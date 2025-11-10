@@ -1,0 +1,40 @@
+;;; stumpwm @ 2025-06-27.22:38:10 -*- mode:skel; -*-
+:name "stumpwm"
+:author ""
+:version "1.0.0"
+:bind
+((emacs-locals
+  :dir-locals
+  ((nil . ((indent-tabs-mode . nil)))
+   (makefile-mode . ((indent-tabs-mode . t)))))
+ #+nil (sbcl :env "/usr/local/bin/sbcl")
+ (user-swm-dir :env (merge-homedir-pathnames ".stumpwm.d")))
+:vc (:hg "https://vc.compiler.company/ext/stumpwm"
+     (upstream (:git "https://github.com/stumpwm/stumpwm"))
+     (gh (:git "ssh://git@github.com/richardwesthaver/stumpwm")))
+:stash ".stash"
+:cache ".stash/cache"
+:rules
+((default (build))
+ (build ()
+  (with-sbcl (:noinform t :quit t :input t)
+   (ql:quickload '(:stumpwm :modeline :util))
+   (uiop:symbol-call :stumpwm 'set-module-dir (merge-pathnames ".stumpwm.d/contrib" (user-homedir-pathname)))
+   (sb-ext:save-lisp-and-die 
+    "stumpwm" 
+    :toplevel 
+    (lambda ()
+     (uiop:symbol-call :stumpwm "STUMPWM")
+     (exit :code 0))
+    :executable t
+    :purify t
+    :compression t)))
+ (:install ()
+  (with-sudo 
+   "install -m 755 stumpwm /usr/local/bin/"))
+ (modules () (:install () #$mkdir -pv $USER_SWM_DIR/contrib && cp -rf contrib/* $USER_SWM_DIR/contrib/$#))
+ (clean ()
+  #$rm -f *.fasl *.fas *.lib *.*fsl
+  rm -f *.log *.fns *.fn *.aux *.cp *.ky *.log *.toc *.pg *.tp *.vr *.vrs
+  rm -f stumpwm$#))
+
