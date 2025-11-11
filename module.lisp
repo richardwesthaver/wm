@@ -26,8 +26,8 @@
 (in-package #:wm)
 
 (defvar *module-dir*
-  (directory-path (merge-homedir-pathnames ".config/stumpwm/lisp"))
-  "The location of the contrib modules on your system. Defaults to ~/.config/stumpwm/lisp.")
+  (directory-path (merge-homedir-pathnames ".config/wm/lisp"))
+  "The location of the contrib modules on your system. Defaults to ~/.config/wm/lisp.")
 
 (defun build-load-path (path)
   "Maps subdirectories of path, returning a list of all subdirs in the
@@ -46,7 +46,7 @@
 (defvar *load-path* nil
   "A list of paths in which modules can be found, by default it is
   populated by any asdf systems found in `*module-dir*' set from the
-  configure script when StumpWM was built, or later by the user using
+  configure script when WM was built, or later by the user using
   `add-to-load-path'")
 
 (define-stumpwm-type :module (input prompt)
@@ -94,13 +94,13 @@ an asdf system, and if so add it to the central registry"
 
 (defcommand init-load-path (path) ((:string "Directory: "))
   "Recursively builds a list of paths that contain modules, then
-add them to the load path. This is called each time StumpWM starts
+add them to the load path. This is called each time WM starts
 with the argument `*module-dir*'"
   (mapcar #'add-to-load-path (build-load-path path))
   *load-path*)
 
 (defun set-module-dir (dir)
-  "Sets the location of the for StumpWM to find modules"
+  "Sets the location of the for WM to find modules"
   (when (stringp dir)
     (setf dir (pathname (concat dir "/"))))
   (setf *module-dir* dir)

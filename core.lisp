@@ -72,7 +72,6 @@
 (defun send-fake-click (win button)
   "Send a fake click (button press + button release) to win."
   (cond
-    #+clx-ext-test
     ((xlib:query-extension *display* "XTEST")
      (xtest:fake-button-event *display* button t)
      (xtest:fake-button-event *display* button nil))

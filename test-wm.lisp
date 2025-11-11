@@ -124,7 +124,7 @@
                (xlib:display-finish-output dpy2)
                ;; On the old connection, list the root window children
                ;; and note the second window is erroneously a pixmap
-               ;; due to too agressive caching in clx.
+               ;; due to too agressive caching in xlib.
                (loop for w in (xlib:query-tree (xlib:screen-root (first (xlib:display-roots dpy))))
                   do (format t "window: ~s~%" w))
                (xlib:close-display dpy2))))
@@ -134,7 +134,7 @@
       (xlib:close-display dpy))))
 
 (defun test-wm-class (map-p)
-  "Test the robustness of CLX's wm-class function. If MAP-P is T then
+  "Test the robustness of XLIB's wm-class function. If MAP-P is T then
 map the window. Useful if you want to test the running window
 manager."
   (labels ((test-it (w &rest strings)

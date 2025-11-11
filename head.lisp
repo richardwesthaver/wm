@@ -28,7 +28,7 @@
   (find n (screen-heads screen) :key 'head-number))
 
 (defun screen-info-head (screen-info)
-  "Transform SCREEN-INFO structure from CLX to a HEAD structure from StumpWM."
+  "Transform SCREEN-INFO structure from XLIB to a HEAD structure from WM."
   (make-head :number (xinerama:screen-info-number screen-info)
              :x (xinerama:screen-info-x screen-info)
              :y (xinerama:screen-info-y screen-info)

@@ -1,6 +1,6 @@
 ;;; modeline.asd --- Modeline Sytem Definitions
 (defsystem :modeline
-  :depends-on (:std :net :clx :wm)
+  :depends-on (:std :net :xlib :wm)
   :components ((:file "pkg")
                (:file "battery")
                (:file "cpu")

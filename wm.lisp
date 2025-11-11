@@ -194,7 +194,7 @@ further up. "
   (ppcre:register-groups-bind (protocol host ('parse-integer display screen))
       ("^(?:(.*?)/)?(.*?)?:(\\d+)(?:\\.(\\d+))?" display :sharedp t)
     (values
-     ;; clx doesn't like (vector character *)
+     ;; xlib doesn't like (vector character *)
      (coerce (or host "")
              '(simple-array character (*)))
      display screen

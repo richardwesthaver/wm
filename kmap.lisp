@@ -84,7 +84,7 @@ related bindings off @kbd{C-t C-f} one might use the following code:
       (key-super key)))
 
 (defun x11-mods (key &optional with-numlock with-capslock)
-  "Return the modifiers for key in a format that clx understands. if
+  "Return the modifiers for key in a format that xlib understands. if
 WITH-NUMLOCK is non-nil then include the numlock modifier. if
 WITH-CAPSLOCK is non-nil then include the capslock modifier. Most of
 the time these just gets in the way."
