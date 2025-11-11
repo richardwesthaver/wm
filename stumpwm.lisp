@@ -32,11 +32,11 @@ rc files exist), the error if it didn't, and the rc file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
 further up. "
   (init :xdg)
-  (let* ((user-rc (probe-file (xdg-config-file :stumpwm)))
+  (let* ((user-rc (std:xdg-config-file :wm))
          (dir-rc
-           (probe-file (xdg-config-dir :stumpwm "init.lisp")))
+           (probe-file (std:xdg-config-dir :wm "init.lisp")))
          (conf-rc
-           (probe-file (uiop:xdg-config-home #p"stumpwm/config/")))
+           (probe-file (std:xdg-config-dir :wm "config/")))
          (etc-rc (probe-file #p"/etc/stumpwmrc"))
          (rc (or user-rc dir-rc conf-rc etc-rc)))
     (if rc
