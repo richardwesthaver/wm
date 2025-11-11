@@ -1,9 +1,4 @@
 ;;; -*- Mode: Lisp -*-
-
-(defpackage :wm-system
-  (:use :cl :asdf))
-(in-package :wm-system)
-
 (defsystem :wm
   :name "WM"
   :author "Shawn Betts <sabetts@vcn.bc.ca>"
@@ -13,7 +8,7 @@
   :description "A tiling, keyboard driven window manager"
   :serial t
   :depends-on (#:core #:clx)
-  :components ((:file "package")
+  :components ((:file "pkg")
                (:file "debug")
                (:file "primitives")
                (:file "wrappers")
@@ -57,8 +52,7 @@
                (:file "remap-keys")
                (:file "manual")
                (:file "minor-modes")
-               (:file "replace-class")
-               (:file "version"))
+               (:file "replace-class"))
   :in-order-to ((test-op (test-op "wm/tests"))))
 
 (defsystem "wm/tests"
@@ -66,7 +60,7 @@
   :serial t
   :depends-on ("wm" "rt")
   :pathname "tests/"
-  :components ((:file "package")
+  :components ((:file "pkg")
                (:file "kmap")
                (:file "mode-line-formatters"))
   :perform (test-op (o c)

@@ -26,8 +26,8 @@
 (in-package #:wm)
 
 (defvar *module-dir*
-  (directory-path (concat (sb-posix:getenv "HOME") "/.stumpwm.d/modules"))
-  "The location of the contrib modules on your system.")
+  (directory-path (merge-homedir-pathnames ".config/stumpwm/lisp"))
+  "The location of the contrib modules on your system. Defaults to ~/.config/stumpwm/lisp.")
 
 (defun build-load-path (path)
   "Maps subdirectories of path, returning a list of all subdirs in the

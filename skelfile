@@ -23,7 +23,7 @@
   (with-sbcl (:noinform t :quit t :input t)
    (ql:quickload '(:std :wm :modeline :util))
    (sb-ext:save-lisp-and-die 
-    "wm" 
+    ".stash/wm" 
     :toplevel 
     (lambda ()
      (uiop:symbol-call :wm "START-WM")
@@ -31,10 +31,10 @@
     :executable t
     :purify t
     :compression t)))
- (modules () (:install () #$mkdir -pv $USER_WM_DIR/contrib && cp -rf contrib/* $USER_WM_DIR/contrib/$#))
+ (modules () (:install () #$mkdir -pv $USER_WM_DIR/lisp && cp -rf util modeline $USER_WM_DIR/lisp/$#))
  (:install (install-modules)
   (with-sudo 
-   "install -m 755 wm /usr/local/bin/"))
+   "install -m 755 .stash/wm /usr/local/bin/"))
  (clean ()
   #$rm -f *.fasl *.fas *.lib *.*fsl
   rm -f *.log *.fns *.fn *.aux *.cp *.ky *.log *.toc *.pg *.tp *.vr *.vrs

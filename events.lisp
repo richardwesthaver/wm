@@ -305,7 +305,7 @@ ratpoison sends the rp_command_request window in 8 byte chunks."
   "Handle a StumpWM style command request."
   (let* ((win root)
          (screen (find-screen root))
-         (data (xlib:get-property win :stumpwm_command :delete-p t :result-type '(vector (unsigned-byte 8))))
+         (data (xlib:get-property win :wm_command :delete-p t :result-type '(vector (unsigned-byte 8))))
          (cmd (utf8-to-string data)))
     (let ((msgs (screen-last-msg screen))
           (hlts (screen-last-msg-highlights screen))
@@ -313,7 +313,7 @@ ratpoison sends the rp_command_request window in 8 byte chunks."
       (setf (screen-last-msg screen) '()
             (screen-last-msg-highlights screen) '())
       (eval-command cmd)
-      (xlib:change-property win :stumpwm_command_result
+      (xlib:change-property win :wm_command_result
                             (sb-ext:string-to-octets (format nil "~{~{~a~%~}~}" (nreverse (screen-last-msg screen))))
                             :string 8)
       (setf (screen-last-msg screen) msgs
@@ -384,7 +384,7 @@ converted to an atom is removed."
        (when (and (eq state :new-value)
                   screen)
          (handle-rp-commands window))))
-    (:stumpwm_command
+    (:wm_command
      ;; RP commands are too weird and problematic, KISS.
      (let* ((screen (find-screen window)))
        (when (and (eq state :new-value)

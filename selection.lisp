@@ -110,7 +110,7 @@
                        "")))))
       (or (getf *x-selection* selection)
           (progn
-            (xlib:convert-selection selection :utf8_string (screen-input-window (current-screen)) :stumpwm-selection)
+            (xlib:convert-selection selection :utf8_string (screen-input-window (current-screen)) :wm-selection)
             ;; Note: this may spend longer than timeout in this loop but it will eventually return.
             (let ((time (get-internal-real-time)))
               (loop for ret = (xlib:process-event *display* :handler #'wait-for-selection :timeout timeout :discard-p nil)

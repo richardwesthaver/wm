@@ -799,7 +799,7 @@ to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
       (input-insert-string input (getf *x-selection* :primary))
       (xlib:convert-selection :primary
                               :string (screen-input-window (current-screen))
-                              :stumpwm-selection)))
+                              :wm-selection)))
 
 (defun input-yank-clipboard (input key)
   (declare (ignore key))
@@ -807,7 +807,7 @@ to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
       (input-insert-string input (getf *x-selection* :clipboard))
       (xlib:convert-selection :clipboard
                               :string (screen-input-window (current-screen))
-                              :stumpwm-selection)))
+                              :wm-selection)))
 
 ;;; Misc functions
 (defun process-input (screen prompt input code state)

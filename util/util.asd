@@ -1,0 +1,23 @@
+;;; ~/comp/ext/stumpwm/contrib/util/util.asd --- Util Sytem Definitions
+(defsystem :util
+  :depends-on (:std :swank :wm :dat :clx :clx/truetype :cl-ppcre)
+  :components ((:file "pkg")
+               (:file "golden-ratio")
+               (:file "beckon")
+               (:file "clipboard-history")
+               (:file "command-history")
+               (:file "globalwindows")
+               (:file "kbd-layouts")
+               (:file "perwindowlayout")
+               (:file "screenshot")
+               (:file "shell-command-history")
+               (:file "spatial-groups")
+               (:file "gaps")
+               (:file "ttf-fonts")
+               (:file "windowtags")
+               (:file "urgentwindows")
+               (:module "winner-mode"
+                :components ((:file "variables")
+                             (:file "macros")
+                             (:file "dumper")
+                             (:file "winner-mode")))))
