@@ -24,7 +24,7 @@
 ;;; Code:
 
 ;;; interactive menu
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defun entries-from-nested-list (lst)
   (mapcar (lambda (x)

@@ -1,7 +1,9 @@
 ;;; wm @ 2025-06-27.22:38:10 -*- mode:skel; -*-
 :name "wm"
-:author ""
+:author ("Richard Westhaver" . "ellis@rwest.io")
+:description "A fork of StumpWM by Shawn Betts <sabetts@vcn.bc.ca>"
 :version "1.0.0"
+:license "GPL"
 :bind
 ((emacs-locals
   :dir-locals
@@ -11,19 +13,20 @@
  (user-wm-dir :env (std:xdg-config-dir :wm)))
 :vc (:hg "https://vc.compiler.company/shed/wm"
      (upstream (:git "https://github.com/stumpwm/stumpwm"))
-     (gh (:git "ssh://git@github.com/richardwesthaver/wm")))
+     (gh (:git "ssh://git@github.com/richardwesthaver/wm"))
+     (cb (:git "ssh://git@codeberg.org/c-c/wm")))
 :stash ".stash"
 :cache ".stash/cache"
 :rules
 ((default (build))
  (build ()
   (with-sbcl (:noinform t :quit t :input t)
-   (ql:quickload '(:std :stumpwm :modeline :util))
+   (ql:quickload '(:std :wm :modeline :util))
    (sb-ext:save-lisp-and-die 
     "wm" 
     :toplevel 
     (lambda ()
-     (uiop:symbol-call :stumpwm "STUMPWM")
+     (uiop:symbol-call :wm "START-WM")
      (exit :code 0))
     :executable t
     :purify t
@@ -35,5 +38,5 @@
  (clean ()
   #$rm -f *.fasl *.fas *.lib *.*fsl
   rm -f *.log *.fns *.fn *.aux *.cp *.ky *.log *.toc *.pg *.tp *.vr *.vrs
-  rm -f stumpwm$#))
+  rm -f wm$#))
 

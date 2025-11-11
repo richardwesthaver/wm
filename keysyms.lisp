@@ -24,7 +24,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *keysym-name-translations* (make-hash-table))
 (defvar *name-keysym-translations* (make-hash-table :test #'equal))

@@ -77,7 +77,7 @@ Temporary mails number
     (setf *maildir-timer*
 	  (run-with-timer 0 *maildir-update-time* #'update-maildir-infos)))
   (loop for (label . info) in *maildir-info*
-	collect (stumpwm:format-expand `((#\l ,(constantly label))
+	collect (wm:format-expand `((#\l ,(constantly label))
 					 (#\n ,(lambda () (format nil "^[~@[^B~*~]~D^]"
 								  (plusp (getf info :new))
 								  (getf info :new))))
@@ -87,4 +87,4 @@ Temporary mails number
 	into fmts
 	finally (return (apply #'concat fmts))))
 
-(stumpwm:add-screen-mode-line-formatter #\D #'maildir-modeline)
+(wm:add-screen-mode-line-formatter #\D #'maildir-modeline)

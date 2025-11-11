@@ -21,7 +21,7 @@
 ;; Macro for defining interactive command. Just pushes and pops new keymaps.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defun enter-interactive-keymap (kmap name)
   "Enter interactive mode"

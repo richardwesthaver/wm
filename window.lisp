@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *default-window-name* "Unnamed"
   "The name given to a window that does not supply its own name.")

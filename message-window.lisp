@@ -21,7 +21,7 @@
 ;; message printing functions
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defgeneric gravity-coords (gravity width height minx miny maxx maxy)
   (:documentation "Get the X and Y coordinates to place something of width WIDTH

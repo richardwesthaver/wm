@@ -16,7 +16,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this software; see the file COPYING.  If not, see
 ;; <http://www.gnu.org/licenses/>.
-(in-package :stumpwm)
+(in-package :wm)
 
 ;;; Settings
 (defvar *mode-line-position* :top
@@ -378,7 +378,7 @@ appropriate mode line click function."
                    (apply (cdr fn) code args)))
                (loop-finish)))))
 
-(add-hook *mode-line-click-hook* 'mode-line-click-dispatcher)
+(add-wm-hook *mode-line-click-hook* 'mode-line-click-dispatcher)
 
 (flet ((ml-on-click-focus-window (code id &rest rest)
          (declare (ignore code rest))

@@ -22,7 +22,7 @@
 ;; throughout stumpwm.
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 ;;; Completions
 (defvar *maximum-completions* 100
@@ -386,7 +386,7 @@ are valid values.
 (declaim (type (member :message :break :abort) *top-level-error-action*))
 (defvar *top-level-error-action* :abort
   "If an error is encountered at the top level, in
-STUMPWM-INTERNAL-LOOP, then this variable decides what action
+WM-INTERNAL-LOOP, then this variable decides what action
 shall be taken. By default it will print a message to the screen
 and to *standard-output*.
 
@@ -518,7 +518,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
 
 ;; duplicate frame accessors for heads.
 (macrolet ((define-head-accessor (name)
-             (let ((pkg (find-package :stumpwm)))
+             (let ((pkg (find-package :wm)))
                `(progn
                   (defgeneric ,(intern (format nil "HEAD-~A" (symbol-name name)) pkg) (head)
                     (:method ((head head))
@@ -573,7 +573,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
    (mapped-windows :initform () :accessor screen-mapped-windows :documentation
                    "A list of all mapped windows. These are the raw xlib:window's. window structures are stored in groups.")
    (withdrawn-windows :initform () :accessor screen-withdrawn-windows :documentation
-                      "A list of withdrawn windows. These are of type stumpwm::window
+                      "A list of withdrawn windows. These are of type wm::window
 and when they're mapped again they'll be put back in the group
 they were in when they were unmapped unless that group doesn't
 exist, in which case they go into the current group.")
@@ -709,19 +709,19 @@ chosen, resignal the error."
   "Call each function in HOOK."
   (run-hook-with-args hook))
 
-(defmacro add-hook (hook fn)
+(defmacro add-wm-hook (hook fn)
   "Add @var{function} to the @var{hook-variable}. For example, to
 display a message whenever you switch frames:
 
 @example
 \(defun my-rad-fn (to-frame from-frame)
-  (stumpwm:message \"Mustard!\"))
+  (wm:message \"Mustard!\"))
 
-\(stumpwm:add-hook stumpwm:*focus-frame-hook* 'my-rad-fn)
+\(wm:add-wm-hook wm:*focus-frame-hook* 'my-rad-fn)
 @end example"
   `(setf ,hook (adjoin ,fn ,hook)))
 
-(defmacro remove-hook (hook fn)
+(defmacro remove-wm-hook (hook fn)
   "Remove the specified function from the hook."
   `(setf ,hook (remove ,fn ,hook)))
 
@@ -1153,9 +1153,9 @@ Press ^5*~a ?^2* for help."
   "This is the message StumpWM displays when it starts. Set it to NIL to
 suppress.")
 
-(defvar *default-package* (find-package '#:stumpwm-user)
+(defvar *default-package* (find-package '#:wm-user)
   "This is the package eval reads and executes in. You might want to set
-this to @code{:stumpwm} if you find yourself using a lot of internal
+this to @code{:wm} if you find yourself using a lot of internal
 stumpwm symbols. Setting this variable anywhere but in your rc file
 will have no effect.")
 

@@ -23,7 +23,7 @@
 ;; declared here.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *menu-map* nil
   "The keymap used by the interactive menu.")

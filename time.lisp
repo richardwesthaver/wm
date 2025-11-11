@@ -32,7 +32,7 @@
 ;; - Simplify code (fewer helper functions somehow?)
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *time-format-string-default* "%a %b %e %Y %k:%M:%S"
   "The default value for `echo-date', (e.g, Thu Mar  3 2005 23:05:25).")

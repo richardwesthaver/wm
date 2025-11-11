@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *stumpwm-name->keysym-name-translations* (make-hash-table :test #'equal)
   "Hashtable mapping from stumpwm key names to keysym names.")

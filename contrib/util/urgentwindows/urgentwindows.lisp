@@ -11,7 +11,7 @@
   (message-no-timeout *urgent-window-message* (window-title target))
   (push target *urgent-windows-stack*))
 
-(add-hook *urgent-window-hook* 'echo-urgent-window)
+(add-wm-hook *urgent-window-hook* 'echo-urgent-window)
 
 (defun raise-urgent-window ()
   (let ((last-urgent (pop *urgent-windows-stack*)))

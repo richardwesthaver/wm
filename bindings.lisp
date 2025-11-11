@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *escape-key* (kbd "C-t")
   "The escape key. Any keymap that wants to hang off the escape key
@@ -254,7 +254,7 @@ current window. To exit command mode, type @key{C-g}."
 (defcommand set-prefix-key (key) ((:key "Key: "))
   "Change the stumpwm prefix key to KEY.
 @example
-\(stumpwm:set-prefix-key (stumpwm:kbd \"C-M-H-s-z\"))
+\(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
 @end example
 
 This will change the prefix key to @key{Control} + @key{Meta} + @key{Hyper} + @key{Super} +

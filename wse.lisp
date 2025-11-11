@@ -20,7 +20,7 @@
 ;; Boston, MA 02111-1307 USA
 
 ;; Window Selection Expressions
-(in-package :stumpwm)
+(in-package :wm)
 
 (defun move-windows-to-group (windows &optional (arggroup nil))
   "Move all windows from the list to the group"

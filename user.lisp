@@ -21,7 +21,7 @@
 ;; Window Manager commands that users can use to manipulate stumpwm.
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 (defun restarts-menu (err)
   "Display a menu with the active restarts and let the user pick
@@ -308,7 +308,7 @@ current frame instead of switching to the window."
   "Reload StumpWM using @code{asdf}."
   (swm-message "Reloading StumpWM...")
   #+asdf (with-restarts-menu
-           (asdf:operate 'asdf:load-op :stumpwm))
+           (asdf:operate 'asdf:load-op :wm))
   #-asdf (swm-message "^B^1*Sorry, StumpWM can only be reloaded with asdf (for now).")
   #+asdf (swm-message "Reloading StumpWM...^B^2*Done^n."))
 

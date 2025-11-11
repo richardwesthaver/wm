@@ -22,7 +22,7 @@
 ;;
 ;;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *debug-level* 0
   "Set this variable to a number > 0 to turn on debugging. The greater the number the more debugging output.")

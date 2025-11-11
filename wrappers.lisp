@@ -22,7 +22,7 @@
 ;; lisps should be wrapped up in a function and put here.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defun screen-display-string (screen &optional (assign t))
   (format nil

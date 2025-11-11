@@ -22,7 +22,7 @@
 ;; Provides the code for timers.
 
 ;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 ;;; Timers
 (defvar *toplevel-io* nil
@@ -111,20 +111,20 @@ The action is to call FUNCTION with arguments ARGS."
             internal-time-units-per-second)
          0)))
 
-(defclass stumpwm-timer-channel () ())
+(defclass wm-timer-channel () ())
 
-(defmethod io-channel-ioport (io-loop (channel stumpwm-timer-channel))
+(defmethod io-channel-ioport (io-loop (channel wm-timer-channel))
   (declare (ignore io-loop))
   nil)
 
-(defmethod io-channel-events ((channel stumpwm-timer-channel))
+(defmethod io-channel-events ((channel wm-timer-channel))
   (sb-thread:with-mutex (*timer-list-lock*)
     (if *timer-list*
         `((:timeout ,(timer-time (car *timer-list*))))
         '(:loop))))
 
-(defmethod io-channel-handle ((channel stumpwm-timer-channel) (event (eql :timeout)) &key)
+(defmethod io-channel-handle ((channel wm-timer-channel) (event (eql :timeout)) &key)
   (run-expired-timers))
 
-(defmethod io-channel-handle ((channel stumpwm-timer-channel) (event (eql :loop)) &key)
+(defmethod io-channel-handle ((channel wm-timer-channel) (event (eql :loop)) &key)
   (run-expired-timers))

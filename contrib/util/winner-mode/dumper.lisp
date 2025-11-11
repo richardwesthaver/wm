@@ -1,7 +1,7 @@
 (in-package #:swm/winner-mode)
 
 (defun current-group-number ()
-  (slot-value (stumpwm:current-group) 'number))
+  (slot-value (wm:current-group) 'number))
 
 (defun dump-name (group-number id)
   (merge-pathnames
@@ -12,7 +12,7 @@
   (declare (ignore args))
   (let* ((group-number (current-group-number)))
     (check-ids group-number *current-ids* *max-ids*)
-    (stumpwm::dump-to-file (stumpwm::dump-group (stumpwm:current-group))
+    (wm::dump-to-file (wm::dump-group (wm:current-group))
      (dump-name group-number (incf (gethash group-number *current-ids*))))
     (when (> (gethash group-number *current-ids*)
              (gethash group-number *max-ids*))

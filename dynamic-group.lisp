@@ -57,7 +57,7 @@
 ;; that the window stack is not smaller than the minimum frame width/height.
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 (defmacro pswap (a b)
   "Swap the values of A and B using PSETF."

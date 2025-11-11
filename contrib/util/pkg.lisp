@@ -4,13 +4,13 @@
 
 ;;; Code:
 (defpackage #:swm/golden-ratio
-  (:use #:cl #:stumpwm)
+  (:use #:cl #:wm)
   (:export :*golden-ratio* :*golden-ratio-on* :toggle-golden-ratio))
 
 (defpackage #:swm/beckon
   (:use #:cl)
   (:import-from 
-   #:stumpwm 
+   #:wm 
    #:defcommand 
    #:window-frame 
    #:ratwarp #:current-window #:frame-x #:frame-y 
@@ -26,16 +26,16 @@
    #:*clipboard-history-max-length*))
 
 (defpackage #:swm/command-history
-  (:use :cl :stumpwm)
+  (:use :cl :wm)
   (:export
    :*command-history-file*
    :*start-hook*
    :*quit-hook*))
 
 (defpackage #:swm/globalwindows
-  (:use #:cl :stumpwm)
+  (:use #:cl :wm)
   (:import-from 
-   :stumpwm
+   :wm
    :*window-format*
    :completing-read
    :current-group
@@ -56,7 +56,7 @@
    :window-name))
 
 (defpackage #:swm/kbd-layouts
-  (:use #:cl #:stumpwm #:io/kbd)
+  (:use #:cl #:wm #:io/kbd)
   (:export 
    #:*caps-lock-behavior*
    #:*custom-setxkb-options*
@@ -64,7 +64,7 @@
    #:keyboard-layout-list))
 
 (defpackage #:swm/perwindowlayout
-  (:use #:cl :stumpwm)
+  (:use #:cl :wm)
   (:export 
    #:*emacs-toggle-input-method-key*
    #:switch-window-layout
@@ -72,33 +72,33 @@
    #:disable-per-window-layout))
 
 (defpackage #:swm/screenshot
-  (:use #:cl :stumpwm :dat/png))
+  (:use #:cl :wm :dat/png))
 
 (defpackage #:swm/shell-command-history
-  (:use :cl :stumpwm)
+  (:use :cl :wm)
   (:export
    :*shell-command-history-file*
    :*start-hook*
    :*quit-hook*))
 
 (defpackage #:swm/spatial-groups
-  (:use #:cl #:stumpwm)
+  (:use #:cl #:wm)
   (:export 
    :*spatial-banish-on-move*
    :spatial-gselect
    :install-default-keybinds))
 
 (defpackage #:swm/gaps
-  (:use #:cl :stumpwm)
+  (:use #:cl :wm)
   (:export 
    :*inner-gaps-size* :*outer-gaps-size* 
    :*head-gaps-size* :*gaps-on* 
    :toggle-gaps :toggle-gaps-on :toggle-gaps-off))
 
 (defpackage #:swm/ttf-fonts
-  (:shadowing-import-from :stumpwm :version :message)
-  (:use #:cl #:stumpwm #:ttf)
-  (:import-from :stumpwm
+  (:shadowing-import-from :wm :version :message)
+  (:use #:cl #:wm #:ttf)
+  (:import-from :wm
    :font-exists-p :open-font 
    :close-font :font-ascent :font-descent :text-line-width
    :draw-image-glyphs :font-height)
@@ -112,8 +112,8 @@
    :draw-image-glyphs))
 
 (defpackage #:swm/windowtags
-  (:use #:cl #:stumpwm)
-  (:import-from #:stumpwm
+  (:use #:cl #:wm)
+  (:import-from #:wm
                 ;; string wrappers for tag data storage
                 #:utf8-to-string
                 ;; groups
@@ -123,8 +123,8 @@
   (:export :window-tags :clear-tags))
 
 (defpackage #:swm/urgentwindows
-  (:use #:cl :stumpwm)
-  (:import-from :stumpwm
+  (:use #:cl :wm)
+  (:import-from :wm
    :*urgent-window-hook* :gselect
    :message-no-timeout :really-raise-window
    :window-group :window-title)

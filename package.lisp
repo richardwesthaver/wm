@@ -19,10 +19,10 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Code:
-(defpackage :stumpwm
+(defpackage :wm
   (:use #:cl #:std #:obj/meta/mix)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
-  (:shadow #:yes-or-no-p #:y-or-n-p #:add-hook #:remove-hook)
+  (:shadow #:yes-or-no-p #:y-or-n-p)
   (:export 
    ;; primitives
    *suppress-abort-messages*
@@ -129,14 +129,14 @@
    *default-group-name*
    *window-border-style*
    *data-dir*
-   add-hook
+   add-wm-hook
+   remove-wm-hook
    clear-window-placement-rules
    concat
    data-dir-file
    dformat
    define-frame-preference
    redirect-all-output
-   remove-hook
    remove-all-hooks
    run-hook
    run-hook-with-args
@@ -469,5 +469,5 @@
    ;; version.lisp
    stumpwm-version *stumpwm-version*))
 
-(defpackage :stumpwm-user
-  (:use #:cl #:stumpwm))
+(defpackage :wm-user
+  (:use #:std-lisp #:wm))

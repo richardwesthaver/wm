@@ -52,7 +52,7 @@
 ;;      used. In a string you'll probably only want to specify an integer.
 ;;    - :> takes no arguments. It triggers right-alignment for the rest of the
 ;;      line.
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *colors*
   '("black"

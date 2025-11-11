@@ -1,4 +1,4 @@
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *expose-n-max* 26 
   "Maximum number of windows to display in the expose")

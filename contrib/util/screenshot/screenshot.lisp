@@ -3,8 +3,8 @@
 (export '(screenshot screenshot-window screenshot-area))
 
 (defun colorname-to-color (colorname)
-  (let* ((screen (stumpwm:current-screen))
-         (colormap (xlib:screen-default-colormap (stumpwm:screen-number screen)))
+  (let* ((screen (wm:current-screen))
+         (colormap (xlib:screen-default-colormap (wm:screen-number screen)))
          (color (xlib:lookup-color colormap colorname)))
     (xlib:alloc-color colormap color)))
 
@@ -53,11 +53,11 @@
           (max (+ 2 x1) x2)
           (max (+ 2 y1) y2)))
 
-(stumpwm:defcommand screenshot-area
+(wm:defcommand screenshot-area
     (filename)
     ((:rest "Filename: "))
   "Make screenshot of selected area of display."
-  (let ((display stumpwm:*display*)
+  (let ((display wm:*display*)
         (x1 0)
         (y1 0)
         (x2 0)
@@ -69,8 +69,8 @@
                     :parent (xlib:screen-root (xlib:display-default-screen display))
                     :x 0
                     :y 0
-                    :width (stumpwm:screen-width (stumpwm:current-screen))
-                    :height (stumpwm:screen-height (stumpwm:current-screen))
+                    :width (wm:screen-width (wm:current-screen))
+                    :height (wm:screen-height (wm:current-screen))
                     :background :none
                     :event-mask '(:exposure :button-press :button-release)))
            (gc (xlib:create-gcontext
@@ -83,7 +83,7 @@
            (progn
              (xlib:map-window window)
              (xlib:grab-pointer window '(:button-press :button-release :button-motion) :owner-p t)
-             (stumpwm:echo "Click and drag the area to screenshot.")
+             (wm:echo "Click and drag the area to screenshot.")
              (xlib:event-case (display :discard-p t)
                (exposure
                 ()
@@ -103,7 +103,7 @@
                (button-press
                 ()
                 (multiple-value-bind (root-x root-y) (xlib:global-pointer-position display)
-                  (stumpwm:echo (format nil "Screenshotting from ~A, ~A to ..." root-x root-y))
+                  (wm:echo (format nil "Screenshotting from ~A, ~A to ..." root-x root-y))
                   (setf x1 root-x)
                   (setf y1 root-y)
                   (setf x2 (+ 1 x1))
@@ -118,8 +118,8 @@
                     ;; drawing over the old rectangle reverts the pixels back to their original values.
                     (when x2
                       (xlib:draw-rectangle window gc x1 y1 (- x2 x1) (- y2 y1)))
-                    (stumpwm:echo (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename))
-                    (%screenshot-window (xlib:screen-root (stumpwm:screen-number (stumpwm:current-screen))) filename
+                    (wm:echo (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename))
+                    (%screenshot-window (xlib:screen-root (wm:screen-number (wm:current-screen))) filename
                                         :x (- x1 1)
                                         :y (- y1 1)
                                         :width (- (- root-x x1) 1)
@@ -129,14 +129,14 @@
                   t))))
         (xlib:destroy-window window)))))
 
-(stumpwm:defcommand screenshot
+(wm:defcommand screenshot
     (filename)
   ((:rest "Filename: "))
   "Make screenshot of root window"
-  (%screenshot-window (xlib:screen-root (stumpwm:screen-number (stumpwm:current-screen))) filename))
+  (%screenshot-window (xlib:screen-root (wm:screen-number (wm:current-screen))) filename))
 
-(stumpwm:defcommand screenshot-window
+(wm:defcommand screenshot-window
     (filename)
   ((:rest "Filename: "))
   "Make screenshot of focus window"
-  (%screenshot-window (stumpwm:window-xwin (stumpwm:current-window)) filename))
+  (%screenshot-window (wm:window-xwin (wm:current-window)) filename))

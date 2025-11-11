@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defstruct command-alias
   from to)
@@ -587,7 +587,7 @@ used to ratpoison's rc file and you just want to run commands or don't
 know lisp very well. One might put the following in one's rc file:
 
 @example
-\(stumpwm:run-commands
+\(wm:run-commands
   \"escape C-z\"
   \"exec firefox\"
   \"split\")

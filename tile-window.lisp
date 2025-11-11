@@ -1,6 +1,6 @@
 ;;; a dumping spot for window stuff that has tiling stuff in it
 
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *ignore-wm-inc-hints* nil
   "Set this to T if you never want windows to resize based on incremental WM_HINTs,

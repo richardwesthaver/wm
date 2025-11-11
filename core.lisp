@@ -23,7 +23,7 @@
 ;;
 ;; Code:
 
-(in-package :stumpwm)
+(in-package :wm)
 
 ;;; keyboard helper functions
 (defun key-to-keycode+state (key)

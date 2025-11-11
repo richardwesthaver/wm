@@ -8,22 +8,22 @@
 
 (defun apply-gaps-p (win)
   "Tell if gaps should be applied to this window"
-  (and *gaps-on* (not (stumpwm::window-transient-p win)) (not (window-fullscreen win))))
+  (and *gaps-on* (not (wm::window-transient-p win)) (not (window-fullscreen win))))
 
 (defun window-edging-p (win direction)
   "Tell if the window is touching the head in the given direction."
-  (let* ((frame (stumpwm::window-frame win))
-         (head (stumpwm::frame-head (stumpwm:window-group win) frame))
-         (offset (nth-value 2 (stumpwm::get-edge frame direction))))
+  (let* ((frame (wm::window-frame win))
+         (head (wm::frame-head (wm:window-group win) frame))
+         (offset (nth-value 2 (wm::get-edge frame direction))))
     (ecase direction
       (:top
-       (= offset (stumpwm::head-y head)))
+       (= offset (wm::head-y head)))
       (:bottom
-       (= offset (+ (stumpwm::head-y head) (stumpwm::head-height head))))
+       (= offset (+ (wm::head-y head) (wm::head-height head))))
       (:left
-       (= offset (stumpwm::head-x head)))
+       (= offset (wm::head-x head)))
       (:right
-       (= offset (+ (stumpwm::head-x head) (stumpwm::head-width head)))))))
+       (= offset (+ (wm::head-x head) (wm::head-width head)))))))
 
 (defun gaps-offsets (win)
   "Return gap offset values for the window. X and Y values are added. WIDTH and
@@ -44,13 +44,13 @@ HEIGHT are subtracted."
         (setf width (+ width *outer-gaps-size*)))
     (values x y width height)))
 
-(defun stumpwm::maximize-window (win)
+(defun wm::maximize-window (win)
   "Redefined gaps aware maximize function."
   (multiple-value-bind (x y wx wy width height border stick)
-      (stumpwm::geometry-hints win)
+      (wm::geometry-hints win)
 
     (let ((ox 0) (oy 0) (ow 0) (oh 0)
-          (frame (stumpwm::window-frame win)))
+          (frame (wm::window-frame win)))
       (if (apply-gaps-p win)
           (multiple-value-setq (ox oy ow oh) (gaps-offsets win)))
 
@@ -61,7 +61,7 @@ HEIGHT are subtracted."
                  (>= width (- (frame-width frame) ow)))
         (setf width (- width ow)))
       (when (and (< oh height)
-                 (>= height (- (stumpwm::frame-display-height (window-group win) frame) oh)))
+                 (>= height (- (wm::frame-display-height (window-group win) frame) oh)))
         (setf height (- height oh)))
 
       (setf x (+ x ox)
@@ -83,11 +83,11 @@ HEIGHT are subtracted."
                 (find *window-border-style* '(:tight :none)))
             (setf (xlib:drawable-width (window-parent win)) (window-width win)
                   (xlib:drawable-height (window-parent win)) (window-height win))
-            (let ((frame (stumpwm::window-frame win)))
+            (let ((frame (wm::window-frame win)))
               (setf (xlib:drawable-width (window-parent win)) (- (frame-width frame)
                                                                  (* 2 (xlib:drawable-border-width (window-parent win)))
                                                                  ow)
-                    (xlib:drawable-height (window-parent win)) (- (stumpwm::frame-display-height (window-group win) frame)
+                    (xlib:drawable-height (window-parent win)) (- (wm::frame-display-height (window-group win) frame)
                                                                   (* 2 (xlib:drawable-border-width (window-parent win)))
                                                                   oh))))
         ;; update the "extents"
@@ -101,11 +101,11 @@ HEIGHT are subtracted."
 
 (defun reset-all-windows ()
   "Reset the size for all tiled windows"
-  (mapcar #'stumpwm::maximize-window
-          (stumpwm::only-tile-windows (stumpwm:screen-windows (current-screen)))))
+  (mapcar #'wm::maximize-window
+          (wm::only-tile-windows (wm:screen-windows (current-screen)))))
 
 ;; Redefined neighbour for working with head gaps
-(defun stumpwm::neighbour (direction frame frameset)
+(defun wm::neighbour (direction frame frameset)
   "Returns the best neighbour of FRAME in FRAMESET on the DIRECTION edge.
    Valid directions are :UP, :DOWN, :LEFT, :RIGHT.
    eg: (NEIGHBOUR :UP F FS) finds the frame in FS that is the 'best'
@@ -124,12 +124,12 @@ HEIGHT are subtracted."
         (best-overlap 0)
         (nearest-edge-diff nil))
     (multiple-value-bind (src-s src-e src-offset)
-        (stumpwm::get-edge frame src-edge)
+        (wm::get-edge frame src-edge)
 
       ;; Get the edge distance closest in the required direction
       (dolist (f frameset)
         (multiple-value-bind (s e offset)
-            (stumpwm::get-edge f opposite)
+            (wm::get-edge f opposite)
           (declare (ignore s e))
           (let ((offset-diff (abs (- src-offset offset))))
             (if nearest-edge-diff
@@ -139,7 +139,7 @@ HEIGHT are subtracted."
 
       (dolist (f frameset)
         (multiple-value-bind (s e offset)
-            (stumpwm::get-edge f opposite)
+            (wm::get-edge f opposite)
           (let ((overlap (- (min src-e e)
                             (max src-s s))))
             ;; Two edges are neighbours if they have the same offset (after
@@ -154,15 +154,15 @@ HEIGHT are subtracted."
 (defun add-head-gaps ()
   "Add extra gap to the head boundary"
   (mapcar (lambda (head)
-            (let* ((height (stumpwm::head-height head))
-                   (width (stumpwm::head-width head))
-                   (x (stumpwm::head-x head))
-                   (y (stumpwm::head-y head))
+            (let* ((height (wm::head-height head))
+                   (width (wm::head-width head))
+                   (x (wm::head-x head))
+                   (y (wm::head-y head))
                    (gap *head-gaps-size*)
                    (new-height (- height (* 2 gap)))
                    (new-width (- width (* 2 gap))))
-              (stumpwm::resize-head
-               (stumpwm::head-number head)
+              (wm::resize-head
+               (wm::head-number head)
                (+ x gap) (+ y gap)
                new-width new-height)))
           (screen-heads (current-screen))))
@@ -183,4 +183,4 @@ HEIGHT are subtracted."
 (defcommand toggle-gaps-off () ()
   "Turn gaps off"
   (setf *gaps-on* nil)
-  (stumpwm:refresh-heads))
+  (wm:refresh-heads))

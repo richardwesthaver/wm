@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defun head-by-number (screen n)
   (find n (screen-heads screen) :key 'head-number))

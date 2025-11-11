@@ -16,7 +16,7 @@
   hicons	  ;; hidden icon list
   vicons-ordering ;; Visible icons ordering information
   hicons-ordering ;; Hidden icons ordering information
-  event-processing-fn ;; Hook function added to stumpwm:*event-processing-hook* to process tray events
+  event-processing-fn ;; Hook function added to wm:*event-processing-hook* to process tray events
   display
   screen
   mode-line)
@@ -52,12 +52,12 @@ first on the list by default.")
 
 (defun screen-mode-line (screen)
   "Returns the mode-line that will contain the tray for SCREEN."
-  (stumpwm::head-mode-line 
+  (wm::head-mode-line 
    (funcall *tray-head-selection-fn* 
-	    (stumpwm::screen-heads screen))))
+	    (wm::screen-heads screen))))
 
 (defun current-tray ()
-  (screen-tray (stumpwm:current-screen)))
+  (screen-tray (wm:current-screen)))
 
 ;;;; Tray appearance
 ;; Dimensions The tray height depends on the modeline height. In
@@ -71,7 +71,7 @@ first on the list by default.")
   "Calculates the total tray height based on the height of the
 SCREEN's modeline."
   (xlib:drawable-height
-   (stumpwm::mode-line-window (screen-mode-line screen))))
+   (wm::mode-line-window (screen-mode-line screen))))
 (defun screen-tray-icon-height (screen)
   "Calculates the height of the icons embedded in the tray based on
 the height of the SCREEN's modeline."
@@ -105,16 +105,16 @@ window coordinates.")
 
 ;; Colors
 (defun nth-color (n)
-  (let ((c (nth n stumpwm:*colors*)))
+  (let ((c (nth n wm:*colors*)))
     (typecase c
       (cons (cadr c))
       (t c))))
 
 (defparameter *tray-win-background* (nth-color 7)
   "Tray main container window background color.")
-(defparameter *tray-viwin-background* stumpwm:*mode-line-background-color*
+(defparameter *tray-viwin-background* wm:*mode-line-background-color*
   "Tray visible icons container window color.")
-(defparameter *tray-hiwin-background* stumpwm:*mode-line-border-color*
+(defparameter *tray-hiwin-background* wm:*mode-line-border-color*
   "Tray hidden icons container window color.")
 (defparameter *tray-cursor-color* (nth-color 2)
   "Tray icon selection cursor color.")
@@ -127,7 +127,7 @@ window coordinates.")
 (defun create-tray (screen mode-line &key (x 0) (y 0))
   "Creates a tray object given the SCREEN and the MODE-LINE window. The
   tray object needs further initialization, see `tray-init'."
-  (let* ((parent (stumpwm::mode-line-window mode-line))
+  (let* ((parent (wm::mode-line-window mode-line))
          (root-window (xlib:drawable-root parent))
 	 (depth (xlib:drawable-depth root-window))
 	 (icon-height (screen-tray-icon-height screen))
@@ -141,8 +141,8 @@ window coordinates.")
                                   :width icon-height
                                   :height tray-height
                                   :background (xlib:alloc-color (xlib:window-colormap root-window)
-                                                               (stumpwm:lookup-color 
-                                                                (stumpwm:current-screen) *tray-win-background*)) 
+                                                               (wm:lookup-color 
+                                                                (wm:current-screen) *tray-win-background*)) 
                                   :event-mask +WIN-EVENT-MASK+)))
     (flet ((create-1x1-invisible-window (event-mask)
 	     (xlib:create-window :parent win
@@ -153,8 +153,8 @@ window coordinates.")
 				 :x x :y y :width icon-height :height tray-height
                                  :event-mask event-mask
 				 :background (xlib:alloc-color (xlib:window-colormap root-window)
-                                                               (stumpwm:lookup-color 
-                                                                (stumpwm:current-screen) bgcolor)))))
+                                                               (wm:lookup-color 
+                                                                (wm:current-screen) bgcolor)))))
       (let* ((fpwin (create-1x1-invisible-window +FPWIN-EVENT-MASK+))
              (sowin (create-1x1-invisible-window +SOWIN-EVENT-MASK+))
              (viwin (create-visible-win *tray-viwin-background* +VIWIN-EVENT-MASK+ icon-height 0))
@@ -169,7 +169,7 @@ window coordinates.")
 ;; TODO: We should also remove the hook somewhere
 (defun destroy-tray (tray)
   "Destroys and de-initializes a tray object."
-  (stumpwm:remove-hook stumpwm:*event-processing-hook* (tray-event-processing-fn tray))
+  (wm:remove-wm-hook wm:*event-processing-hook* (tray-event-processing-fn tray))
   (dolist (socket (tray-vicons tray))
     (ignore-errors (xembed:destroy-socket socket)))
   (dolist (socket (tray-hicons tray))
@@ -520,7 +520,7 @@ instead of its current position in the list."
   "Returns the selection atom name for TRAY as specified by the FDO
 System Tray protocol."
   (let* ((stumpwm-screen (tray-screen tray))
-	 (screen (slot-value stumpwm-screen 'stumpwm::number))
+	 (screen (slot-value stumpwm-screen 'wm::number))
 	(display (tray-display tray)))
     (intern 
      (format nil "_NET_SYSTEM_TRAY_S~a" (xlib::screen-position screen display))
@@ -642,10 +642,10 @@ passed to `xlib:process-event'."
 (defun tray-client-list (tray)
   (mapcar #'xembed::client (tray-socket-list tray)))
 
-;(in-package :stumpwm)
+;(in-package :wm)
 (defun new-mode-line-hook (mode-line)
   "If *tray-autoshow*, then creates tray window"
-  (let ((stumpwm-screen (stumpwm::mode-line-screen mode-line)))
+  (let ((stumpwm-screen (wm::mode-line-screen mode-line)))
     (unless (screen-tray stumpwm-screen)
       (let* ((tray (create-tray stumpwm-screen mode-line))
              (hnd (make-tray-handler tray)))
@@ -654,50 +654,50 @@ passed to `xlib:process-event'."
         (map-tray tray)
         (let ((event-handler (lambda ()
                                (loop while (ignore-errors
-                                             (xlib:process-event stumpwm::*display* :timeout 0 :handler hnd))))))
+                                             (xlib:process-event wm::*display* :timeout 0 :handler hnd))))))
           (setf (tray-event-processing-fn tray) event-handler)
-          (stumpwm::add-hook stumpwm:*event-processing-hook* event-handler))))))
+          (wm::add-wm-hook wm:*event-processing-hook* event-handler))))))
 
 (defun destroy-mode-line-hook (mode-line)
   "Destroys tray, when mode-line is destroyed"
-  (let* ((stumpwm-screen (stumpwm::mode-line-screen mode-line))
+  (let* ((stumpwm-screen (wm::mode-line-screen mode-line))
          (tray (screen-tray stumpwm-screen)))
     (when (and
            tray
            (xlib:window-equal
-            (stumpwm::mode-line-window (tray-mode-line tray))
-            (stumpwm::mode-line-window mode-line)))
+            (wm::mode-line-window (tray-mode-line tray))
+            (wm::mode-line-window mode-line)))
       (destroy-tray tray))))
 
 (defun add-mode-line-hooks ()
-  (stumpwm:add-hook stumpwm:*new-mode-line-hook* #'new-mode-line-hook)
-  (stumpwm:add-hook stumpwm:*destroy-mode-line-hook* #'destroy-mode-line-hook)
+  (wm:add-wm-hook wm:*new-mode-line-hook* #'new-mode-line-hook)
+  (wm:add-wm-hook wm:*destroy-mode-line-hook* #'destroy-mode-line-hook)
   nil)
 
 (defun remove-mode-line-hooks ()
-  (stumpwm:remove-hook stumpwm:*new-mode-line-hook* #'new-mode-line-hook)
-  (stumpwm:remove-hook stumpwm:*destroy-mode-line-hook* #'destroy-mode-line-hook)
+  (wm:remove-wm-hook wm:*new-mode-line-hook* #'new-mode-line-hook)
+  (wm:remove-wm-hook wm:*destroy-mode-line-hook* #'destroy-mode-line-hook)
   nil)
 
 ;;; Mode line placeholder
 (defparameter *tray-placeholder-pixels-per-space* 9)
 
 (defun mode-line-tray-placeholder (ml)
-  (let ((tray (screen-tray (stumpwm::mode-line-screen ml))))
+  (let ((tray (screen-tray (wm::mode-line-screen ml))))
     (if (and tray (eq ml (tray-mode-line tray)))
         (make-string (floor (tray-width tray)
                             *tray-placeholder-pixels-per-space*)
                      :initial-element #\Space)
         "")))
 
-(stumpwm:add-screen-mode-line-formatter #\T 'mode-line-tray-placeholder)
+(wm:add-screen-mode-line-formatter #\T 'mode-line-tray-placeholder)
 
 ;;; Commands
-(stumpwm:defcommand stumptray () ()
+(wm:defcommand stumptray () ()
   "Enable tray for current screen"
   (if (current-tray)
       (destroy-tray (current-tray))
-      (let* ((stumpwm-screen (stumpwm:current-screen))
+      (let* ((stumpwm-screen (wm:current-screen))
              (tray (create-tray stumpwm-screen (screen-mode-line stumpwm-screen)))
              (hnd (make-tray-handler tray)))
         (setf (screen-tray stumpwm-screen) tray)
@@ -705,12 +705,12 @@ passed to `xlib:process-event'."
         (map-tray tray)
         (let ((event-handler (lambda ()
                                (loop while (ignore-errors
-                                             (xlib:process-event stumpwm::*display* :timeout 0 :handler hnd))))))
+                                             (xlib:process-event wm::*display* :timeout 0 :handler hnd))))))
           (setf (tray-event-processing-fn tray) event-handler)
-          (stumpwm:add-hook stumpwm:*event-processing-hook*
+          (wm:add-wm-hook wm:*event-processing-hook*
                             event-handler)))))
 
-(stumpwm:defcommand stumptray-toggle-hidden-icons-visibility () ()
+(wm:defcommand stumptray-toggle-hidden-icons-visibility () ()
   "Toggle icon visibility"
   (cond ((tray-show-hiwin-p (current-tray))
          (hide-hiwin (current-tray)))
@@ -718,7 +718,7 @@ passed to `xlib:process-event'."
 	 (show-hiwin (current-tray))))
   (tray-update (current-tray)))
 
-(stumpwm:defcommand systray-selection-right () ()
+(wm:defcommand systray-selection-right () ()
   "Selection right"
   (let* ((tray (current-tray))
 	 (pos (tray-curpos tray)))
@@ -726,7 +726,7 @@ passed to `xlib:process-event'."
     (setf (tray-curpos tray) (1+ (or pos -1)))
     (tray-update tray)))
 
-(stumpwm:defcommand systray-selection-left () ()
+(wm:defcommand systray-selection-left () ()
   "Selection left"
   (let* ((tray (current-tray))
 	 (pos (tray-curpos tray)))
@@ -734,20 +734,20 @@ passed to `xlib:process-event'."
     (setf (tray-curpos tray) (1- (or pos 0)))
     (tray-update tray)))
 
-(stumpwm:defcommand systray-toggle-icon-hiding () ()
+(wm:defcommand systray-toggle-icon-hiding () ()
   "Toggle icon hiding"
   (let ((tray (current-tray)))
     (toggle-icon-hiding tray (icon-at-cursor tray))
     (tray-update tray)))
 
-(stumpwm:defcommand systray-move-icon-left () ()
+(wm:defcommand systray-move-icon-left () ()
   "Move icon left"
   (let ((tray (current-tray)))
     (show-hiwin tray)
     (move-icon-left tray)
     (tray-update tray)))
 
-(stumpwm:defcommand systray-move-icon-right () ()
+(wm:defcommand systray-move-icon-right () ()
   "Move icon right"
   (let ((tray (current-tray)))
     (show-hiwin tray)

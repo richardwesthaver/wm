@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *default-bg-color* #x333333
   "Default color for the desktop background.")
@@ -365,7 +365,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
   ;; Initialize the screen structure
   (labels ((ac (color)
              ;; We add an alpha channel to the color returned by
-             ;; xlib:alloc-color. This is normally done by stumpwm:alloc-color,
+             ;; xlib:alloc-color. This is normally done by wm:alloc-color,
              ;; but that requires a screen instance.
              (logior (xlib:alloc-color (xlib:screen-default-colormap screen-number) color)
                      (ash #xff 24))))

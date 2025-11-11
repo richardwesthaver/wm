@@ -21,7 +21,7 @@
 ;; Help and introspection commands
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *message-max-width* 80
   "The maximum width of a message before it wraps.")
@@ -381,8 +381,8 @@ KMAPS are enabled"
 (defcommand which-key-mode () ()
   "Toggle which-key-mode"
   (if (find 'which-key-mode-key-press-hook *key-press-hook*)
-      (remove-hook *key-press-hook* 'which-key-mode-key-press-hook)
-      (add-hook *key-press-hook* 'which-key-mode-key-press-hook)))
+      (remove-wm-hook *key-press-hook* 'which-key-mode-key-press-hook)
+      (add-wm-hook *key-press-hook* 'which-key-mode-key-press-hook)))
 
 (defcommand modifiers () ()
   "List the modifiers stumpwm recognizes and what MOD-X it thinks they're on."

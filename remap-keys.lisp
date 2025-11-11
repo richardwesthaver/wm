@@ -22,7 +22,7 @@
 ;; under StumpWM
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *remap-keys-window-match-list* nil)
 
@@ -102,7 +102,7 @@ EXAMPLE:
                     (cons pattern (make-remap-keys kmap))))
                 specs))
   (when *remap-keys-window-match-list*
-    (add-hook *focus-window-hook* 'remap-keys-focus-window-hook)
+    (add-wm-hook *focus-window-hook* 'remap-keys-focus-window-hook)
     (setq *custom-key-event-handler* 'remap-keys-event-handler)))
 
 (defcommand send-raw-key () ()

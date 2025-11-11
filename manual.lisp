@@ -21,7 +21,7 @@
 ;; Generate the texinfo manual from docstrings in the source.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (require :sb-introspect)
 
@@ -120,7 +120,7 @@ the maximum line width."
 (defun generate-function-doc (s line)
   (ppcre:register-groups-bind (name) ("^@@@ (.*)" line)
     (let ((fn-name (with-standard-io-syntax
-                     (let ((*package* (find-package :stumpwm)))
+                     (let ((*package* (find-package :wm)))
                        (read-from-string name)))))
       (if (fboundp fn-name)
           (let ((fn (fdefinition fn-name))
@@ -133,7 +133,7 @@ the maximum line width."
 
 (defun generate-macro-doc (s line)
   (ppcre:register-groups-bind (name) ("^%%% (.*)" line)
-    (let* ((symbol (find-symbol (string-upcase name) :stumpwm))
+    (let* ((symbol (find-symbol (string-upcase name) :wm))
            (*print-pretty* nil))
       (format s "@defmac {~A} " name)
       (format-lambda-list s (sb-introspect:function-lambda-list
@@ -143,21 +143,21 @@ the maximum line width."
 
 (defun generate-variable-doc (s line)
   (ppcre:register-groups-bind (name) ("^### (.*)" line)
-    (let ((sym (find-symbol (string-upcase name) :stumpwm)))
+    (let ((sym (find-symbol (string-upcase name) :wm)))
       (format s "@defvar ~a~%~a~&@end defvar~%~%"
               name (documentation sym 'variable))
       t)))
 
 (defun generate-hook-doc (s line)
   (ppcre:register-groups-bind (name) ("^\\$\\$\\$ (.*)" line)
-    (let ((sym (find-symbol (string-upcase name) :stumpwm)))
+    (let ((sym (find-symbol (string-upcase name) :wm)))
       (format s "@defvr {Hook} ~a~%~a~&@end defvr~%~%"
               name (documentation sym 'variable))
       t)))
 
 (defun generate-command-doc (s line)
   (ppcre:register-groups-bind (name) ("^!!! (.*)" line)
-    (if-let ((symbol (find-symbol (string-upcase name) :stumpwm)))
+    (if-let ((symbol (find-symbol (string-upcase name) :wm)))
       (let ((cmd (symbol-function symbol))
             (*print-pretty* nil))
         (format s "@deffn {Command} ~A " name)
@@ -168,7 +168,7 @@ the maximum line width."
 
 (defun generate-class-doc (s line)
   (ppcre:register-groups-bind (name) ("^€€€ (.*)" line)
-    (let ((sym (find-symbol (string-upcase name) :stumpwm)))
+    (let ((sym (find-symbol (string-upcase name) :wm)))
       (if sym
           (let ((class (find-class sym)))
             (if class

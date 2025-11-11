@@ -21,7 +21,7 @@
 ;; Handle the X selection.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *default-selections* '(:primary)
   #.(format

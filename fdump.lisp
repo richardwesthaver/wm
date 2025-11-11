@@ -21,7 +21,7 @@
 
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 
 (defstruct fdump
@@ -88,7 +88,7 @@ location."
                       :if-exists :supersede
                       :if-does-not-exist :create)
     (with-standard-io-syntax
-      (let ((*package* (find-package :stumpwm))
+      (let ((*package* (find-package :wm))
             (*print-pretty* t))
         (prin1 foo fp)))))
 
@@ -123,7 +123,7 @@ Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME location."
 (defun read-dump-from-file (file)
   (with-open-file (fp file :direction :input)
     (with-standard-io-syntax
-      (let ((*package* (find-package :stumpwm)))
+      (let ((*package* (find-package :wm)))
         (read fp)))))
 
 (defun restore-group (group gdump &optional auto-populate (window-dump-fn 'window-id))

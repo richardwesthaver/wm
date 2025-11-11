@@ -1,11 +1,11 @@
 ;;; -*- Mode: Lisp -*-
 
-(defpackage :stumpwm-system
+(defpackage :wm-system
   (:use :cl :asdf))
-(in-package :stumpwm-system)
+(in-package :wm-system)
 
-(defsystem :stumpwm
-  :name "StumpWM"
+(defsystem :wm
+  :name "WM"
   :author "Shawn Betts <sabetts@vcn.bc.ca>"
   :version "24.11"
   :maintainer "David Bjergaard <dbjergaard@gmail.com>"
@@ -41,7 +41,7 @@
                (:file "module")
                (:file "ioloop")
                (:file "timers")
-               (:file "stumpwm")
+               (:file "wm")
                (:file "user")
                (:file "interactive-keymap")
                (:file "iresize")
@@ -59,15 +59,15 @@
                (:file "minor-modes")
                (:file "replace-class")
                (:file "version"))
-  :in-order-to ((test-op (test-op "stumpwm/tests"))))
+  :in-order-to ((test-op (test-op "wm/tests"))))
 
-(defsystem "stumpwm/tests"
-  :name "StumpWM tests"
+(defsystem "wm/tests"
+  :name "WM tests"
   :serial t
-  :depends-on ("stumpwm" "rt")
+  :depends-on ("wm" "rt")
   :pathname "tests/"
   :components ((:file "package")
                (:file "kmap")
                (:file "mode-line-formatters"))
   :perform (test-op (o c)
-             (uiop/package:symbol-call "RT" "DO-TESTS" :stumpwm)))
+             (uiop/package:symbol-call "RT" "DO-TESTS" :wm)))

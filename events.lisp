@@ -21,7 +21,7 @@
 ;; Event handling.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 ;;; Event handler functions
 (defparameter *event-fn-table* (make-hash-table)

@@ -54,7 +54,7 @@ total amount of memory, allocated memory, allocated/total ratio"
 (defun fmt-mem-usage-bar (mem)
   "Returns a coloured bar-graph representing the current allocation of memory."
   (let ((cpu (truncate (* 100 (nth 2 mem)))))
-    (stumpwm:bar cpu *mem-usage-bar-width* *mem-usage-bar-full* *mem-usage-bar-empty*)))
+    (wm:bar cpu *mem-usage-bar-width* *mem-usage-bar-full* *mem-usage-bar-empty*)))
 
 (defvar *mem-formatters-alist*
   '((#\a  fmt-mem-allocated)

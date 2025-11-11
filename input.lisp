@@ -21,7 +21,7 @@
 ;; This file handles input stuff
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 ;;; General Utilities
 ;; This could use a much more efficient algorithm.

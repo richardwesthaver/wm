@@ -19,14 +19,14 @@
 ;; Commentary:
 
 ;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *in-main-thread* nil
-  "Dynamically bound to T during the execution of the main stumpwm function.")
+  "Dynamically bound to T during the execution of the main wm function.")
 
 ;;; Main
 (defun load-rc-file (&optional (catch-errors t))
-  "Load the user's .stumpwmrc file or the system wide one if that
+  "Load the user's wmrc file or the system wide one if that
 doesn't exist. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the rc file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
@@ -37,7 +37,7 @@ further up. "
            (probe-file (std:xdg-config-dir :wm "init.lisp")))
          (conf-rc
            (probe-file (std:xdg-config-dir :wm "config/")))
-         (etc-rc (probe-file #p"/etc/stumpwmrc"))
+         (etc-rc (probe-file #p"/etc/wmrc"))
          (rc (or user-rc dir-rc conf-rc etc-rc)))
     (if rc
         (if catch-errors
@@ -169,11 +169,11 @@ further up. "
   (defmethod io-channel-handle ((channel display-channel) (event (eql :loop)) &key)
     (dispatch-all (slot-value channel 'display))))
 
-(defun stumpwm-internal-loop ()
+(defun wm-internal-loop ()
   (loop
     (with-simple-restart (:new-io-loop "Recreate I/O loop")
       (let ((io (make-instance *default-io-loop*)))
-        (io-loop-add io (make-instance 'stumpwm-timer-channel))
+        (io-loop-add io (make-instance 'wm-timer-channel))
         (io-loop-add io (make-instance 'display-channel :display *display*))
         ;; If we have no implementation for the current CL, then
         ;; don't register the channel.
@@ -187,7 +187,7 @@ further up. "
           (handler-bind
               ((t (lambda (c)
                     (handle-top-level-condition c))))
-            (io-loop io :description "StumpWM")))))))
+            (io-loop io :description "WM")))))))
 
 (defun parse-display-string (display)
   "Parse an X11 DISPLAY string and return the host and display from it."
@@ -209,12 +209,12 @@ further up. "
   (xlib:close-display *display*)
   (close-log))
 
-(defun stumpwm-internal (display-str)
+(defun wm-internal (display-str)
   (multiple-value-bind (host display screen protocol) (parse-display-string display-str)
     (declare (ignore screen))
     (setf *display* (xlib:open-display host :display display :protocol protocol)
           (xlib:display-error-handler *display*) 'error-handler)
-    (with-simple-restart (quit-stumpwm "Quit Stumpwm")
+    (with-simple-restart (quit-wm "Quit WM")
       ;; In the event of an error, we always need to close the display
       (unwind-protect
            (progn
@@ -238,7 +238,7 @@ further up. "
                        (and *startup-message* (swm-message *startup-message* (print-key *escape-key*)))
                        (swm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))
                (when *last-unhandled-error*
-                 (message-no-timeout "^B^1*StumpWM Crashed With An Unhandled Error!~%Copy the error to the clipboard with the 'copy-unhandled-error' command.~%^b~a^B^n~%~%~a."
+                 (message-no-timeout "^B^1*WM Crashed With An Unhandled Error!~%Copy the error to the clipboard with the 'copy-unhandled-error' command.~%^b~a^B^n~%~%~a."
                                      (first *last-unhandled-error*) (second *last-unhandled-error*)))
                (mapc 'process-existing-windows *screen-list*)
                ;; We need to setup each screen with its current window. Go
@@ -263,28 +263,28 @@ further up. "
              ;; Let's manage.
              (let ((*package* (find-package *default-package*)))
                (run-hook *start-hook*)
-               (stumpwm-internal-loop)))
+               (wm-internal-loop)))
         (close-resources))))
   ;; what should the top level loop do?
   :quit)
 
-(defun force-stumpwm-restart (&key (close-display t))
+(defun force-wm-restart (&key (close-display t))
   (when close-display
     (xlib:close-display *display*))
   (apply 'execv (first sb-ext:*posix-argv*) sb-ext:*posix-argv*))
 
-;; Usage: (stumpwm)
-(defun stumpwm (&optional (display-str (or (sb-posix:getenv "DISPLAY") ":0")))
+;; Usage: (start-wm)
+(defun start-wm (&optional (display-str (or (sb-posix:getenv "DISPLAY") ":0")))
   "Start the stump window manager."
   (set-signal-handler sb-posix:sighup
-    (dformat 0 "SIGHUP received: forcing immediate restart of stumpwm~%") ;; debug level 0 to "force" logging
-    (force-stumpwm-restart))
+    (dformat 0 "SIGHUP received: forcing immediate restart of wm~%") ;; debug level 0 to "force" logging
+    (force-wm-restart))
   (let ((*in-main-thread* t))
     (setf *data-dir* (default-data-dir))
     (init-load-path *module-dir*)
     (loop
       (let ((ret (catch :top-level
-                   (stumpwm-internal display-str))))
+                   (wm-internal display-str))))
         (setf *last-unhandled-error* nil)
         (cond ((and (consp ret)
                     (typep (first ret) 'condition))
@@ -295,10 +295,10 @@ further up. "
               ;; the process because otherwise we get errors.
               ((eq ret :hup-process)
                (run-hook *restart-hook*)
-               (force-stumpwm-restart :close-display nil))
+               (force-wm-restart :close-display nil))
               ((eq ret :restart)
                (run-hook *restart-hook*))
               (t
                (run-hook *quit-hook*)
                ;; the number is the unix return code
-               (return-from stumpwm 0)))))))
+               (return-from start-wm 0)))))))

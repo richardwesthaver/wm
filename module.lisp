@@ -23,7 +23,7 @@
 
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *module-dir*
   (directory-path (concat (sb-posix:getenv "HOME") "/.stumpwm.d/modules"))

@@ -22,7 +22,7 @@
 ;;
 ;; Code:
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *default-group-type* 'tile-group
   "The type of group that should be created by default.")

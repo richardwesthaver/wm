@@ -17,8 +17,8 @@
   (declare (ignore ml))
   (handler-case
       (progn
-	(if (typep (stumpwm::current-group) 'stumpwm::tile-group)
-	(let ((x (list-length (stumpwm::frame-windows (current-group) (stumpwm::current-frame)))))
+	(if (typep (wm::current-group) 'wm::tile-group)
+	(let ((x (list-length (wm::frame-windows (current-group) (wm::current-frame)))))
     	  (if (>= x 1)
     	      (format NIL "(~A Hidden)" (- x 1))
     	      "(0 Hidden)"))

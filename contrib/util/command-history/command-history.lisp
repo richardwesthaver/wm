@@ -13,7 +13,7 @@
   (with-open-file (in *command-history-file* :if-does-not-exist nil)
     (when in
       (with-standard-io-syntax
-        (setf stumpwm::*input-history* (read in))))))
+        (setf wm::*input-history* (read in))))))
 
 (defun save-input-history ()
   "Save current *input-history* to file."
@@ -23,9 +23,9 @@
                        :if-exists :supersede)
     (with-standard-io-syntax
       (print
-        (remove-duplicates stumpwm::*input-history* :test #'string= :from-end t)
+        (remove-duplicates wm::*input-history* :test #'string= :from-end t)
         out))))
 
-(add-hook *start-hook* 'load-input-history)
+(add-wm-hook *start-hook* 'load-input-history)
 
-(add-hook *quit-hook* 'save-input-history)
+(add-wm-hook *quit-hook* 'save-input-history)

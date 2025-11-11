@@ -21,7 +21,7 @@
 ;; This file handles keymaps
 
 ;;; Code:
-(in-package stumpwm)
+(in-package :wm)
 
 (defvar *top-map* nil
   "The top level key map. This is where you'll find the binding for the
@@ -52,13 +52,13 @@ related bindings off @kbd{C-t C-f} one might use the following code:
 
 @example
 \(defvar *my-frame-bindings*
-  (let ((m (stumpwm:make-sparse-keymap)))
-    (stumpwm:define-key m (stumpwm:kbd \"f\") \"curframe\")
-    (stumpwm:define-key m (stumpwm:kbd \"M-b\") \"move-focus left\")
+  (let ((m (wm:make-sparse-keymap)))
+    (wm:define-key m (wm:kbd \"f\") \"curframe\")
+    (wm:define-key m (wm:kbd \"M-b\") \"move-focus left\")
     m ; NOTE: this is important
   ))
 
-\(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd \"C-f\") '*my-frame-bindings*)
+\(wm:define-key wm:*root-map* (wm:kbd \"C-f\") '*my-frame-bindings*)
 @end example"
   (make-kmap))
 
@@ -208,7 +208,7 @@ others."
 existing binding.  For example,
 
 @example
-\(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd \"C-z\") \"echo Zzzzz...\")
+\(wm:define-key wm:*root-map* (wm:kbd \"C-z\") \"echo Zzzzz...\")
 @end example
 
 Now when you type C-t C-z, you'll see the text ``Zzzzz...'' pop up."

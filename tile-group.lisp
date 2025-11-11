@@ -21,7 +21,7 @@
 ;; Frame functions
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (define-swm-class tile-group (group)
   ((frame-tree :accessor tile-group-frame-tree)

@@ -16,7 +16,7 @@
 ;; along with this software; see the file COPYING.  If not, see
 ;; <http://www.gnu.org/licenses/>.
 
-(in-package :stumpwm)
+(in-package :wm)
 
 ;; This file implements a generic multiplexing I/O loop for listening
 ;; to I/O events from multiple sources. The model is as follows:

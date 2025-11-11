@@ -22,7 +22,7 @@
 ;; written. But it's an interesting way of doing it.
 
 ;;; Code:
-(in-package #:stumpwm)
+(in-package #:wm)
 
 (defvar *resize-increment* 10
   "Number of pixels to increment by when interactively resizing frames.")

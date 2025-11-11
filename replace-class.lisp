@@ -1,4 +1,4 @@
-(in-package :stumpwm)
+(in-package :wm)
 
 (defmethod replace-class-in-mixin ((object mixin-object)
                                    (new-class class)
@@ -27,17 +27,17 @@
          object)
         (t
          ;; First we disable all non-compatible minor modes. 
-         (loop for mode in (stumpwm::list-minor-modes object)
-               unless (let* ((scope (stumpwm:minor-mode-scope mode))
-                             (st (stumpwm::scope-type scope)))
+         (loop for mode in (wm::list-minor-modes object)
+               unless (let* ((scope (wm:minor-mode-scope mode))
+                             (st (wm::scope-type scope)))
                         (or (eql new-class st)
-                            (stumpwm::superclassp new-class st)))
-                 do (stumpwm::autodisable-minor-mode mode object))
+                            (wm::superclassp new-class st)))
+                 do (wm::autodisable-minor-mode mode object))
          (if (typep object 'mixin-object)
              (flet ((mix-it (mix-list)
                       (apply #'change-class
                              object (ensure-mixin mix-list) initargs)
-                      (stumpwm::sync-minor-modes object)
+                      (wm::sync-minor-modes object)
                       object))
                (let* ((tag nil)
                       (old-class-obj (find-class old-class))
@@ -69,7 +69,7 @@
                   (handler-bind ((error
                                    (lambda (c)
                                      (let ((r1 (find-restart 'continue c))
-                                           (r2 (find-restart 'stumpwm::continue c)))
+                                           (r2 (find-restart 'wm::continue c)))
                                        (cond (r1 (invoke-restart r1))
                                              (r2 (invoke-restart r2)))))))
                     (call-next-method))

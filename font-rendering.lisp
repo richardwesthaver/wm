@@ -1,5 +1,5 @@
 
-(in-package :stumpwm)
+(in-package :wm)
 
 (defgeneric font-exists-p (font))
 

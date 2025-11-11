@@ -27,7 +27,7 @@
 ;; the MOP is used to implement minor modes and add them to scope objects.
 
 ;;; Code:
-(in-package :stumpwm)
+(in-package :wm)
 
 (defvar *minor-mode*)
 
@@ -67,9 +67,9 @@ object.")
   (declare (ignore rest))
   (sync-keys))
 
-(add-hook *focus-frame-hook* 'minor-mode-sync-keys-hook-function)
-(add-hook *focus-window-hook* 'minor-mode-sync-keys-hook-function)
-(add-hook *focus-group-hook* 'minor-mode-sync-keys-hook-function)
+(add-wm-hook *focus-frame-hook* 'minor-mode-sync-keys-hook-function)
+(add-wm-hook *focus-window-hook* 'minor-mode-sync-keys-hook-function)
+(add-wm-hook *focus-group-hook* 'minor-mode-sync-keys-hook-function)
 
 ;;; Conditions
 (define-condition minor-mode-error (error) ())
@@ -419,7 +419,7 @@ modes."
 ;;; Helper Functions
 
 (defun generate-keymap (keymap-spec &optional
-                                    (top-map (stumpwm:make-sparse-keymap))
+                                    (top-map (wm:make-sparse-keymap))
                                     (filter-bindings #'identity))
   "Generate a (potentially nested) keymap based on KEYMAP. KEYMAP is a list of
 keymap specs, where each spec is a cons cell containing an input sequence and
@@ -437,16 +437,16 @@ empty keymap."
                  (bind-to (cdr keys)))
              (labels
                  ((bind-it (key &optional to)
-                    (cond (to (stumpwm:define-key curmap (stumpwm:kbd key) to))
-                          (t (stumpwm:define-key curmap (stumpwm:kbd key)
+                    (cond (to (wm:define-key curmap (wm:kbd key) to))
+                          (t (wm:define-key curmap (wm:kbd key)
                                (funcall filter-bindings bind-to)))))
                   (attempt-binding (key rest bind seq)
                     (cond
-                      ((and bind (stumpwm::kmap-p bind))
+                      ((and bind (wm::kmap-p bind))
                        (if (null rest)
                            (restart-case
                                (error "~A in ~A is already bound to a keymap"
-                                      (stumpwm::print-key (stumpwm:kbd key)) seq)
+                                      (wm::print-key (wm:kbd key)) seq)
                              (keep-binding ()
                                :report "Keep the current binding"
                                nil)
@@ -458,7 +458,7 @@ empty keymap."
                            (setf curmap bind)))
                       (bind
                           (restart-case (error "~S in ~S is already bound to ~A"
-                                               (stumpwm::print-key (stumpwm:kbd key))
+                                               (wm::print-key (wm:kbd key))
                                                seq
                                                bind)
                             (replace-binding ()
@@ -472,13 +472,13 @@ empty keymap."
                               (bind-it key))))
                       ((null rest)
                        (bind-it key))
-                      (t (let ((m (stumpwm:make-sparse-keymap)))
+                      (t (let ((m (wm:make-sparse-keymap)))
                            (bind-it key m)
                            (setf curmap m)))))
                   (traverse-and-bind (seq)
                     (loop for (key . rest) on (cl-ppcre:split " " seq)
-                          do (let ((bind (stumpwm:lookup-key curmap
-                                           (stumpwm:kbd key))))
+                          do (let ((bind (wm:lookup-key curmap
+                                           (wm:kbd key))))
                                (attempt-binding key rest bind seq)))))
                (if (not (or (symbolp bind-to)
                             (stringp bind-to)
@@ -494,7 +494,7 @@ empty keymap."
       (cond ((null keymap)
              topmap)
             ((or (symbolp keymap)
-                 (stumpwm::kmap-p keymap))
+                 (wm::kmap-p keymap))
              keymap)
             ((listp keymap)
              (restart-case (mapc (lambda (keys)
@@ -506,14 +506,14 @@ empty keymap."
                  topmap)
                (abort-bindings* ()
                  :report "Return an empty keymap"
-                 (stumpwm:make-sparse-keymap)))
+                 (wm:make-sparse-keymap)))
              topmap)
             (t (restart-case
                    (error "Function MAKE-MINOR-MODE-KEYMAP cant understand ~A"
                           keymap)
                  (use-empty-keymap ()
                    :report "Use an empty keymap"
-                   (stumpwm:make-sparse-keymap))))))))
+                   (wm:make-sparse-keymap))))))))
 
 (defun make-minor-mode-keymap (spec)
   (generate-keymap spec))

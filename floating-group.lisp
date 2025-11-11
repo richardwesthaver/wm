@@ -1,6 +1,6 @@
 ;;; implementation of a floating style window management group
 
-(in-package #:stumpwm)
+(in-package #:wm)
 
 ;;; floating window
 

@@ -23,13 +23,13 @@
   "Enable layout switching"
   (xlib::initialize-extensions *display*) ;; we need it because
   (xlib/xkb:enable-xkeyboard *display*) ;; stumpwm opens display before extension definition
-  (add-hook *focus-group-hook* 'group-focus-changed)
-  (add-hook *focus-window-hook* 'window-focus-changed))
+  (add-wm-hook *focus-group-hook* 'group-focus-changed)
+  (add-wm-hook *focus-window-hook* 'window-focus-changed))
 
 (defcommand disable-per-window-layout () ()
   "Disable layout switching"
-  (remove-hook *focus-window-hook* 'window-focus-changed)
-  (remove-hook *focus-group-hook* 'group-focus-changed))
+  (remove-wm-hook *focus-window-hook* 'window-focus-changed)
+  (remove-wm-hook *focus-group-hook* 'group-focus-changed))
 
 (defun toggle-window-layout ()
   (let ((cur-window (current-window)))
