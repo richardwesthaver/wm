@@ -132,12 +132,12 @@ which-key window. Two arguments will be passed to this formatter:
                             (describe-command-to-stream cmd-without-args nil)))
       (cond ((and (help-key-p keys)
                   (cdr printed-key))
-             (swm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
+             (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
                           printed-key (butlast printed-key)))
             ((cancel-key-p keys)
-             (swm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
+             (wm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
                           (lastcar printed-key)))
-            (t (swm-message "~{~A~^ ~} is not bound." printed-key))))))
+            (t (wm-message "~{~A~^ ~} is not bound." printed-key))))))
 
 (defun describe-variable-to-stream (var stream)
   "Write the help for the variable to the stream."
@@ -386,7 +386,7 @@ KMAPS are enabled"
 
 (defcommand modifiers () ()
   "List the modifiers stumpwm recognizes and what MOD-X it thinks they're on."
-  (swm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
+  (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
                "Meta" (modifiers-meta *modifiers*)
                "Alt" (modifiers-alt *modifiers*)
                "Super" (modifiers-super *modifiers*)

@@ -3,7 +3,7 @@
   :name "WM"
   :author "Shawn Betts <sabetts@vcn.bc.ca>"
   :version "24.11"
-  :maintainer "David Bjergaard <dbjergaard@gmail.com>"
+  :maintainer "Richard Westhaver <richard.westhaver@gmail.com>"
   ;; :license "GNU General Public License"
   :description "A tiling, keyboard driven window manager"
   :serial t

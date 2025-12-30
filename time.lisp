@@ -97,7 +97,7 @@
 
 (defcommand echo-date () ()
   "Display the date and time."
-  (swm-message "~a" (time-format *time-format-string-default*)))
+  (wm-message "~a" (time-format *time-format-string-default*)))
 
 (defcommand-alias time echo-date)
 

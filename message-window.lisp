@@ -244,7 +244,7 @@ When the value is :new-on-bottom, new messages are added to the bottom as in a l
 See also WITH-MESSAGE-QUEUING.")
 
 (defmacro with-message-queuing (new-on-bottom-p &body body)
-  "Queue all messages sent by (SWM-MESSAGE ...), (ECHO-STRING ...), (ECHO-STRING-LIST ...)
+  "Queue all messages sent by (WM-MESSAGE ...), (ECHO-STRING ...), (ECHO-STRING-LIST ...)
  forms within BODY without clobbering earlier messages.
 When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
   `(progn
@@ -317,7 +317,7 @@ When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
   "Display @var{string} in the message bar on @var{screen}. You almost always want to use @command{message}."
   (echo-string-list screen (split-string msg (string #\Newline))))
 
-(defun swm-message (fmt &rest args)
+(defun wm-message (fmt &rest args)
   "run FMT and ARGS through `format' and echo the result to the current screen."
   (echo-string (current-screen) (apply 'format nil fmt args)))
 
@@ -333,7 +333,7 @@ message does not time out."
 (defun message-no-timeout (fmt &rest args)
   "Like message, but the window doesn't disappear after a few seconds."
   (let ((*suppress-echo-timeout* t))
-    (apply 'swm-message fmt args)))
+    (apply 'wm-message fmt args)))
 
 ;;; Commands
 
@@ -350,4 +350,4 @@ continue cycling back through the message history."
       (setf *lastmsg-nth* 0))
   (if (screen-last-msg (current-screen))
       (echo-nth-last-message (current-screen) *lastmsg-nth*)
-      (swm-message "No last message.")))
+      (wm-message "No last message.")))

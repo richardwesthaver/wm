@@ -710,6 +710,9 @@ passed to `xlib:process-event'."
           (wm:add-wm-hook wm:*event-processing-hook*
                             event-handler)))))
 
+(defmethod std:init ((self (eql :wm/tray)) &key)
+  (stumptray))
+
 (wm:defcommand stumptray-toggle-hidden-icons-visibility () ()
   "Toggle icon visibility"
   (cond ((tray-show-hiwin-p (current-tray))

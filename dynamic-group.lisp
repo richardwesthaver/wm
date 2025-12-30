@@ -593,7 +593,7 @@ policy of GROUP"
   ;; Add a window to a dynamic group, on a specific head. This should only be
   ;; called with a dynamic group and dynamic window. 
   (if (dynamic-group-head-full-p group head)
-      (progn (swm-message "Head ~A in group ~A is full" head group)
+      (progn (wm-message "Head ~A in group ~A is full" head group)
              (handle-head-overflow group head window))
       (dynamic-group-place-window group head window))
   ;; The LOOP and WHEN forms here could maybe be removed...? I think the syncing
@@ -725,7 +725,7 @@ policy of GROUP"
          (let ((win master-window)
                (frame (copy-frame head)))
            (if (only-one-frame-p)
-               (swm-message "There's only one frame.")
+               (wm-message "There's only one frame.")
                (progn
                  (mapc (lambda (w)
                          ;; windows in other frames disappear
@@ -1068,7 +1068,7 @@ between groups."
   "Make WINDOW into a floating window.  Stop managing it as a dynamic tiling 
 window. "
   (if (typep window 'float-window)
-      (swm-message "Window ~A is already a floating window." window)
+      (wm-message "Window ~A is already a floating window." window)
       (progn
         (group-delete-window group window)
         (replace-class window 'float-window)
@@ -1080,7 +1080,7 @@ window. "
 (defun dynamic-group-unfloat-window (window group)
   "Make WINDOW into a dynamic window. "
   (if (typep window 'dynamic-window)
-      (swm-message "Window ~A is already a dynamic window." window)
+      (wm-message "Window ~A is already a dynamic window." window)
       (progn
         (let ((head (window-head window)))
           (replace-class window 'dynamic-window)
@@ -1090,7 +1090,7 @@ window. "
 
 (defmethod invoke-expose ((group dynamic-group))
   (declare (ignore group))
-  (swm-message "Expose is not supported for dynamic groups"))
+  (wm-message "Expose is not supported for dynamic groups"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dynamic Group Commands ;;;
@@ -1176,9 +1176,9 @@ backward (counterclockwise)"
 
 (defcommand (swap-windows tile-group) () ()
   "Exchange two windows"
-  (let* ((f1 (progn (swm-message "Select Window One")
+  (let* ((f1 (progn (wm-message "Select Window One")
                     (choose-frame-by-number (current-group))))
-         (f2 (progn (swm-message "Select Window Two")
+         (f2 (progn (wm-message "Select Window Two")
                     (choose-frame-by-number (current-group)))))
     (when (and f1 f2)
       (let ((w1 (frame-window f1))
@@ -1232,7 +1232,7 @@ backward (counterclockwise)"
     (if-let ((window (select-window-from-menu windows fmt)))
       (group-focus-window (current-group) window)
       (throw 'error :abort))
-    (swm-message "No Managed Floating Windows")))
+    (wm-message "No Managed Floating Windows")))
 
 (defcommand (exchange-with-master dynamic-group) () ()
   (swap-window-with-master (current-group) (current-head) (current-window)))

@@ -61,7 +61,7 @@ further up. "
      (throw :top-level :quit))
     ;; all other asynchronous errors are printed.
     (asynchronous
-     (swm-message "Caught Asynchronous X Error: ~s ~s." error-key key-vals))
+     (wm-message "Caught Asynchronous X Error: ~s ~s." error-key key-vals))
     (t
      (apply 'error error-key :display display :error-key error-key key-vals))))
 
@@ -80,7 +80,7 @@ further up. "
      (let ((s (format nil "~&Caught '~a' at the top level. Please report this." c)))
        (write-line s)
        (print-backtrace)
-       (swm-message "^1*^B~a" s)))
+       (wm-message "^1*^B~a" s)))
     (:break (restart-case
                 (invoke-debugger c)
               (:abort-debugging ()
@@ -235,8 +235,8 @@ further up. "
                (let ((*package* (find-package *default-package*)))
                  (multiple-value-bind (success err rc) (load-rc-file)
                    (if success
-                       (and *startup-message* (swm-message *startup-message* (print-key *escape-key*)))
-                       (swm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))
+                       (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
+                       (wm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))
                (when *last-unhandled-error*
                  (message-no-timeout "^B^1*WM Crashed With An Unhandled Error!~%Copy the error to the clipboard with the 'copy-unhandled-error' command.~%^b~a^B^n~%~%~a."
                                      (first *last-unhandled-error*) (second *last-unhandled-error*)))

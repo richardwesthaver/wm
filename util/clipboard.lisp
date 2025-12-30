@@ -1,4 +1,4 @@
-(in-package #:wm/clipboard-history)
+(in-package #:wm/clipboard)
 
 (defmacro push-max-stack (stack val max-depth)
   `(setq ,stack
@@ -11,7 +11,7 @@
   (let ((s1 (subseq s 0 (min maxlen (length s)))))
     (if (string-equal s1 s)
         s1
-        (wm:concat s1 " ..."))))
+        (concatenate 'string s1 " ..."))))
 
 (defun poll-selection (&optional (selection :primary))
   (xlib:convert-selection selection
@@ -37,12 +37,12 @@
              (not (member sel *clipboard-history* :test 'string-equal)))
     (push-max-stack *clipboard-history* sel *clipboard-history-max-length*)))
 
-(wm:add-wm-hook wm:*selection-notify-hook* 'wm/clipboard-history::save-clipboard-history)
+(wm:add-wm-hook wm:*selection-notify-hook* 'wm/clipboard::save-clipboard-history)
 
 (wm:defcommand show-clipboard-history () ()
   "Select from previously saved selections"
   (if (null *clipboard-history*)
-      (wm::message "No selection history")
+      (wm-message "No selection history")
       (let ((sel (second
                   (wm:select-from-menu
                    (wm:current-screen)
@@ -60,7 +60,7 @@
     (wm:cancel-timer *clipboard-timer*)
     (setq *clipboard-timer* nil)))
 
-;; (stop-clipboard-manager)
+
 (defvar *clipboard-poll-timeout* 5)
 
 (defun start-clipboard-manager ()
@@ -71,7 +71,10 @@
                                 *clipboard-poll-timeout*
                                 'poll-clipboard-selection)))
 
-;; (start-clipboard-manager)
+
+(defmethod std:init ((self (eql :wm/clipboard)) &key)
+  (start-clipboard-manager))
+
 (wm:defcommand clear-clipboard-history () ()
   "Clear saved selections"
   (setf *clipboard-history* nil))

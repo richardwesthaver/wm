@@ -25,12 +25,12 @@
 
 (defun enter-interactive-keymap (kmap name)
   "Enter interactive mode"
-  (swm-message "~S started." name)
+  (wm-message "~S started." name)
   (push-top-map kmap))
 
 (defun exit-interactive-keymap (name)
   "Exits interactive mode"
-  (swm-message "~S finished." name)
+  (wm-message "~S finished." name)
   (pop-top-map))
 
 (defcommand call-and-exit-kmap (command exit-command) ((:command "command to run: ")

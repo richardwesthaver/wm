@@ -703,7 +703,7 @@ chosen, resignal the error."
             (dolist (fn hook)
               (with-simple-restart (continue-hooks "Continue running the remaining hooks.")
                 (apply fn args)))))
-      (t (c) (swm-message "^B^1*Error on hook ^b~S^B!~% ^n~A" hook c) (values nil c)))))
+      (t (c) (wm-message "^B^1*Error on hook ^b~S^B!~% ^n~A" hook c) (values nil c)))))
 
 (defun run-hook (hook)
   "Call each function in HOOK."
@@ -1428,7 +1428,7 @@ of :error."
      (push ,elt ,list)))
 
 (define-condition stumpwm-condition (condition)
-  ((swm-message :initarg :message :reader warning-message))
+  ((wm-message :initarg :message :reader warning-message))
   (:documentation "Any stumpmwm specific condition should inherit from this.")
   (:report (lambda (condition stream)
              (format stream "~A~%" (warning-message condition)))))
@@ -1455,10 +1455,10 @@ of :error."
    package))
 
 (defun command-mode-start-message ()
-  (swm-message "Press C-g to exit command-mode."))
+  (wm-message "Press C-g to exit command-mode."))
 
 (defun command-mode-end-message ()
-  (swm-message "Exited command-mode."))
+  (wm-message "Exited command-mode."))
 
 (defstruct (mode-line (:constructor %make-mode-line))
   screen

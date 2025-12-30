@@ -23,7 +23,7 @@
 	 (tagstring (utf8-to-string tags))
 	 (taglist 
 	   (if tags (string-split-by-spaces tagstring) nil)))
-    (if argwin taglist (swm-message "Tags: ~{~%~a~}" taglist))))
+    (if argwin taglist (wm-message "Tags: ~{~%~a~}" taglist))))
 
 (defun (setf window-tags) (newtags &optional (argwin nil))
   "Set the window tag set for a window"
@@ -68,7 +68,7 @@
 (defcommand all-tags () ()
   "List all windows with their tags"
   (let ((*suppress-echo-timeout* t))
-    (swm-message 
+    (wm-message 
      "Window list: ~{~%~{[ ~a ] ( ~a | ~a | ~a ) ~% ->~{~a, ~}~}~}"
      (mapcar
       (lambda (x)

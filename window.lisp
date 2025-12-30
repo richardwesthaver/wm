@@ -817,7 +817,7 @@ needed."
         (if (getf placement-data :raise)
           (switch-to-group (window-group window))
           (unless *suppress-window-placement-indicator*
-            (swm-message "Placing window ~a in group ~a." (window-name window) (group-name (window-group window)))))
+            (wm-message "Placing window ~a in group ~a." (window-name window) (group-name (window-group window)))))
         (apply 'run-hook-with-args *place-window-hook* window (window-group window) placement-data)))
     ;; must call this after the group slot is set for the window.
     (grab-keys-on-window window)
@@ -1054,7 +1054,7 @@ window. Default to the current window. if
   "Override the current window's title."
   (if (current-window)
       (setf (window-user-title (current-window)) title)
-      (swm-message "No Focused Window.")))
+      (wm-message "No Focused Window.")))
 
 (defcommand select-window (query) ((:window-name "Select: "))
   "Switch to the first window that starts with @var{query}."
@@ -1121,7 +1121,7 @@ window. Default to the current window. if
     (if (and nw
              (not (eq w nw)))
         (group-focus-window group nw)
-        (swm-message "No other window."))))
+        (wm-message "No other window."))))
 
 (defmethod focus-prev-window (group)
   (let* ((w (group-current-window group))
@@ -1130,7 +1130,7 @@ window. Default to the current window. if
     (if (and nw
              (not (eq w nw)))
         (group-focus-window group nw)
-        (swm-message "No other window."))))
+        (wm-message "No other window."))))
 
 (defcommand other-window (&optional (group (current-group))) ()
   "Switch to the window last focused."
@@ -1202,7 +1202,7 @@ by number and if the @var{windows-list} is provided, it is shown unsorted (as-is
     (if-let ((window (select-window-from-menu window-list fmt)))
       (group-focus-window (current-group) window)
       (throw 'error :abort))
-    (swm-message "No Managed Windows")))
+    (wm-message "No Managed Windows")))
 
 (defcommand windowlist-by-class (&optional (fmt *window-format-by-class*)) (:rest)
   "Allow the user to select a window from the list of windows (sorted by class)
@@ -1239,7 +1239,7 @@ been marked, and defaults to T."
   (when win
     (setf (window-marked win) (not (window-marked win)))
     (when message
-      (swm-message (if (window-marked win)
+      (wm-message (if (window-marked win)
                    "^3~A^n Marked!"
                    "^3~A^n Unmarked!")
                (format-expand *window-formatters* *window-format* win)))))
@@ -1267,8 +1267,8 @@ be used to override the default window formatting."
 (defcommand window-info (&optional (fmt *window-info-format*)) (:rest)
   "Display information about the current window."
   (if (current-window)
-      (swm-message "~a" (format-expand *window-formatters* fmt (current-window)))
-      (swm-message "No Current Window.")))
+      (wm-message "~a" (format-expand *window-formatters* fmt (current-window)))
+      (wm-message "No Current Window.")))
 
 (defcommand refresh () ()
   "Refresh current window without changing its size."

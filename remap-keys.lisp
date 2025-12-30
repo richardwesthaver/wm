@@ -107,7 +107,7 @@ EXAMPLE:
 
 (defcommand send-raw-key () ()
   "Prompts for a key and forwards it to the CURRENT-WINDOW."
-  (swm-message "Press a key to send: ")
+  (wm-message "Press a key to send: ")
   (let* ((screen (current-screen))
          (win (screen-current-window screen))
          (k (with-focus (screen-key-window screen)

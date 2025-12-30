@@ -103,7 +103,7 @@
                        (if (probe-file restore-file)
                            (restore-group group
                                           (read-dump-from-file restore-file))
-                           (swm-message "^B^1*Can't restore group \"^b~a^B\" with \"^b~a^B\"."
+                           (wm-message "^B^1*Can't restore group \"^b~a^B\" with \"^b~a^B\"."
                                     group-name restore-file))))
                    (values group
                            (if (or (eq frame :float) (typep group 'float-group))
@@ -120,7 +120,7 @@
                          (restore-group new-group
                                         (read-dump-from-file restore-file))
                          (when (stringp create)
-                           (swm-message "^B^1*Can't restore group \"^b~a^B\" with \"^b~a^B\"."
+                           (wm-message "^B^1*Can't restore group \"^b~a^B\" with \"^b~a^B\"."
                                     group-name restore-file)))
                      (values new-group
                              (if (or (eq frame :float) (typep new-group 'float-group))
@@ -133,7 +133,7 @@
                                frame
                                (frame-by-number (current-group) frame))
                            raise))
-                  (t (swm-message "^B^1*Error placing window, group \"^b~a^B\" does not exist." group-name)
+                  (t (wm-message "^B^1*Error placing window, group \"^b~a^B\" does not exist." group-name)
                      (values)))))
         (values))))
 
@@ -197,7 +197,7 @@ housekeeping."
             (handler-case
                 (funcall *new-window-preferred-frame* window)
               (t (c)
-                (swm-message "^1*^BError while calling ^b^3**new-window-preferred-frame*^1*^B: ^n~a" c)
+                (wm-message "^1*^BError while calling ^b^3**new-window-preferred-frame*^1*^B: ^n~a" c)
                 default))))
     (cond
       ;; If we already have a frame use it.
@@ -234,6 +234,6 @@ housekeeping."
         default))
       ;; Not well formed `*new-window-preferred-frame*'.  Message an error and
       ;; return the default.
-      (t (swm-message "^1*^BInvalid ^b^3**new-window-preferred-frame*^1*^B: ^n~a"
+      (t (wm-message "^1*^BInvalid ^b^3**new-window-preferred-frame*^1*^B: ^n~a"
                   preferred-frame)
          default))))

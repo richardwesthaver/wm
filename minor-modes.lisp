@@ -358,7 +358,7 @@ modes."
                        (list-current-mode-objects :screen screen))))
     (prog1 modes 
       (when %interactivep%
-        (swm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
+        (wm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
 
 (defcommand enabled-minor-modes () ()
   "Return all enabled minor modes, with duplicates removed."
@@ -366,7 +366,7 @@ modes."
                                           (list-mode-objects)))))
     (prog1 modes
       (when %interactivep%
-        (swm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
+        (wm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
 
 (defun minor-mode-enabled-p (minor-mode &optional (screen (current-screen)))
   "Return T if MINOR-MODE is active"

@@ -317,7 +317,7 @@
    ;;; message-window.lisp
    echo-string
    swm-err
-   swm-message
+   wm-message
    gravity-coords
    with-message-queuing
    *queue-messages-p*
@@ -468,4 +468,4 @@
    generate-keymap))
 
 (defpackage :wm-user
-  (:use #:std-lisp #:wm))
+  (:use #:core-lisp #:wm))

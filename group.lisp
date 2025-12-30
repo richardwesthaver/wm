@@ -233,7 +233,7 @@ at 0. Return a netwm compliant group id."
 
 (defun move-window-to-group (window to-group)
   (if (equalp to-group (window-group window))
-      (swm-message "That window is already in the group ~a." (group-name to-group))
+      (wm-message "That window is already in the group ~a." (group-name to-group))
       (labels ((really-move-window (window to-group)
                  (unless (eq (window-group window) to-group)
                    (hide-window window)
@@ -397,7 +397,7 @@ exists. Returns the new group."
   (if-let ((next (next-group current (non-hidden-groups list))))
     (progn (switch-to-group next)
            next)
-    (swm-message "No other group.")))
+    (wm-message "No other group.")))
 
 (defun group-forward-with-window (current list)
   "Switch to the next group in the list, if one exists, and moves the
@@ -450,7 +450,7 @@ window along."
   (let ((groups (screen-groups (current-screen))))
     (if (> (length groups) 1)
         (switch-to-group (second groups))
-        (swm-message "No other group."))))
+        (wm-message "No other group."))))
 
 (defun %grename (name group)
   (let ((group-name (group-name group)))
@@ -467,10 +467,10 @@ window along."
 (defcommand grename (name) ((:string "New name for group: "))
   "Rename the current group."
   (cond ((find-group (current-screen) name)
-         (swm-message "^1*^BError: Name already exists."))
+         (wm-message "^1*^BError: Name already exists."))
         ((or (zerop (length name))
              (string= name "."))
-         (swm-message "^1*^BError: Name cannot be empty name."))
+         (wm-message "^1*^BError: Name cannot be empty name."))
         (t (%grename name (current-group)))))
 
 (defun echo-groups (screen fmt &optional verbose (wfmt *window-format*))
@@ -558,9 +558,9 @@ The windows will be moved to group \"^B^2*~a^n\"
             (let ((dead-group-name (group-name dead-group)))
               (switch-to-group to-group)
               (kill-group dead-group to-group)
-              (swm-message "Deleted ~a." dead-group-name))
-            (swm-message "Canceled."))
-        (swm-message "There's only one group left."))))
+              (wm-message "Deleted ~a." dead-group-name))
+            (wm-message "Canceled."))
+        (wm-message "There's only one group left."))))
 
 (defcommand gkill-other () ()
 "Kill other groups. All windows in other groups are migrated
@@ -569,13 +569,13 @@ to the current group."
          (groups (remove current-group
                          (screen-groups (current-screen)))))
     (if (null groups)
-        (swm-message "No other groups.")
+        (wm-message "No other groups.")
         (progn (dolist (dead-group groups)
                  (kill-group dead-group current-group))
-               (swm-message "Killed other groups.")))))
+               (wm-message "Killed other groups.")))))
 
 (defcommand gmerge (from) ((:group "From group: "))
 "Merge @var{from} into the current group. @var{from} is not deleted."
   (if (eq from (current-group))
-      (swm-message "^B^3*Cannot merge group with itself!")
+      (wm-message "^B^3*Cannot merge group with itself!")
       (merge-groups from (current-group))))

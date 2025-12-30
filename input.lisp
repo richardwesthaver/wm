@@ -917,7 +917,7 @@ input (pressing Return), nil otherwise."
 (defun y-or-n-p (message)
   "Ask a \"y or n\" question on the current screen and return T if the
 user presses 'y'."
-  (swm-message "~a(y or n) " message)
+  (wm-message "~a(y or n) " message)
   (eql (read-one-char (current-screen))
        #\y))
 
@@ -931,6 +931,6 @@ user presses 'yes'"
                                    :completions
                                    '("yes" "no")))
         until (find line '("yes" "no") :test 'string-equal)
-        do (swm-message "Please answer yes or no.")
+        do (wm-message "Please answer yes or no.")
            (sleep 1)
         finally (return (string-equal line "yes"))))

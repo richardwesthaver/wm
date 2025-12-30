@@ -40,7 +40,7 @@
 (defun abort-resize-p ()
   "Resize is only available if there's more than one frame."
   (when (single-frame-p)
-    (swm-message "There's only 1 frame!")
+    (wm-message "There's only 1 frame!")
     t))
 
 (defun setup-iresize ()

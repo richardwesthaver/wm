@@ -4,7 +4,7 @@
   :components ((:file "pkg")
                (:file "golden-ratio")
                (:file "beckon")
-               (:file "clipboard-history")
+               (:file "clipboard")
                (:file "command-history")
                (:file "globalwindows")
                (:file "kbd-layouts")

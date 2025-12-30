@@ -17,7 +17,7 @@
    #:frame-height #:frame-width)
   (:export #:beckon #:*window-height-fraction* #:*window-width-fraction*))
 
-(defpackage #:wm/clipboard-history
+(defpackage #:wm/clipboard
   (:use #:cl)
   (:export 
    #:start-clipboard-manager

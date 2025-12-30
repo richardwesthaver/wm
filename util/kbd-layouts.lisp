@@ -3,7 +3,6 @@
 (in-package #:wm/kbd-layouts)
 
 ;;; Variables
-(defvar *available-keyboard-layouts* '#1=("us" . #1#))
 (defvar *keyboard-layout* "us")
 
 (declaim ((or boolean (member :ctrl :swapped)) *caps-lock-behavior*))
@@ -38,4 +37,4 @@
     (run-shell-command cmd nil)
     (when *run-xmodmap*
       (run-shell-command "xmodmap ~/.Xmodmap"))
-    (swm-message (format nil "Keyboard layout switched to: ~a" layout))))
+    (wm-message (format nil "Keyboard layout switched to: ~a" layout))))

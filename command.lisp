@@ -316,7 +316,7 @@ be used when prompting the user for the argument.
      (throw 'error \"Symbol not in STUMPWM package\")))
 
 \(defcommand \"symbol\" (sym) ((:symbol \"Pick a symbol: \"))
-  (swm-message \"~a\" (with-output-to-string (s)
+  (wm-message \"~a\" (with-output-to-string (s)
                     (describe sym s))))
 @end example
 
@@ -368,14 +368,14 @@ then describes the symbol."
 
 (define-stumpwm-type :key-seq (input prompt)
   (labels ((update (seq)
-             (swm-message "~a ~{~a ~}"
+             (wm-message "~a ~{~a ~}"
                       prompt
                       (mapcar 'print-key (reverse seq)))))
     (let ((rest (argument-pop-rest input)))
       (or (and rest (parse-key-seq rest))
           ;; read a key sequence from the user
           (with-focus (screen-key-window (current-screen))
-            (swm-message "~a" prompt)
+            (wm-message "~a" prompt)
             (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))))))))
 
 (define-stumpwm-type :window-number (input prompt)
@@ -576,10 +576,10 @@ user aborted."
       (cond ((stringp result)
              (if error-p
                  (message-no-timeout "~a" result)
-                 (swm-message "~a" result)))
+                 (wm-message "~a" result)))
             ((eq result :abort)
              (unless *suppress-abort-messages*
-               (swm-message "Abort.")))))))
+               (wm-message "Abort.")))))))
 
 (defun run-commands (&rest commands)
   "Run each stumpwm command in sequence. This could be used if you're
