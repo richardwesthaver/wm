@@ -465,7 +465,8 @@
    current-minor-modes
    minor-mode-enabled-p
    find-minor-mode
-   generate-keymap))
+   generate-keymap
+   wm-quit))
 
 (defpackage :wm-user
-  (:use #:core-lisp #:wm))
+  (:use #:std-lisp #:wm))

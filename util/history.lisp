@@ -1,12 +1,9 @@
-;;;; command-history.lisp
-
-(in-package #:wm/command-history)
-
-(defvar *home-dir* (sb-posix:getenv "HOME"))
+;;; history.lisp --- WM Command History
+(in-package #:wm/history)
 
 (defvar *command-history-file*
   (merge-pathnames
-    (format nil "~A/.stumpwm.d/history" *home-dir*)))
+    (format nil "~A/history" wm:*data-dir*)))
 
 (defun load-input-history ()
   "Load *input-history* to file."

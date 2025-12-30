@@ -67,11 +67,6 @@
               (pathname f)))))
     (flatten (mapcar #'list-module *load-path*))))
 
-(defun find-module (name)
-  (if name
-      (find name (list-modules) :test #'string=)
-      nil))
-
 (defun ensure-pathname (path)
   (if (stringp path) (first (directory path))
       path))
@@ -108,7 +103,7 @@ with the argument `*module-dir*'"
 
 (defcommand load-wm-module (name) ((:module "Load module: "))
   "Loads the contributed module with the given NAME."
-  (let ((module (find-module (string-downcase name))))
+  (let ((module (find name (list-modules) :test #'string-equal)))
     (if module
         (asdf:operate 'asdf:load-op module)
         (error "Could not load or find module: ~s" name))))

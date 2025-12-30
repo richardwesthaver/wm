@@ -30,8 +30,7 @@
 doesn't exist. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the rc file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
-further up. "
-  (init :xdg)
+further up."
   (let* ((user-rc (std:xdg-config-file :wm))
          (dir-rc
            (probe-file (std:xdg-config-dir :wm "init.lisp")))
@@ -280,6 +279,7 @@ further up. "
     (dformat 0 "SIGHUP received: forcing immediate restart of wm~%") ;; debug level 0 to "force" logging
     (force-wm-restart))
   (let ((*in-main-thread* t))
+    (init :xdg)
     (setf *data-dir* (default-data-dir))
     (init-load-path *module-dir*)
     (loop

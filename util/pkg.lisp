@@ -25,12 +25,10 @@
    #:show-clipboard-history
    #:*clipboard-history-max-length*))
 
-(defpackage #:wm/command-history
+(defpackage #:wm/history
   (:use :cl :wm)
   (:export
-   :*command-history-file*
-   :*start-hook*
-   :*quit-hook*))
+   :*command-history-file*))
 
 (defpackage #:wm/globalwindows
   (:use #:cl :wm)
@@ -73,13 +71,6 @@
 
 (defpackage #:wm/screenshot
   (:use #:cl :wm :dat/png))
-
-(defpackage #:wm/shell-command-history
-  (:use :cl :wm)
-  (:export
-   :*shell-command-history-file*
-   :*start-hook*
-   :*quit-hook*))
 
 (defpackage #:wm/spatial-groups
   (:use #:cl #:wm)
