@@ -469,4 +469,6 @@
    wm-quit))
 
 (defpackage :wm-user
-  (:use #:std-lisp #:wm))
+  (:shadowing-import-from :wm :completing-read)
+  (:use #:std-lisp #:wm #:cli #:obj #:log #:net #:io))
+

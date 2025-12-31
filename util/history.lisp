@@ -23,6 +23,6 @@
         (remove-duplicates wm::*input-history* :test #'string= :from-end t)
         out))))
 
-(add-wm-hook *start-hook* 'load-input-history)
+(add-wm-hook wm:*start-hook* 'load-input-history)
 
-(add-wm-hook *quit-hook* 'save-input-history)
+(add-wm-hook wm:*quit-hook* 'save-input-history)
