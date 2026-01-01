@@ -50,7 +50,6 @@
                (:file "dynamic-window")
                (:file "dynamic-group")
                (:file "remap-keys")
-               (:file "manual")
                (:file "minor-modes")
                (:file "replace-class"))
   :in-order-to ((test-op (test-op "wm/tests"))))
