@@ -436,12 +436,12 @@ COMMAND-LIST: A list of entries defining the commands associated with each mark.
           (define-key m (kbd "C-p") 'menu-up)
           (define-key m (kbd "Up") 'menu-up)
           (define-key m (kbd "S-Up") 'menu-scroll-up)
-          (define-key m (kbd "SunPageUp") 'menu-page-up)
+          (define-key m (kbd "Prior") 'menu-page-up)
 
           (define-key m (kbd "C-n") 'menu-down)
           (define-key m (kbd "Down") 'menu-down)
           (define-key m (kbd "S-Down") 'menu-scroll-down)
-          (define-key m (kbd "SunPageDown") 'menu-page-down)
+          (define-key m (kbd "Next") 'menu-page-down)
 
           (define-key m (kbd "C-g") 'menu-abort)
           (define-key m (kbd "ESC") 'menu-abort)

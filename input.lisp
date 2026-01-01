@@ -154,7 +154,7 @@ and complete the input by mutating it."))
     (define-key map (kbd "C-v") 'input-yank-clipboard)
     (define-key map (kbd "TAB") 'input-complete-forward)
     (define-key map (kbd "C-i") 'input-complete-forward)
-    (define-key map (kbd "ISO_Left_Tab") 'input-complete-backward)
+    (define-key map (kbd "ISO_Left_T") 'input-complete-backward)
     (define-key map t 'input-self-insert)
     map)
   "This is the keymap containing all input editing key bindings.")
@@ -211,7 +211,7 @@ Available completion styles include
   (setf *all-modifiers*
         (append (multiple-value-list
                  (xlib:keysym->keycodes *display*
-                                        (keysym-name->keysym "ISO_Level3_Shift")))
+                                        (keysym-name-code "ISO_Level3")))
                 *all-modifiers*)))
 
 (defun keycode->character (code mods)
@@ -762,11 +762,11 @@ together, finding the keysym for it, and looking up the keysym on the X server.
 For example, given a keysym corresponding to 'a' and a dead keysym corresponding
 to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
 'acute' are concatenated to give 'aacute', the name of the keysym for 'á'."
-  (let ((charname (keysym->keysym-name keysym))
+  (let ((charname (keysym-code-name keysym))
         (deadstr (ignore-errors
-                  (subseq (gethash dead-keysym *dead-key-sym->name*) 5))))
+                  (gethash dead-keysym *dead-keysym-name-table*))))
     (xlib:keysym->character *display*
-                            (keysym-name->keysym
+                            (keysym-name-code
                              (concatenate 'string charname deadstr)))))
 
 (defun find-character-for-keysym (input key)
@@ -848,7 +848,7 @@ input (pressing Return), nil otherwise."
 
 (defun get-modifier-map ()
   (labels ((find-mod (mod codes)
-             (let* ((keysym (keysym-name->keysym mod))
+             (let* ((keysym (keysym-name-code mod))
                     (keycodes (multiple-value-list (xlib:keysym->keycodes *display* keysym))))
                (intersection keycodes codes))))
     (let ((modifiers (make-modifiers)))

@@ -4,7 +4,7 @@
   :author "Shawn Betts <sabetts@vcn.bc.ca>"
   :version "24.11"
   :maintainer "Richard Westhaver <richard.westhaver@gmail.com>"
-  ;; :license "GNU General Public License"
+  :license "GNU General Public License"
   :description "A tiling, keyboard driven window manager"
   :serial t
   :depends-on (#:core #:xlib)
@@ -59,9 +59,6 @@
   :name "WM tests"
   :serial t
   :depends-on ("wm" "rt")
-  :pathname "tests/"
-  :components ((:file "pkg")
-               (:file "kmap")
-               (:file "mode-line-formatters"))
+  :components ((:file "tests"))
   :perform (test-op (o c)
              (uiop/package:symbol-call "RT" "DO-TESTS" :wm)))

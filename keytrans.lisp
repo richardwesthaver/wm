@@ -49,9 +49,9 @@ names."
 (defun stumpwm-name->keysym (stumpwm-name)
   "Return the keysym corresponding to STUMPWM-NAME.
 If no mapping for STUMPWM-NAME exists, then fallback by calling
-KEYSYM-NAME->KEYSYM."
+KEYSYM-NAME-CODE."
   (let ((keysym-name (stumpwm-name->keysym-name stumpwm-name)))
-    (keysym-name->keysym (or keysym-name stumpwm-name))))
+    (keysym-name-code (or keysym-name stumpwm-name))))
 
 (defun keysym->stumpwm-name (keysym)
   "Return the stumpwm key name corresponding to KEYSYM.

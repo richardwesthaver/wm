@@ -21,21 +21,24 @@
 
 ;;; Commentary:
 
-;;; Overview
+;;;; Overview
+
 ;; This file implements dynamic tiling à la DWM, where windows are organized
 ;; into the master window and the window stack. There exists one master window
 ;; per head within a group. When a new window is added to a head within the
 ;; group, that heads master window is pushed onto that heads stack, and the new
 ;; window becomes the master window.
 
-;;; Window Placement Policy
+;;;; Window Placement Policy
+
 ;; When a window is added to a dynamic group it must be determined which head to
 ;; place the window upon. This is controlled by the class allocated slot
 ;; head-placement-policy. It can either be a keyword of :FIRST through :FIFTH,
 ;; in which case the window is placed on that head, or the keyword
 ;; :CURRENT-FRAME, in which case the head of the current frame is selected.
 
-;;; Overflow Policy
+;;;; Overflow Policy
+
 ;; In the event that the head a window is to be placed upon is full, a window,
 ;; head, and group are chosen as backups. The chosen window is then moved to the
 ;; chosen head or, if that head is itself full, to the chosen group. The window
@@ -46,7 +49,8 @@
 ;; be chosen by any valid string. The group will be created if it does not
 ;; exist.
 
-;;; Window Layouts
+;;;; Window Layouts
+
 ;; The location of the master window can be chosen on a global or per head
 ;; basis. The location can be chosen by one of four keywords, :LEFT :RIGHT :TOP
 ;; and :BOTTOM. Likewise, the amount of space given to the master window can
@@ -59,14 +63,8 @@
 ;;; Code:
 (in-package :wm)
 
-(defmacro pswap (a b)
-  "Swap the values of A and B using PSETF."
-  `(psetf ,a ,b
-          ,b ,a))
-
 ;; The window definition remains unchanged, as at its core it is a tile
 ;; window. All we do is add a single tag.
-
 (define-swm-class dynamic-window (tile-window)
   ((superfluous :initform nil
                 :accessor superfluous-window-tag)))

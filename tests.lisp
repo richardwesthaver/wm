@@ -1,5 +1,8 @@
-(in-package #:wm/tests)
-(in-suite :wm)
+(defpackage #:wm/tests
+  (:use #:cl #:wm #:rt))
+(in-package :wm/tests)
+(defsuite :wm)
+
 (defun expand-key-description (&rest desc)
   (let ((args (list (car desc) :keysym)))
     (dolist (mod (cdr desc))
@@ -18,3 +21,6 @@
   (expect-key "-" :to-be (45))
   (signals wm::kbd-parse-error (wm::parse-key "C-")))
 
+(deftest test-bar ()
+  (is (= 3 (count #\X (bar 60 5 #\X #\= ) :test #'char=)))
+  (is (= 2 (count #\= (bar 60 5 #\X #\= ) :test #'char=))))

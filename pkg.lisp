@@ -22,6 +22,7 @@
 (defpackage :wm
   (:use #:cl #:std #:obj/meta/mix)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
+  (:import-from #:xkb #:load-xkbcommon)
   (:shadow #:yes-or-no-p #:y-or-n-p)
   (:export 
    ;; primitives
