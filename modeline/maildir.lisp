@@ -23,25 +23,20 @@
   "List of plists for number of {new,cur,tmp} mail for each mailbox")
 
 (defvar *maildir-alist*
-  (list (cons "Mail" (merge-pathnames (make-pathname :directory '(:relative "Mail"))
+  (list (cons "ellis" (merge-pathnames (make-pathname :directory `(:relative "mail" 
+                                                                            ,(sb-posix:passwd-name 
+                                                                              (cdr (assoc :name 
+                                                                                          (std/os::user-info))))))
 				      (user-homedir-pathname))))
   "Alist of pathnames to the mail directories with names. Defaults to just ~/Mail.")
 
-(defvar *maildir-modeline-fmt* "%l: %n "
+(defvar *maildir-modeline-fmt* "(:%l %n %c)"
   "The Default Value For Displaying Maildir information on the modeline.
-
-@table @asis
-@item %%
-A literal '%'
-@item %l
-Label of the maildir
-@item %n
-New mails number
-@item %c
-Current mails number
-@item %t
-Temporary mails number
-@end table")
+- %% :: A literal '%'
+- %l :: Label of the maildir
+- %n :: New mails number
+- %c :: Current mails number
+- %t :: Temporary mails number")
 
 (defun maildir-mailboxes (maildir)
   "Returns a list of all mailboxes in *maildir-path*."
@@ -87,4 +82,4 @@ Temporary mails number
 	into fmts
 	finally (return (apply #'concat fmts))))
 
-(wm:add-screen-mode-line-formatter #\D #'maildir-modeline)
+(wm:add-screen-mode-line-formatter #\M #'maildir-modeline)

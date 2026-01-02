@@ -13,7 +13,7 @@
     (#\m  disk-get-mount-point)
     (#\f  disk-get-filesystem-type)))
 
-(defparameter *disk-modeline-fmt* "%d: %p"
+(defparameter *disk-modeline-fmt* "%d:%p"
   "The default value for displaying disk usage information on the modeline.
 
 %% = A literal '%'
@@ -22,8 +22,7 @@
 %a = Filesystem available space
 %p = Filesystem used space in percent
 %m = Filesystem mount point
-%f = Filesystem type
-")
+%f = Filesystem type")
 
 (defvar *disk-usage-paths* '("/" "/home/")
   "The list of mount points to report the disk usage of.")
@@ -37,9 +36,6 @@
                               *disk-usage*)))
     (nth field-number usage-infos)))
 
-(defun size-human-readable (size-as-number)
-  (std:human-readable-size size-as-number))
-
 (defun disk-get-size-as-number (path)
   (disk:disk-total-space path))
 
@@ -51,7 +47,7 @@
       (disk-get-available-size-as-number path)))
 
 (defun disk-get-used (path)
-  (size-human-readable (disk-get-used-as-number path)))
+  (human-readable-size (disk-get-used-as-number path)))
 
 (defun disk-get-available-size-as-number (path)
   (disk:disk-available-space path))
@@ -67,30 +63,20 @@
     (format nil "~a%" value)))
 
 (defun disk-get-device (path)
-  #+linux
   (handler-case
       (disk:mountpoint-device path path)
-    (error () "ERR"))
-  #-linux (disk-usage-get-field path 0))
+    (error () "ERR")))
 
 (defun disk-get-mount-point (path)
   path)
 
 (defun disk-get-filesystem-type (path)
-  #+linux
   (handler-case
       (disk:mountpoint-fstype path)
-    (error () "ERR"))
-  #-linux "filesystem type supported only on GNU/Linux :-(")
-
-(defun use-fallback-method-p ()
-  (search "%d" *disk-modeline-fmt* :test #'string=))
+    (error () "ERR")))
 
 (defun disk-mode-line (ml)
   (declare (ignore ml))
-  #-linux
-  (when (use-fallback-method-p)
-    (disk-update-usage *disk-usage-paths*))
   (let ((fmts (loop for p in *disk-usage-paths* collect
                    (format-expand *disk-formatters-alist*
                                   *disk-modeline-fmt*

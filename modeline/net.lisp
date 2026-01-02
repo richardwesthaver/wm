@@ -158,18 +158,13 @@ For the second case rescans route table every minute."
     (#\i  fmt-ipv4)
     (#\I  fmt-ipv6)))
 
-(defvar *net-modeline-fmt* "%d: %u"
+(defvar *net-modeline-fmt* "%d:%u"
   "The default value for displaying net information on the modeline.
-
-@table @asis
-@item %%
-A literal '%'
-@item %d
-network device name
-@item %u
-network usage
-@end table
-")
+- %% :: A literal '%'
+- %d :: network device name
+- %u :: network usage
+- %i :: ipv4
+- %I :: ipv6")
 
 (defun net-modeline (ml)
   (declare (ignore ml))

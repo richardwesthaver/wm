@@ -274,7 +274,7 @@ kmap."
                     (let ((*current-key-seq* key-seq))
                       (eval-command cmd t))
                     t)
-                   (t (m-message "~{~a ~}not bound." (mapcar 'print-key (nreverse key-seq)))))))))))
+                   (t (wm-message "~{~a ~}not bound." (mapcar 'print-key (nreverse key-seq)))))))))))
 
 (defun bytes-to-window (bytes)
   "Combine a list of 4 8-bit bytes into a 32-bit number. This is because

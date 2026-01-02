@@ -30,7 +30,7 @@
 (defvar *cpu-temp-hi* 75)
 (defvar *cpu-temp-crit* 90)
 
-(defvar *cpu-usage-modeline-fmt* "CPU: ^[~A~3D%^] "
+(defvar *cpu-usage-modeline-fmt* "^[~A~3D%^] "
   "The default formatting for CPU usage")
 
 ;; More or less yanked from the wiki.
@@ -77,10 +77,9 @@ not available). Don't make calculation more than once a second."
   (let ((cpu (truncate (* 100 (current-cpu-usage)))))
     (format nil *cpu-usage-modeline-fmt* (bar-zone-color cpu) cpu)))
 
-(defun fmt-cpu-usage-bar (ml &optional (width *cpu-usage-bar-width*) (full *cpu-usage-bar-full*) (empty *cpu-usage-bar-empty*))
+(defun fmt-cpu-usage-bar (&optional (width *cpu-usage-bar-width*) (full *cpu-usage-bar-full*) (empty *cpu-usage-bar-empty*))
   "Returns a coloured bar-graph representing the current percent of average CPU
 utilization."
-  (declare (ignore ml))
   (let ((cpu (truncate (* 100 (current-cpu-usage)))))
     (wm::bar cpu width full empty)))
 
@@ -169,24 +168,15 @@ utilization."
     (#\r  fmt-cpu-freq-range)
     (#\t  fmt-cpu-temp)))
 
-(defvar *cpu-modeline-fmt* "%c (%f) %t"
+(defvar *cpu-modeline-fmt* "%c%C"
   "The default value for displaying cpu information on the modeline.
 
-@table @asis
-@item %%
-A literal '%'
-@item %c
-CPU usage
-@item %C
-CPU usage graph
-@item %f
-CPU frequency
-@item %r
-CPU frequency range
-@item %t
-CPU temperature
-@end table
-")
+- %% :: A literal '%'
+- %c :: CPU usage
+- %C :: CPU usage graph
+- %f :: CPU frequency
+- %r :: CPU frequency range
+- %t :: CPU temperature")
 
 (defun cpu-modeline (ml)
   (declare (ignore ml))

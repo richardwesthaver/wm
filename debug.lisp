@@ -35,6 +35,8 @@
 *error-output*. It may be more convenient for you to pipe debugging
 output directly to a file.")
 
+;; levels = 1-5,7[1],10
+;; -> fully replace with logger verbs
 (defun dformat (level fmt &rest args)
   (when (>= *debug-level* level)
     (multiple-value-bind (sec m h) (get-decoded-system-time)
@@ -57,9 +59,7 @@ before reopening.")
 if you want everything to go to ~/.stumpwm.d/debug-output.txt you would
 do:
 
-@example
 (redirect-all-output (data-dir-file \"debug-output\" \"txt\"))
-@end example
 "
   (when (typep *redirect-stream* 'file-stream)
     (close *redirect-stream*))
