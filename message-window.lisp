@@ -321,7 +321,7 @@ When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
   "run FMT and ARGS through `format' and echo the result to the current screen."
   (echo-string (current-screen) (apply 'format nil fmt args)))
 
-(defun swm-err (fmt &rest args)
+(defun wm-err (fmt &rest args)
   "run FMT and ARGS through format and echo the result to the
 current screen along with a backtrace. For careful study, the
 message does not time out."

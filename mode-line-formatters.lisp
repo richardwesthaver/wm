@@ -186,7 +186,7 @@ critical."
           ((past med) *bar-med-color*)
           (t ""))))
 
-(defun repeat (n char)
+(defun rep (n char)
   (make-string n :initial-element char))
 
 (defun bar (percent width full empty)

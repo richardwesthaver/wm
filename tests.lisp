@@ -25,8 +25,9 @@
   (is (= 3 (count #\X (bar 60 5 #\X #\= ) :test #'char=)))
   (is (= 2 (count #\= (bar 60 5 #\X #\= ) :test #'char=))))
 
-(defparameter *current-test-num* 0)
-(defparameter *tests* nil)
+(std:eval-always
+  (defparameter *current-test-num* 0)
+  (defparameter *tests* nil))
 
 (defmacro define-test ((dpy screen) &body body)
   (let ((name (intern (format nil "TEST-~d" *current-test-num*))))

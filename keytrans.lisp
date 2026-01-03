@@ -57,7 +57,7 @@ KEYSYM-NAME-CODE."
   "Return the stumpwm key name corresponding to KEYSYM.
 If no mapping for the stumpwm key name exists, then fall back by
 calling KEYSYM->KEYSYM-NAME."
-  (let ((keysym-name (keysym->keysym-name keysym)))
+  (let ((keysym-name (keysym-code-name keysym)))
     (or (keysym-name->stumpwm-name keysym-name)
         keysym-name)))
 

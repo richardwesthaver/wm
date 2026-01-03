@@ -120,7 +120,7 @@
    *new-frame-action*
    *new-window-preferred-frame*
    *startup-message*
-   *default-package*
+   *default-wm-package*
    *window-placement-rules*
    *mouse-focus-policy*
    *root-click-focuses-frame*
@@ -317,7 +317,7 @@
    save-frame-excursion only-one-frame-p
    ;;; message-window.lisp
    echo-string
-   swm-err
+   wm-err
    wm-message
    gravity-coords
    with-message-queuing

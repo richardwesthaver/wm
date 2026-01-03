@@ -176,8 +176,7 @@ further up."
         (io-loop-add io (make-instance 'display-channel :display *display*))
         ;; If we have no implementation for the current CL, then
         ;; don't register the channel.
-        (multiple-value-bind (in out)
-            (open-pipe)
+        (multiple-value-bind (in out) (open-pipe)
           (let ((channel (make-instance 'request-channel :in in :out out)))
             (io-loop-add io channel)
             (setq *request-channel* channel)))
@@ -209,6 +208,7 @@ further up."
   (close-log))
 
 (defun wm-internal (display-str)
+  (dformat 0 "~A" display-str)
   (multiple-value-bind (host display screen protocol) (parse-display-string display-str)
     (declare (ignore screen))
     (setf *display* (xlib:open-display host :display display :protocol protocol)
@@ -231,7 +231,7 @@ further up."
                ;; screens are initialized.
                (push #'minor-mode-top-maps *minor-mode-maps*)
                ;; Load rc file
-               (let ((*package* (find-package *default-package*)))
+               (let ((*package* (find-package *default-wm-package*)))
                  (multiple-value-bind (success err rc) (load-rc-file)
                    (if success
                        (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
@@ -260,7 +260,7 @@ further up."
              ;; the first time they try to run a command.
              (sb-thread:make-thread #'rehash)
              ;; Let's manage.
-             (let ((*package* (find-package *default-package*)))
+             (let ((*package* (find-package *default-wm-package*)))
                (run-hook *start-hook*)
                (wm-internal-loop)))
         (close-resources))))
@@ -278,12 +278,15 @@ further up."
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm~%") ;; debug level 0 to "force" logging
     (force-wm-restart))
+  (dformat 0 "got here...")
   (let ((*in-main-thread* t))
     (init :xdg)
     (setf *data-dir* (default-data-dir))
     (init-load-path *module-dir*)
+    (dformat 0 "loading complete...")
     (loop
       (let ((ret (catch :top-level
+                   (dformat 0 "before WM-INTERNAL...")
                    (wm-internal display-str))))
         (setf *last-unhandled-error* nil)
         (cond ((and (consp ret)

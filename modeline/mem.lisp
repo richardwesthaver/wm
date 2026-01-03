@@ -61,7 +61,7 @@ total amount of memory, allocated memory, allocated/total ratio"
     (#\p  fmt-mem-percent)
     (#\b  fmt-mem-usage-bar)))
 
-(defvar *mem-modeline-fmt* "%a %p %b"
+(defvar *mem-modeline-fmt* "%p %b"
   "The default value for displaying mem usage information on the modeline.
 
 - %% :: A literal '%'

@@ -169,7 +169,7 @@ such a case, kill the shell command to resume StumpWM."
                            (multiple-value-list (eval (read-from-string cmd)))))
           (throw 'error :abort))
     (error (c)
-      (swm-err "^B^1*~A" c))))
+      (wm-err "^B^1*~A" c))))
 
 (defcommand-alias eval eval-line)
 
@@ -208,6 +208,10 @@ such a case, kill the shell command to resume StumpWM."
 
 (defcommand-alias abort keyboard-quit)
 
+(defcommand wm-quit () ()
+  "Quit StumpWM."
+  (throw :top-level :quit))
+
 (defcommand quit-confirm () ()
   "Prompt the user to confirm quitting StumpWM."
   (if (y-or-n-p (format nil "~@{~a~^~%~}"
@@ -216,10 +220,6 @@ such a case, kill the shell command to resume StumpWM."
                         "^B^6Confirm?^n "))
       (wm-quit)
       (xlib:unmap-window (screen-message-window (current-screen)))))
-
-(defcommand wm-quit () ()
-  "Quit StumpWM."
-  (throw :top-level :quit))
 
 (defcommand restart-soft () ()
   "Soft restart StumpWM. The lisp process isn't restarted. Instead,

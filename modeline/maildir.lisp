@@ -82,4 +82,4 @@
 	into fmts
 	finally (return (apply #'concat fmts))))
 
-(wm:add-screen-mode-line-formatter #\M #'maildir-modeline)
+(wm:add-screen-mode-line-formatter #\E #'maildir-modeline)

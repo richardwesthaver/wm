@@ -1153,7 +1153,7 @@ Press ^5*~a ?^2* for help."
   "This is the message StumpWM displays when it starts. Set it to NIL to
 suppress.")
 
-(defvar *default-package* (find-package '#:wm-user)
+(defvar *default-wm-package* (find-package '#:wm-user)
   "This is the package eval reads and executes in. You might want to set
 this to @code{:wm} if you find yourself using a lot of internal
 stumpwm symbols. Setting this variable anywhere but in your rc file

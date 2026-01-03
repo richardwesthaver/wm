@@ -742,18 +742,18 @@ functions are passed this structure as their first argument."
 
 (defun dead-key-character (keysym)
   "Given a dead key keysym, return the corresponding non-dead character"
-  (let ((symname (subseq (gethash keysym *dead-key-sym->name*) 5)))
+  (let ((symname (subseq (gethash keysym *dead-keysym-name-table*) 5)))
     ;; Some sym names are different from their non-dead name, patch those here.
     (cond ((string= symname "tilde")
            (setf symname "asciitilde"))
           ((string= symname "circumflex")
            (setf symname "asciicircum")))
     (xlib:keysym->character *display*
-                            (gethash symname *name-keysym-translations*))))
+                            (gethash symname *name-keysym-table*))))
 
 (defun dead-key-p (keysym)
   "Check if KEYSYM is dead"
-  (gethash keysym *dead-key-sym->name*))
+  (gethash keysym *dead-keysym-name-table*))
 
 (defun make-combined-character (keysym dead-keysym)
   "Try to modify KEYSYM with DEAD-KEYSYM by concatenating the keysym names
