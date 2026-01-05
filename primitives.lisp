@@ -19,7 +19,7 @@
 ;;; Commentary:
 
 ;; This file contains primitive data structures and functions used
-;; throughout stumpwm.
+;; throughout WM.
 
 ;;; Code:
 (in-package :wm)
@@ -409,34 +409,34 @@ Use the window's resource class.
 Use the window's resource name.
 @end table")
 
-(defclass swm-class ()
+(defclass wm-class ()
   ((new-objects
     :initform nil
-    :accessor swm-class-new-objects
+    :accessor wm-class-new-objects
     :allocation :class
     :documentation
     "Track all newly created objects in order to mix in the appropriate minor modes
 when they are touched")))
 
-(defmethod initialize-instance :after ((obj swm-class) &key &allow-other-keys)
+(defmethod initialize-instance :after ((obj wm-class) &key &allow-other-keys)
   ;; Register all newly created objects so that they can have the relevant minor
   ;; modes autoenabled.
-  (pushnew obj (swm-class-new-objects obj) :test #'eq))
+  (pushnew obj (wm-class-new-objects obj) :test #'eq))
 
 (defgeneric print-swm-object (object stream)
   (:method (object stream)
     (format stream "~A" (type-of object))))
 
-(defmethod print-object ((object swm-class) stream)
+(defmethod print-object ((object wm-class) stream)
   (print-unreadable-object (object stream)
     (print-swm-object object stream)
     (when-let ((minor-modes (list-minor-modes object)))
       (format stream " :MINOR-MODES ~A" minor-modes))))
 
-(defun make-swm-class-instance (class &rest initargs)
+(defun make-wm-class-instance (class &rest initargs)
   "Make an instance of a StumpWM class and autoenable any relevant minor
 modes. CLASS must be a symbol denoting a class which descends, directly or
-indirectly, from swm-class. INITARGS must be all initargs one would pass to
+indirectly, from wm-class. INITARGS must be all initargs one would pass to
 make-instance."
   ;; This is implemented as a function instead of as an after method for
   ;; initialize-instance because autoenabling a minor mode involves changing the
@@ -448,20 +448,20 @@ make-instance."
       (loop for class in *active-global-minor-modes*
             when (typep object (scope-type (minor-mode-scope class)))
             do (autoenable-minor-mode class object))
-      (setf (swm-class-new-objects object)
-            (remove object (swm-class-new-objects object) :test #'eq)))))
+      (setf (wm-class-new-objects object)
+            (remove object (wm-class-new-objects object) :test #'eq)))))
 
-(defmacro define-swm-class (class-name superclasses slots &rest options)
+(defmacro define-wm-class (class-name superclasses slots &rest options)
   "Define a class and a method for REPLACE-CLASS which specializes
-upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used."
-  (unless superclasses (setq superclasses '(swm-class)))
+upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
+  (unless superclasses (setq superclasses '(wm-class)))
   `(progn
      (defclass ,class-name ,superclasses ,slots ,@options)
      (defmethod replace-class ((object ,class-name) new &rest r)
        (apply #'replace-class-in-mixin
               object new ',class-name r))))
 
-(define-swm-class frame ()
+(define-wm-class frame ()
   ((number
     :initform nil
     :initarg :number
@@ -496,17 +496,17 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
 
 (defun make-frame (&rest rest &key number x y width height window)
   (declare (ignore number x y width height window))
-  (apply 'make-swm-class-instance 'frame rest))
+  (apply 'make-wm-class-instance 'frame rest))
 
 (defun copy-frame (instance)
-  (make-swm-class-instance 'frame :number (frame-number instance)
+  (make-wm-class-instance 'frame :number (frame-number instance)
                                   :x (frame-x instance)
                                   :y (frame-y instance)
                                   :width (frame-width instance)
                                   :height (frame-height instance)
                                   :window (frame-window instance)))
 
-(define-swm-class head (frame)
+(define-wm-class head (frame)
   ((name
     :initform ""
     :accessor head-name
@@ -540,10 +540,10 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
 
 (defun make-head (&rest rest &key number x y width height window name)
   (declare (ignore number x y width height window name))
-  (apply 'make-swm-class-instance 'head rest))
+  (apply 'make-wm-class-instance 'head rest))
 
 (defun copy-head (instance)
-  (make-swm-class-instance 'head :number (frame-number instance)
+  (make-wm-class-instance 'head :number (frame-number instance)
                                  :x (frame-x instance)
                                  :y (frame-y instance)
                                  :width (frame-width instance)
@@ -551,7 +551,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
                                  :window (frame-window instance)
                                  :name (head-name instance)))
 
-(define-swm-class screen ()
+(define-wm-class screen ()
   ((id :initarg :id :reader screen-id)
    (host :initarg :host :reader screen-host)
    (number :initarg :number :reader screen-number)
@@ -618,7 +618,7 @@ exist, in which case they go into the current group.")
 (defvar *window-number-map* "0123456789"
   "Set this to a string to remap the window numbers to something more convenient.")
 
-(defvar *group-number-map* "123456789"
+(defvar *group-number-map* "0123456789"
   "Set this to a string to remap the group numbers to something more convenient.")
 
 (defvar *frame-number-map* "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -1326,7 +1326,7 @@ mouse focus will behave as though it contains :IGNORE")
 (defvar *resize-map* nil
   "The keymap used for resizing a window")
 
-(defvar *default-group-name* "Default"
+(defvar *default-group-name* "main"
   "The name of the default group.")
 
 (defmacro with-focus (xwin &body body)
@@ -1397,14 +1397,14 @@ of :error."
        ,@body)))
 
 (defun rotate-log ()
-  (let ((log-filename (merge-pathnames "stumpwm.log" *data-dir*))
-        (bkp-log-filename (merge-pathnames "stumpwm.log.1" *data-dir*)))
+  (let ((log-filename (merge-pathnames "wm.log" *data-dir*))
+        (bkp-log-filename (merge-pathnames "wm.log.1" *data-dir*)))
     (when (probe-file log-filename)
       (rename-file log-filename bkp-log-filename))))
 
 (defun open-log ()
   (rotate-log)
-  (let ((log-filename (merge-pathnames "stumpwm.log" *data-dir*)))
+  (let ((log-filename (merge-pathnames "wm.log" *data-dir*)))
     (setf *debug-stream* (open log-filename :direction :output
                                             :if-exists :supersede
                                             :if-does-not-exist :create))))
@@ -1419,19 +1419,19 @@ of :error."
      (setf ,list (remove ,elt ,list))
      (push ,elt ,list)))
 
-(define-condition stumpwm-condition (condition)
+(define-condition wm-condition (condition)
   ((wm-message :initarg :message :reader warning-message))
-  (:documentation "Any stumpmwm specific condition should inherit from this.")
+  (:documentation "Any wm specific condition should inherit from this.")
   (:report (lambda (condition stream)
              (format stream "~A~%" (warning-message condition)))))
 
-(define-condition stumpwm-error (stumpwm-condition error)
+(define-condition wm-error (wm-condition error)
   ()
-  (:documentation "Any stumpwm specific error should inherit this."))
+  (:documentation "Any wm specific error should inherit this."))
 
-(define-condition stumpwm-warning (warning stumpwm-condition)
+(define-condition wm-warning (warning wm-condition)
   ()
-  (:documentation "Adds a message slot to warning. Any stumpwm specific warning
+  (:documentation "Adds a message slot to warning. Any wm specific warning
   should inherit from this."))
 
 (defun intern1 (thing &optional (package *package*) (rt *readtable*))

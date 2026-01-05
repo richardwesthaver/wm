@@ -22,13 +22,11 @@
 ((default (build))
  (build ()
   (with-sbcl (:noinform t :quit t :input t)
-   (ql:quickload '(:std :wm :modeline :util))
+   (ql:quickload '(:core :xlib :xlib/truetype :wm :modeline :util))
+   (in-package :std)
    (sb-ext:save-lisp-and-die 
     ".stash/wm" 
-    :toplevel 
-    (lambda ()
-     (uiop:symbol-call :wm "START-WM")
-     (exit :code 0))
+    :toplevel (find-symbol "START-WM" :wm)
     :executable t
     :purify t
     :compression t)))

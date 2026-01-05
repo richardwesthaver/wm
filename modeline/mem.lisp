@@ -23,7 +23,7 @@
   (if s
       (do ((line (read-line s nil nil) (read-line s nil nil)))
 	  ((null line) nil)
-	(let ((split (cl-ppcre:split "\\s*:\\s*" line)))
+	(let ((split (ppcre:split "\\s*:\\s*" line)))
 	  (when (string= (car split) field) (return (cadr split)))))
       ""))
 
@@ -61,7 +61,7 @@ total amount of memory, allocated memory, allocated/total ratio"
     (#\p  fmt-mem-percent)
     (#\b  fmt-mem-usage-bar)))
 
-(defvar *mem-modeline-fmt* "%p %b"
+(defvar *mem-modeline-fmt* "mem:%p%b"
   "The default value for displaying mem usage information on the modeline.
 
 - %% :: A literal '%'

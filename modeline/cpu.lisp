@@ -88,7 +88,7 @@ utilization."
     (if s
         (do ((line (read-line s nil nil) (read-line s nil nil)))
             ((null line) nil)
-          (let ((split (cl-ppcre:split "\\s*:\\s*" line)))
+          (let ((split (ppcre:split "\\s*:\\s*" line)))
             (when (string= (car split) field) (return (cadr split)))))
         "")))
 
@@ -98,7 +98,7 @@ utilization."
       (if s
           (do ((line (read-line s nil nil) (read-line s nil nil)))
               ((null line) nil)
-            (let ((split (cl-ppcre:split "\\s*:\\s*" line)))
+            (let ((split (ppcre:split "\\s*:\\s*" line)))
               (when (string= (car split) field) (setq ret (cons (cadr split) ret)))))
           ""))
     ret))
@@ -132,7 +132,7 @@ utilization."
         (sys-dir (sort
                   (remove-if-not
                    (lambda (x)
-                     (when (and (cl-ppcre:scan "^.*/thermal_zone\\d+/" (namestring x))
+                     (when (and (ppcre:scan "^.*/thermal_zone\\d+/" (namestring x))
                                 (string-equal (std:read-file (format nil "~A/type" x)) (format nil "x86_pkg_temp~%")))
                        x))
                    (std:directory-files #P"/sys/class/thermal/"))
@@ -168,7 +168,7 @@ utilization."
     (#\r  fmt-cpu-freq-range)
     (#\t  fmt-cpu-temp)))
 
-(defvar *cpu-modeline-fmt* "%c%C"
+(defvar *cpu-modeline-fmt* "cpu%c%C"
   "The default value for displaying cpu information on the modeline.
 
 - %% :: A literal '%'

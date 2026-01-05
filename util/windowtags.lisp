@@ -1,19 +1,17 @@
 ;;; windowtags.lisp
-(in-package #:wm/windowtags)
-
-;;; "windowtags" goes here. Hacks and glory await!
 
 ;; Copyright 2009 Michael Raskin
-;;
-;; Maintainer: Michael Raskin
-;;
-;; This file is part of stumpwm.
+
+;;; Code:
+(in-package #:wm/windowtags)
+
+(defvar *tag-group-name* ".tag-store")
 
 ;; String parsing for commands
 (defun string-split-by-spaces (x)
   (if (not x) nil 
       (if (listp x) (mapcar 'string-upcase x)
-	  (cl-ppcre:split " " (string-upcase x)))))
+	  (ppcre:split " " (string-upcase x)))))
 
 ;; Basic operations
 (defcommand window-tags (&optional (argwin nil)) ()
@@ -110,12 +108,12 @@
   (move-windows-to-group (select-by-tags (string-split-by-spaces argtag))))
 
 (defcommand push-without-tag (argtag) ((:rest "Tag(s) needed to stay in the group: "))
-  "Push windows not having the tag (any of the tags) to .tag-store"
-  (move-windows-to-group (select-by-tags (string-split-by-spaces argtag) T) ".tag-store"))
+  "Push windows not having the tag (any of the tags) to *TAG-GROUP-NAME*"
+  (move-windows-to-group (select-by-tags (string-split-by-spaces argtag) T) *tag-group-name*))
 
 (defcommand push-tag (argtag) ((:rest "Tag(s) to push: "))
-  "Push windows having the tag (any of the tags) to .tag-store"
-  (move-windows-to-group (select-by-tags (string-split-by-spaces argtag)) ".tag-store"))
+  "Push windows having the tag (any of the tags) to *TAG-GROUP-NAME*"
+  (move-windows-to-group (select-by-tags (string-split-by-spaces argtag)) *tag-group-name*))
 
 (defcommand pull+push (argtag) ((:rest "Tag(s) to select: "))
   "Pull all windows with the tag, push all without"
@@ -124,27 +122,26 @@
 
 (defcommand push-window () ()
   "Push window to tag store"
-  (move-windows-to-group (list (current-window)) ".tag-store"))
+  (move-windows-to-group (list (current-window)) *tag-group-name*))
 
 ;; Manage window numbers by tags..
 (defun window-number-from-tag (window)
   "Find a numeric tag, if any, and parse it"
   (let*
       ((tags (window-tags window))
-       (numtag (find-if (lambda (x) (cl-ppcre:scan "^[0-9]+$" x)) tags))
+       (numtag (find-if (lambda (x) (ppcre:scan "^[0-9]+$" x)) tags))
        (num (and numtag (parse-integer numtag))))
     num))
 
 (defcommand number-by-tags () ()
-  "Every window tagged <number> will have a chance to have that number. 
-	    The remaining windows will have packed numbers"
-
-                                        ; First, assign impossible numbers.
+  "Every window tagged <number> will have a chance to have that number. The
+remaining windows will have packed numbers"
+  ;; First, assign impossible numbers.
   (mapcar
    (lambda (x)
      (setf (window-number x) -1))
    (group-windows (current-group)))
-                                        ; Now try to assign numbers to windows holding corresponding tags.
+  ;; Now try to assign numbers to windows holding corresponding tags.
   (mapcar
    (lambda (x) 
      (let* 
@@ -153,7 +150,7 @@
        (if (and num (not (find num occupied)))
 	   (setf (window-number x) num))))
    (group-windows (current-group)))
-                                        ; Give up and give smallest numbers possible
+  ;; Give up and give smallest numbers possible
   (repack-window-numbers 
    (mapcar 'window-number
 	   (remove-if-not 
@@ -185,9 +182,9 @@ in current group and only to them"
   (only)
   (fclear)
   (let* ((current (current-group (current-screen)))
-         (tag-store (find-group (current-screen) ".tag-store")))
+         (tag-store (find-group (current-screen) *tag-group-name*)))
     (loop for w in (screen-windows (current-screen)) 
-          do (if (find-if (lambda (s) (cl-ppcre:scan (concatenate 'string "(?i)" tag-regex) s)) (window-tags w))
+          do (if (find-if (lambda (s) (ppcre:scan (concatenate 'string "(?i)" tag-regex) s)) (window-tags w))
                  (move-window-to-group w current)
                  (move-window-to-group w tag-store)))))
 
@@ -196,16 +193,16 @@ in current group and only to them"
   (fclear)
   (let ((current (current-group (current-screen))))
     (loop for w in (screen-windows (current-screen)) 
-          do (if (find-if (lambda (s) (cl-ppcre:scan (concatenate 'string "(?i)" tag-regex) s)) (window-tags w))
+          do (if (find-if (lambda (s) (ppcre:scan (concatenate 'string "(?i)" tag-regex) s)) (window-tags w))
                  (move-window-to-group w current)))))
 
 (defcommand select-by-title-regexp (regex) ((:rest "Title regex to select: "))
   (only)
   (fclear)
   (let* ((current (current-group (current-screen)))
-         (tag-store (find-group (current-screen) ".tag-store")))
+         (tag-store (find-group (current-screen) *tag-group-name*)))
     (loop for w in (screen-windows (current-screen)) 
-          do (if (cl-ppcre:scan regex (window-title w))
+          do (if (ppcre:scan regex (window-title w))
                  (move-window-to-group w current)
                  (move-window-to-group w tag-store)))))
 
@@ -214,5 +211,5 @@ in current group and only to them"
   (fclear)
   (let ((current (current-group (current-screen))))
     (loop for w in (screen-windows (current-screen)) 
-          do (when (cl-ppcre:scan regex (window-title w))
+          do (when (ppcre:scan regex (window-title w))
                (move-window-to-group w current)))))

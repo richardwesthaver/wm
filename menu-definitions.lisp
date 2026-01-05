@@ -229,7 +229,7 @@ a re-computation of the match."
             (setf (menu-table menu) (remove-if-not #'match-p (single-menu-unfiltered-table menu))
                   (menu-selected menu) 0)
             (bound-check-menu menu)))
-      (cl-ppcre:ppcre-syntax-error ()))))
+      (ppcre:ppcre-syntax-error ()))))
 
 (defmethod typing-action ((menu batch-menu) key-seq)
   "Mark the selected item with the character that was typed. If the character

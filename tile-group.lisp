@@ -23,7 +23,7 @@
 ;;; Code:
 (in-package #:wm)
 
-(define-swm-class tile-group (group)
+(define-wm-class tile-group (group)
   ((frame-tree :accessor tile-group-frame-tree)
    (last-frame :initform nil :accessor tile-group-last-frame)
    (current-frame :accessor tile-group-current-frame)))

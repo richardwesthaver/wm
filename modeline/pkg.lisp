@@ -9,11 +9,11 @@
            #:*acpi-thermal-zone*))
 
 (defpackage #:wm/battery
-  (:use :cl :wm :cl-ppcre)
+  (:use :cl :wm :ppcre)
   (:export #:*refresh-time* #:*prefer-sysfs*))
 
 (defpackage #:wm/net
-  (:use #:cl #:wm #:cl-ppcre #:net #:cli/tools/net)
+  (:use #:cl #:wm #:ppcre #:net #:cli/tools/net)
   (:export #:*net-device*))
 
 (defpackage #:wm/tray

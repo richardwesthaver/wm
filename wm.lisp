@@ -208,7 +208,6 @@ further up."
   (close-log))
 
 (defun wm-internal (display-str)
-  (dformat 0 "~A" display-str)
   (multiple-value-bind (host display screen protocol) (parse-display-string display-str)
     (declare (ignore screen))
     (setf *display* (xlib:open-display host :display display :protocol protocol)
@@ -218,8 +217,6 @@ further up."
       (unwind-protect
            (progn
              (let ((*initializing* t))
-               (ensure-data-dir)
-               (open-log)
                ;; we need to do this first because init-screen grabs keys
                (update-modifier-map)
                ;; Initialize all the screens
@@ -264,8 +261,8 @@ further up."
                (run-hook *start-hook*)
                (wm-internal-loop)))
         (close-resources))))
-  ;; what should the top level loop do?
   :quit)
+  
 
 (defun force-wm-restart (&key (close-display t))
   (when close-display
@@ -275,18 +272,18 @@ further up."
 ;; Usage: (start-wm)
 (defun start-wm (&optional (display-str (or (sb-posix:getenv "DISPLAY") ":0")))
   "Start the stump window manager."
+  (std:init :xdg)
+  (setf *data-dir* (default-data-dir))  
+  (ensure-data-dir)
+  (init-load-path *module-dir*)
+  (open-log)
   (set-signal-handler sb-posix:sighup
-    (dformat 0 "SIGHUP received: forcing immediate restart of wm~%") ;; debug level 0 to "force" logging
+    (dformat 0 "SIGHUP received: forcing immediate restart of wm~%")
     (force-wm-restart))
-  (dformat 0 "got here...")
   (let ((*in-main-thread* t))
-    (init :xdg)
-    (setf *data-dir* (default-data-dir))
-    (init-load-path *module-dir*)
-    (dformat 0 "loading complete...")
+    (dformat 10 "initialization complete~%")
     (loop
       (let ((ret (catch :top-level
-                   (dformat 0 "before WM-INTERNAL...")
                    (wm-internal display-str))))
         (setf *last-unhandled-error* nil)
         (cond ((and (consp ret)
@@ -303,5 +300,4 @@ further up."
                (run-hook *restart-hook*))
               (t
                (run-hook *quit-hook*)
-               ;; the number is the unix return code
-               (return-from start-wm 0)))))))
+               (sb-ext:exit :code 0)))))))

@@ -96,7 +96,7 @@
 (defun title-re-p (w tre)
   "Check whether the window title of the window w matches the regular
   expression tre."
-  (cl-ppcre:scan tre (window-title w)))
+  (ppcre:scan tre (window-title w)))
 
 (defun classed-p (w class)
   "Check whether the window class of the window w is equal to the string
@@ -106,7 +106,7 @@
 (defun class-re-p (w cre)
   "Check whether the window class of the window w matches the regular
   expression cre."
-  (cl-ppcre:scan cre (window-class w)))
+  (ppcre:scan cre (window-class w)))
 
 (defun typed-p (w type)
   "Check whether the window type of the window w is equal to the string
@@ -116,7 +116,7 @@
 (defun type-re-p (w tre)
   "Check whether the window type of the window w matches the regular
   expression tre."
-  (cl-ppcre:scan tre (window-type w)))
+  (ppcre:scan tre (window-type w)))
 
 (defun roled-p (w role)
   "Check whether the window role of the window w is equal to the string
@@ -126,7 +126,7 @@
 (defun role-re-p (w rre)
   "Check whether the window role of the window w matches the regular
   expression rre."
-  (cl-ppcre:scan rre (window-role w)))
+  (ppcre:scan rre (window-role w)))
 
 (defun resed-p (w res)
   "Check whether the window resource of the window w is equal to the
@@ -136,7 +136,7 @@
 (defun res-re-p (w rre)
   "Check whether the window resource of the window w matches the regular
   expression rre."
-  (cl-ppcre:scan rre (window-res w)))
+  (ppcre:scan rre (window-res w)))
 
 (defun grouped-p (w &optional name)
   "Check whether the window w belongs to the group name or the current

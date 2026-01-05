@@ -42,9 +42,10 @@ output directly to a file.")
     (multiple-value-bind (sec m h) (get-decoded-system-time)
       (format *debug-stream* "~2,'0d:~2,'0d:~2,'0d ~2,' d " h m sec level))
     ;; strip out non base-char chars quick-n-dirty like
-    (write-string (map 'string (lambda (ch)
-                                 (if (typep ch 'standard-char)
-                                     ch #\?))
+    (write-line (map 'string (lambda (ch)
+                               (if (typep ch 'standard-char)
+                                   ch 
+                                   #\?))
                        (apply 'format nil fmt args))
                   *debug-stream*)
     (force-output *debug-stream*)))

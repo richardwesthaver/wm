@@ -65,7 +65,6 @@
         :when head
           :collect head))
 
-
 (defun make-screen-heads (screen root)
   (declare (ignore screen))
   ;; Query for whether the server supports RANDR, if so, call the

@@ -305,8 +305,8 @@ modes are enabled in them, then nullify the list of objects."
   ;; This functions is needed because calling autoenable-minor-mode from within
   ;; a method that accesses slots is implied to be undefined behavior, so we
   ;; cant do this from within initialize-instance.
-  (let ((objects (prog1 (swm-class-new-objects (current-screen))
-                   (setf (swm-class-new-objects (current-screen)) nil))))
+  (let ((objects (prog1 (wm-class-new-objects (current-screen))
+                   (setf (wm-class-new-objects (current-screen)) nil))))
     (when (and objects *active-global-minor-modes*)
       (map nil #'sync-minor-modes objects))))
 
@@ -476,7 +476,7 @@ empty keymap."
                            (bind-it key m)
                            (setf curmap m)))))
                   (traverse-and-bind (seq)
-                    (loop for (key . rest) on (cl-ppcre:split " " seq)
+                    (loop for (key . rest) on (ppcre:split " " seq)
                           do (let ((bind (wm:lookup-key curmap
                                            (wm:kbd key))))
                                (attempt-binding key rest bind seq)))))
@@ -619,7 +619,7 @@ ROOT-MAP-SPEC."
              `(lambda (mode)
                 (declare (ignore mode))
                 ,(let ((split (remove-if (lambda (s) (string= s ""))
-                                         (cl-ppcre:split "-" (symbol-name mode)))))
+                                         (ppcre:split "-" (symbol-name mode)))))
                    (format nil "~{~A~^-~}" (case (length split)
                                              ((1) split)
                                              ((2) (nullgen split 3))
@@ -771,9 +771,9 @@ where the car is the scope designator and the cdr is the class with that scope."
 
 (defun validate-minor-mode-superclasses (superclasses)
   (flet ((validate (class)
-           (when (or (eq class 'swm-class)
-                     (superclassp class 'swm-class))
-             (error "The class ~A is not a valid superclass for minor modes~%as it descends from SWM-CLASS"
+           (when (or (eq class 'wm-class)
+                     (superclassp class 'wm-class))
+             (error "The class ~A is not a valid superclass for minor modes~%as it descends from WM-CLASS"
                     class))))
     (mapc #'validate superclasses)))
 

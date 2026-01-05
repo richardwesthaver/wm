@@ -104,7 +104,7 @@ the time these just gets in the way."
   (when-let ((reason (kbd-parse-error-reason c)))
     (format stream "~%Reason: ~A" reason)))
 
-(define-condition kbd-parse-error (stumpwm-error)
+(define-condition kbd-parse-error (wm-error)
   ((string :initarg :string)
    (reason :initarg :reason :reader kbd-parse-error-reason
 	   :initform nil))

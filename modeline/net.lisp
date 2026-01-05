@@ -44,7 +44,7 @@
       (loop :as line = (read-line file nil)
 	 :when (null line) :return nil
 	 :do
-	 (let ((split (cl-ppcre:split "\\s+" line)))
+	 (let ((split (ppcre:split "\\s+" line)))
 	   (when (and (string= (nth +destination+ split) +ipv4-zero+)
 		      (string= (nth +mask+ split) +ipv4-zero+)
 		      (logand (parse-integer (nth +flags+ split) :junk-allowed t) 2))

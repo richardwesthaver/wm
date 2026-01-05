@@ -65,7 +65,7 @@
 
 ;; The window definition remains unchanged, as at its core it is a tile
 ;; window. All we do is add a single tag.
-(define-swm-class dynamic-window (tile-window)
+(define-wm-class dynamic-window (tile-window)
   ((superfluous :initform nil
                 :accessor superfluous-window-tag)))
 
@@ -122,7 +122,7 @@ These values are used only upon the first instantiation of a dynamic group."
  :master-layout :left
  :default-split-ratio (/ 2 3))
 
-(define-swm-class dynamic-group (tile-group)
+(define-wm-class dynamic-group (tile-group)
   (;; Class allocated slots
    (head-placement-policy
     :reader dynamic-group-head-placement-policy

@@ -99,7 +99,7 @@ frames such that there are no numerical gaps."))
 that no longer belongs to any group) into the given group, defaults to searching
 the current screen"))
 
-(define-swm-class group ()
+(define-wm-class group ()
   ((screen :initarg :screen :accessor group-screen)
    (windows :initform nil :accessor group-windows)
    (current-window :initform nil :accessor group-current-window)
@@ -353,7 +353,7 @@ Groups are known as \"virtual desktops\" in the NETWM standard."
 (defun %ensure-group (group-name group-type screen)
   "If there is a group named with GROUP-NAME in SCREEN return it, otherwise create it."
   (or (find-group screen group-name)
-      (let ((group (make-swm-class-instance
+      (let ((group (make-wm-class-instance
                     group-type
                     :screen screen
                     :number (if (char= (char group-name 0) #\.)

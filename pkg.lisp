@@ -21,6 +21,7 @@
 ;;; Code:
 (defpackage :wm
   (:use #:cl #:std #:obj/meta/mix)
+  (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)
   (:shadow #:yes-or-no-p #:y-or-n-p)
@@ -173,9 +174,9 @@
    modifiers-hyper
    modifiers-numlock
    ;; Conditions
-   stumpwm-condition
-   stumpwm-error
-   stumpwm-warning
+   wm-condition
+   wm-error
+   wm-warning
    ;; Completion Options
    *maximum-completions*
    ;; Minor mode keymaps

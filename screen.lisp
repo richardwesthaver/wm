@@ -394,7 +394,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                                                :border-width 1
                                                :bit-gravity :north-east
                                                :event-mask '(:exposure)))
-           (screen (make-swm-class-instance
+           (screen (make-wm-class-instance
                     'screen
                     :id id
                     :host host
@@ -448,7 +448,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                                       :font (when (typep font 'xlib:font) font)
                                       :foreground fg-color
                                       :background bg-color))))
-           (group (make-swm-class-instance 'tile-group
+           (group (make-wm-class-instance 'tile-group
                                            :screen screen
                                            :number 1
                                            :name *default-group-name*)))

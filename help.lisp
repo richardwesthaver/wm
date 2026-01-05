@@ -212,9 +212,9 @@ Example:
            (command-equal (cmd)
              (cond ((and (stringp cmd) (stringp command))
                     (cond (match-partial-string
-                           (cl-ppcre:scan command cmd))
+                           (ppcre:scan command cmd))
                           (match-with-arguments
-                           (let ((els (cl-ppcre:split " " cmd)))
+                           (let ((els (ppcre:split " " cmd)))
                              (member command els :test #'string-equal)))
                           (t (string-equal cmd command))))
                    ((or (and (symbolp cmd) (symbolp command))
@@ -258,14 +258,14 @@ FIND-BINDING-IN-KMAP."
            (let ((longest1 0)
                  (longest2 0))
              (mapc (lambda (el)
-                     (let* ((final (lastcar (cl-ppcre:split " " (cadr el))))
+                     (let* ((final (lastcar (ppcre:split " " (cadr el))))
                             (l1 (length final))
                             (l2 (length (symbol-name (lastcar el)))))
                        (when (> l1 longest1) (setf longest1 l1))
                        (when (> l2 longest2) (setf longest2 l2))))
                    list)
              (mapcar (lambda (el)
-                       (let* ((final (lastcar (cl-ppcre:split " " (cadr el))))
+                       (let* ((final (lastcar (ppcre:split " " (cadr el))))
                               (l1 (length final))
                               (l2 (length (symbol-name (lastcar el)))))
                          (list (format nil "~S~A" final

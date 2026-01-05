@@ -6,7 +6,7 @@
   "Set this to T if you never want windows to resize based on incremental WM_HINTs,
 like xterm and emacs.")
 
-(define-swm-class tile-window (window)
+(define-wm-class tile-window (window)
   ((frame   :initarg :frame   :accessor window-frame :type frame)
    (normal-size :initform nil :accessor window-normal-size)))
 

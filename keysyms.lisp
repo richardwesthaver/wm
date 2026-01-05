@@ -198,7 +198,7 @@
  #xffee ; "Hyper_R"        ;Right hyper
  #xfe01 ; "ISO_Lock"
  #xfe02 ; "ISO_Level2_Latch"
- #xfe03 ; "ISO_Level3_Shift"
+ #xfe03 ; "ISO_Level3"
  #xfe04 ; "ISO_Level3_Latch"
  #xfe05 ; "ISO_Level3_Lock"
  #xff7e ; "ISO_Group_Shift" ;Alias for mode_switch

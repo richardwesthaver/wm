@@ -1,6 +1,6 @@
 ;;; ~/comp/ext/stumpwm/contrib/util/util.asd --- Util Sytem Definitions
 (defsystem :util
-  :depends-on (:std :swank :wm :dat :xlib :xlib/truetype :cl-ppcre)
+  :depends-on (:std :swank :wm :dat :xlib :xlib/truetype :ppcre)
   :components ((:file "pkg")
                (:file "golden-ratio")
                (:file "beckon")
@@ -15,8 +15,4 @@
                (:file "ttf-fonts")
                (:file "windowtags")
                (:file "urgentwindows")
-               (:module "winner-mode"
-                :components ((:file "variables")
-                             (:file "macros")
-                             (:file "dumper")
-                             (:file "winner-mode")))))
+               (:file "winner")))

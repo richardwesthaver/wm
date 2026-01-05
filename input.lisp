@@ -207,7 +207,7 @@ Available completion styles include
       (= (xlib:keycode->keysym *display* keycode 0) 0)))
 
 (defun register-altgr-as-modifier ()
-  "Register the keysym(s) for ISO_Level3_Shift as modifiers."
+  "Register the keysym(s) for ISO_Level3 as modifiers."
   (setf *all-modifiers*
         (append (multiple-value-list
                  (xlib:keysym->keycodes *display*
@@ -873,7 +873,7 @@ input (pressing Return), nil otherwise."
                      (push mod (modifiers-hyper modifiers)))
                     ((find-mod "Num_Lock" codes)
                      (push mod (modifiers-numlock modifiers)))
-                    ((find-mod "ISO_Level3_Shift" codes)
+                    ((find-mod "ISO_Level3" codes)
                      (push mod (modifiers-altgr modifiers)))))
         ;; If alt is defined but meta isn't set meta to alt and clear alt
         (when (and (modifiers-alt modifiers)
