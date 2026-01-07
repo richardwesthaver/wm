@@ -30,7 +30,7 @@
   (:export
    :*command-history-file*))
 
-(defpackage #:wm/globalwindows
+(defpackage #:wm/windows
   (:use #:cl :wm)
   (:import-from 
    :wm
@@ -51,33 +51,25 @@
    :tile-group-current-frame
    :window-frame
    :window-group
-   :window-name))
-
-(defpackage #:wm/kbd-layouts
-  (:use #:cl #:wm #:io/kbd)
-  (:export 
-   #:*caps-lock-behavior*
-   #:*custom-setxkb-options*
-   #:*run-xmodmap*
-   #:keyboard-layout-list))
-
-(defpackage #:wm/perwindowlayout
-  (:use #:cl :wm)
-  (:export 
-   #:*emacs-toggle-input-method-key*
-   #:switch-window-layout
-   #:enable-per-window-layout
-   #:disable-per-window-layout))
+   :window-name
+   :*urgent-window-hook* :gselect
+   :message-no-timeout :really-raise-window
+   :window-title
+   ;; string wrappers for tag data storage
+   #:utf8-to-string
+   ;; groups
+   #:find-group)
+  ;; global
+  (:export
+   :goto-window :with-global-windowlist
+   :global-windowlist :global-pull-windowlist)
+  ;; urgent
+  (:export :raise-urgent :*urgent-window-message*)
+  ;; tags
+  (:export :window-tags :clear-tags))
 
 (defpackage #:wm/screenshot
   (:use #:cl :wm :dat/png))
-
-(defpackage #:wm/spatial-groups
-  (:use #:cl #:wm)
-  (:export 
-   :*spatial-banish-on-move*
-   :spatial-gselect
-   :install-default-keybinds))
 
 (defpackage #:wm/gaps
   (:use #:cl :wm)
@@ -101,25 +93,6 @@
    :font-descent
    :text-line-width
    :draw-image-glyphs))
-
-(defpackage #:wm/windowtags
-  (:use #:cl #:wm)
-  (:import-from #:wm
-                ;; string wrappers for tag data storage
-                #:utf8-to-string
-                ;; groups
-                #:find-group
-                ;; switching windows
-                #:really-raise-window)
-  (:export :window-tags :clear-tags))
-
-(defpackage #:wm/urgentwindows
-  (:use #:cl :wm)
-  (:import-from :wm
-   :*urgent-window-hook* :gselect
-   :message-no-timeout :really-raise-window
-   :window-group :window-title)
-  (:export :raise-urgent :*urgent-window-message*))
 
 (defpackage #:wm/winner-mode
   (:use :cl)

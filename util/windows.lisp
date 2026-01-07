@@ -1,26 +1,103 @@
-;;; windowtags.lisp
-
-;; Copyright 2009 Michael Raskin
+;;; util/windows.lisp --- Window Utils
 
 ;;; Code:
-(in-package #:wm/windowtags)
+(in-package #:wm/windows)
 
+;;; Global Windows
+(defun global-windows ()
+  "Returns a list of the names of all the windows in the current screen."
+  (let ((groups (sort-groups (current-screen)))
+        (windows nil))
+    (dolist (group groups)
+      (dolist (window (group-windows group))
+        ;; Don't include the current window in the list
+        (when (not (eq window (current-window)))
+          (push window windows))))
+    windows))
+
+(defun goto-window (window)
+  "Raise the window win and select its frame.  For now, it does not
+select the screen."
+  (let* ((group (window-group window))
+         (frame (window-frame window))
+         (old-frame (tile-group-current-frame group)))
+    (frame-raise-window group frame window)
+    (focus-all window)
+    (unless (eq frame old-frame)
+      (show-frame-indicator group))))
+
+(define-stumpwm-type :global-window-names (input prompt)
+  (labels
+      ((global-window-names ()
+         (mapcar (lambda (window) (window-name window)) (global-windows))))
+    (or (argument-pop input)
+        (completing-read (current-screen) prompt (global-window-names)))))
+
+(defmacro with-global-windowlist (name docstring &rest args)
+ `(defcommand ,name (&optional (fmt *window-format*)) (:rest)
+   ,docstring
+   (let ((global-windows-list (global-windows)))
+     (labels
+         ((sort-windows (windowlist)
+            (sort1 windowlist 'string-lessp :key 'window-name)))
+       (if (null global-windows-list)
+           (wm-message "No other windows on screen ;)")
+           (let ((window (select-window-from-menu (sort-windows global-windows-list) fmt)))
+             (when window
+               (progn ,@args))))))))
+
+(with-global-windowlist global-windowlist "Like windowlist, but for all groups not just the current one."
+  (goto-window window))
+
+(with-global-windowlist global-pull-windowlist
+  "Global windowlist for pulling windows to the current frame."
+  (when (not (equalp (window-group window)
+                     (current-group)))
+    (move-window-to-group window (current-group)))
+  (pull-window window))
+
+;;; Urgent Windows
+(defvar *urgent-windows-stack* nil
+  "Stack of windows gone urgent. After activating a window from the stack,
+ it goes off the stack")
+
+(defvar *urgent-window-message* "~a needs your attention."
+  "Message template to be displayed to grab user's attention")
+
+(defun echo-urgent-window (target)
+  (message-no-timeout *urgent-window-message* (window-title target))
+  (push target *urgent-windows-stack*))
+
+(add-wm-hook *urgent-window-hook* 'echo-urgent-window)
+
+(defun raise-urgent-window ()
+  (let ((last-urgent (pop *urgent-windows-stack*)))
+    (when last-urgent
+      (gselect (group-name (window-group last-urgent)))
+      (really-raise-window last-urgent))))
+
+(defcommand raise-urgent () ()
+  "Raise urgent window"
+  (raise-urgent-window))
+
+;;; Window Tags
+;; Copyright 2009 Michael Raskin
 (defvar *tag-group-name* ".tag-store")
 
 ;; String parsing for commands
 (defun string-split-by-spaces (x)
   (if (not x) nil 
       (if (listp x) (mapcar 'string-upcase x)
-	  (ppcre:split " " (string-upcase x)))))
+          (ppcre:split " " (string-upcase x)))))
 
 ;; Basic operations
 (defcommand window-tags (&optional (argwin nil)) ()
   "Show window tags"
   (let* ((win (or argwin (current-window)))
-	 (tags (xlib:get-property (window-xwin win) :WM_TAGS))
-	 (tagstring (utf8-to-string tags))
-	 (taglist 
-	   (if tags (string-split-by-spaces tagstring) nil)))
+         (tags (xlib:get-property (window-xwin win) :WM_TAGS))
+         (tagstring (utf8-to-string tags))
+         (taglist 
+           (if tags (string-split-by-spaces tagstring) nil)))
     (if argwin taglist (wm-message "Tags: ~{~%~a~}" taglist))))
 
 (defun (setf window-tags) (newtags &optional (argwin nil))
@@ -70,12 +147,12 @@
      "Window list: ~{~%~{[ ~a ] ( ~a | ~a | ~a ) ~% ->~{~a, ~}~}~}"
      (mapcar
       (lambda (x)
-	(list
-	 (window-title x)
-	 (window-class x)
-	 (window-res x)
-	 (window-role x)
-	 (window-tags x)))
+        (list
+         (window-title x)
+         (window-class x)
+         (window-res x)
+         (window-role x)
+         (window-tags x)))
       (screen-windows (current-screen))))))
 
 ;; Selection of tags and windows by tags
@@ -145,17 +222,17 @@ remaining windows will have packed numbers"
   (mapcar
    (lambda (x) 
      (let* 
-	 ((num (window-number-from-tag x))
-	  (occupied (mapcar 'window-number (group-windows (current-group)))))
+         ((num (window-number-from-tag x))
+          (occupied (mapcar 'window-number (group-windows (current-group)))))
        (if (and num (not (find num occupied)))
-	   (setf (window-number x) num))))
+           (setf (window-number x) num))))
    (group-windows (current-group)))
   ;; Give up and give smallest numbers possible
   (repack-window-numbers 
    (mapcar 'window-number
-	   (remove-if-not 
-	    (lambda (x) (equalp (window-number x) (window-number-from-tag x)))
-	    (group-windows (current-group))))))
+           (remove-if-not 
+            (lambda (x) (equalp (window-number x) (window-number-from-tag x)))
+            (group-windows (current-group))))))
 
 (defcommand tag-visible (&optional (argtags nil)) (:rest)
   "IN-CURRENT-GROUP or another specified tag will be assigned to all windows
@@ -169,14 +246,14 @@ in current group and only to them"
   (let*
       ((window (car (select-by-tags tag))))
     (if window
-	(progn
-	  (if (groups)
+        (progn
+          (if (groups)
               (progn
                 (move-windows-to-group (list window))
                 (really-raise-window window))
               (raise-window window))
-	  window)
-	nil)))
+          window)
+        nil)))
 
 (defcommand search-tag (tag-regex) ((:rest "Tag regex to select: "))
   (only)
@@ -213,3 +290,4 @@ in current group and only to them"
     (loop for w in (screen-windows (current-screen)) 
           do (when (ppcre:scan regex (window-title w))
                (move-window-to-group w current)))))
+
