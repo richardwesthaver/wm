@@ -16,8 +16,8 @@
 
 ;; Defaults arguments for fmt-mem-usage-bar
 (defvar *mem-usage-bar-width* 10)
-(defvar *mem-usage-bar-full* #\#)
-(defvar *mem-usage-bar-empty* #\:)
+(defvar *mem-usage-bar-full* #\*)
+(defvar *mem-usage-bar-empty* #\.)
 
 (defun get-proc-fd-field (s field)
   (if s
@@ -49,7 +49,7 @@ total amount of memory, allocated memory, allocated/total ratio"
 (defun fmt-mem-percent (mem)
   "Returns a string representing the current percent of used memory."
   (let* ((% (truncate (* 100 (nth 2 mem)))))
-    (format nil "^[~A~3D%^] " (bar-zone-color %) %)))
+    (format nil "^[~A~2D%^]" (bar-zone-color %) %)))
 
 (defun fmt-mem-usage-bar (mem)
   "Returns a coloured bar-graph representing the current allocation of memory."

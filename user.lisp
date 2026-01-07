@@ -194,7 +194,7 @@ such a case, kill the shell command to resume StumpWM."
 
 (defcommand-alias abort keyboard-quit)
 
-(defcommand wm-quit () ()
+(defcommand quit-wm () ()
   "Quit StumpWM."
   (throw :top-level :quit))
 
@@ -204,7 +204,7 @@ such a case, kill the shell command to resume StumpWM."
                         "You are about to quit the window manager to TTY."
                         "Really ^1^Bquit^b^n ^B^2StumpWM^n^b?"
                         "^B^6Confirm?^n "))
-      (wm-quit)
+      (quit-wm)
       (xlib:unmap-window (screen-message-window (current-screen)))))
 
 (defcommand restart-soft () ()

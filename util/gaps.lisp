@@ -1,4 +1,6 @@
-;;; swm-gaps.lisp
+;;; wm-gaps.lisp --- WM Window Gaps
+
+;;; Code:
 (in-package #:wm/gaps)
 
 (defvar *inner-gaps-size* 5)

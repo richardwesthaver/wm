@@ -16,7 +16,7 @@
 ;; Defaults arguments for fmt-cpu-usage-bar
 (defvar *cpu-usage-bar-width* 10)
 (defvar *cpu-usage-bar-full* #\#)
-(defvar *cpu-usage-bar-empty* #\:)
+(defvar *cpu-usage-bar-empty* #\.)
 
 (defvar *prev-user-cpu* 0)
 (defvar *prev-sys-cpu* 0)
@@ -30,7 +30,7 @@
 (defvar *cpu-temp-hi* 75)
 (defvar *cpu-temp-crit* 90)
 
-(defvar *cpu-usage-modeline-fmt* "^[~A~3D%^] "
+(defvar *cpu-usage-modeline-fmt* "^[~A~2D%^]"
   "The default formatting for CPU usage")
 
 ;; More or less yanked from the wiki.
@@ -168,7 +168,7 @@ utilization."
     (#\r  fmt-cpu-freq-range)
     (#\t  fmt-cpu-temp)))
 
-(defvar *cpu-modeline-fmt* "cpu%c%C"
+(defvar *cpu-modeline-fmt* "cpu:%c%C"
   "The default value for displaying cpu information on the modeline.
 
 - %% :: A literal '%'

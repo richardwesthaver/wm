@@ -15,7 +15,7 @@
 
 (defvar *current-event-time* nil)
 
-(defmacro define-stump-event-handler (event keys &body body)
+(defmacro define-wm-event-handler (event keys &body body)
   (let ((event-slots (gensym)))
     (multiple-value-bind (body declarations docstring)
         (parse-body body :documentation t)
@@ -72,13 +72,13 @@
       (when (has-bw value-mask)
         (setf (xlib:drawable-border-width xwin) border-width)))))
 
-(define-stump-event-handler :configure-request (stack-mode #|parent|# window #|above-sibling|# x y width height border-width value-mask)
+(define-wm-event-handler :configure-request (stack-mode #|parent|# window #|above-sibling|# x y width height border-width value-mask)
   (dformat 3 "CONFIGURE REQUEST ~@{~S ~}~%" stack-mode window x y width height border-width value-mask)
   (if-let ((win (find-window window)))
     (configure-managed-window win x y width height stack-mode value-mask)
     (configure-unmanaged-window window x y width height border-width value-mask)))
 
-(define-stump-event-handler :configure-notify (stack-mode #|parent|# window #|above-sibling|# x y width height border-width value-mask)
+(define-wm-event-handler :configure-notify (stack-mode #|parent|# window #|above-sibling|# x y width height border-width value-mask)
   (dformat 4 "CONFIGURE NOTIFY ~@{~S ~}~%" stack-mode window x y width height border-width value-mask)
   (when-let ((screen (find-screen window)))
     (let ((old-heads (screen-heads screen))
@@ -93,7 +93,7 @@
                     (update-mode-lines screen))
              (dformat 1 "Invalid configuration! ~S~%" new-heads)))))))
 
-(define-stump-event-handler :map-request (parent send-event-p window)
+(define-wm-event-handler :map-request (parent send-event-p window)
   (unless send-event-p
     ;; This assumes parent is a root window and it should be.
     (dformat 3 "map request: ~a ~a ~a~%" window parent (find-window window))
@@ -124,7 +124,7 @@
            (let ((window (process-mapped-window screen window)))
              (group-raise-request (window-group window) window :map))))))))
 
-(define-stump-event-handler :unmap-notify (send-event-p event-window window #|configure-p|#)
+(define-wm-event-handler :unmap-notify (send-event-p event-window window #|configure-p|#)
   ;; There are two kinds of unmap notify events: the straight up
   ;; ones where event-window and window are the same, and
   ;; substructure unmap events when the event-window is the parent
@@ -141,7 +141,7 @@
             (decf (window-unmap-ignores window)))
           (withdraw-window window)))))
 
-(define-stump-event-handler :destroy-notify (send-event-p event-window window)
+(define-wm-event-handler :destroy-notify (send-event-p event-window window)
   (unless (or send-event-p
               (xlib:window-equal event-window window))
     ;; Ignore structure destroy notifies and only
@@ -243,7 +243,7 @@ kmap."
   which will take precedence over the keymap based handler defined in
   the default :KEY-PRESS event handler.")
 
-(define-stump-event-handler :key-press (code state #|window|#)
+(define-wm-event-handler :key-press (code state #|window|#)
   (labels ((get-cmd (code state)
              (with-focus (screen-key-window (current-screen))
                (handle-keymap (top-maps) code state nil t nil))))
@@ -360,7 +360,7 @@ converted to an atom is removed."
           ;; FIXME: what about when properties are REMOVED?
           (update-fullscreen window 1)))))))
 
-(define-stump-event-handler :property-notify (window atom state)
+(define-wm-event-handler :property-notify (window atom state)
   (dformat 2 "property notify ~s ~s ~s~%" window atom state)
   (case atom
     (:rp_command_request
@@ -380,20 +380,20 @@ converted to an atom is removed."
      (when-let ((window (find-window window)))
        (update-window-properties window atom)))))
 
-(define-stump-event-handler :mapping-notify (request start count)
+(define-wm-event-handler :mapping-notify (request start count)
   ;; We could be a bit more intelligent about when to update the
   ;; modifier map, but I don't think it really matters.
   (xlib:mapping-notify *display* request start count)
   (update-modifier-map)
   (sync-keys))
 
-(define-stump-event-handler :selection-request (requestor property selection target time)
+(define-wm-event-handler :selection-request (requestor property selection target time)
   (send-selection requestor property selection target time))
 
-(define-stump-event-handler :selection-clear (selection)
+(define-wm-event-handler :selection-clear (selection)
   (setf (getf *x-selection* selection) nil))
 
-(define-stump-event-handler :selection-notify (window property selection)
+(define-wm-event-handler :selection-notify (window property selection)
   (dformat 2 "selection-notify: ~s ~s ~s~%" window property selection)
   (when property
     (let* ((selection (or selection :primary))
@@ -424,7 +424,7 @@ converted to an atom is removed."
                   x (+ y height)
                   (+ x width) y))
 
-(define-stump-event-handler :exposure (window x y width height count)
+(define-wm-event-handler :exposure (window x y width height count)
   (let (screen ml)
     (when (zerop count)
       (cond
@@ -443,7 +443,7 @@ converted to an atom is removed."
       (when (and *debug-expose-events* screen)
         (draw-cross screen window x y width height)))))
 
-(define-stump-event-handler :reparent-notify (window parent)
+(define-wm-event-handler :reparent-notify (window parent)
   (let ((win (find-window window)))
     (when (and win
                (not (xlib:window-equal parent (window-parent win))))
@@ -503,10 +503,10 @@ converted to an atom is removed."
             (echo-string (window-screen window) (format nil "'~a' denied raise request in group ~a" (window-name window) (group-name (window-group window))))))
       (focus-all window)))
 
-(define-stump-event-handler :client-message (window type #|format|# data)
+(define-wm-event-handler :client-message (window type #|format|# data)
   (dformat 2 "client message: ~s ~s~%" type data)
   (case type
-    (:_NET_CURRENT_DESKTOP              ;switch desktop
+    (:_NET_CURRENT_DESKTOP ;switch desktop
      (let* ((screen (find-screen window))
             (n (elt data 0))
             (group (and screen
@@ -514,7 +514,7 @@ converted to an atom is removed."
                         (elt (sort-groups screen) n))))
        (when group
          (switch-to-group group))))
-    (:_NET_WM_DESKTOP                   ;move window to desktop
+    (:_NET_WM_DESKTOP ;move window to desktop
      (let* ((our-window (find-window window))
             (screen (when our-window
                       (window-screen our-window)))
@@ -528,7 +528,7 @@ converted to an atom is removed."
      (let ((our-window (find-window window))
            (source (elt data 0)))
        (when our-window
-         (if (= source 2)               ;request is from a pager
+         (if (= source 2) ;request is from a pager
              (focus-all our-window)
              (maybe-raise-window our-window)))))
     (:_NET_CLOSE_WINDOW
@@ -563,10 +563,10 @@ converted to an atom is removed."
   (t
    (dformat 2 "ignored message~%"))))
 
-(define-stump-event-handler :focus-out (window mode kind)
+(define-wm-event-handler :focus-out (window mode kind)
   (dformat 5 "~@{~s ~}~%" window mode kind))
 
-(define-stump-event-handler :focus-in (window mode kind)
+(define-wm-event-handler :focus-in (window mode kind)
   (let ((win (find-window window)))
     (when (and win (eq mode :normal) (not (eq kind :pointer)))
       (let ((screen (window-screen win)))
@@ -574,7 +574,6 @@ converted to an atom is removed."
           (setf (screen-focus screen) win))))))
 
 ;;; Mouse focus
-
 (defun focus-all (win)
   "Focus the window, frame, group and screen belonging to WIN. Raise
 the window in it's frame."
@@ -585,7 +584,7 @@ the window in it's frame."
       (switch-to-group group)
       (group-focus-window (window-group win) win))))
 
-(define-stump-event-handler :enter-notify (window mode)
+(define-wm-event-handler :enter-notify (window mode)
   (when (and window (eq mode :normal) (eq *mouse-focus-policy* :sloppy))
     (let ((win (find-window window)))
       (when (and win (find win (top-windows)))
@@ -614,7 +613,7 @@ the window in it's frame."
 (defvar *button-state* nil
   "Modifier state keys for button presses.")
 
-(define-stump-event-handler :button-press (window state code x y child time)
+(define-wm-event-handler :button-press (window state code x y child time)
   (let ((button (decode-button-code code))
         (screen (find-screen window))
         (mode-line (find-mode-line-by-window window))

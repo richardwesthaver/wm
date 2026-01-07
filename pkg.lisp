@@ -452,9 +452,9 @@
    minor-mode-enabled-p
    find-minor-mode
    generate-keymap
-   wm-quit))
+   quit-wm))
 
-(defpackage :wm-user
+(std:defpkg :wm-user
   (:shadowing-import-from :wm :completing-read)
-  (:use #:std-lisp #:wm #:cli #:obj #:log #:net #:io))
+  (:use #:core-lisp #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
 

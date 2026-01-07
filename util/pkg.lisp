@@ -8,7 +8,7 @@
   (:export :*golden-ratio* :*golden-ratio-on* :toggle-golden-ratio))
 
 (defpackage #:wm/clipboard
-  (:use #:cl)
+  (:use #:cl #:wm)
   (:export 
    #:start-clipboard-manager
    #:stop-clipboard-manager
@@ -89,7 +89,3 @@
    :font-descent
    :text-line-width
    :draw-image-glyphs))
-
-(defpackage #:wm/winner-mode
-  (:use :cl)
-  (:export :winner-undo :winner-redo :*tmp-folder* :dump-group-to-file :*default-commands*))

@@ -8,5 +8,4 @@
                (:file "screenshot")
                (:file "gaps")
                (:file "ttf-fonts")
-               (:file "windows")
-               (:file "winner")))
+               (:file "windows")))

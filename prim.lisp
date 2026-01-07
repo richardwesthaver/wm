@@ -69,6 +69,42 @@ appear for. This must be an integer. If falsy, default to *timeout-wait*.")
   "The background color of the grabbed pointer.")
 
 ;;; Hooks
+#+nil
+(defhook *wm-hooks*
+  ((:command-mode-start '(command-mode-start-message))
+   (:command-mode-end '(command-mode-end-message))
+   (:urgent-window)
+   (:map-window)
+   (:unmap-window)
+   (:new-window)
+   (:destroy-window)
+   (:focus-window)
+   (:place-window)
+   (:pre-thread)
+   (:start)
+   (:quit)
+   (:restart)
+   (:internal-loop)
+   (:event-processing)
+   (:new-frame)
+   (:focus-frame)
+   (:split-frame)
+   (:remove-split)
+   (:message)
+   (:top-level-error)
+   (:focus-group)
+   (:key-press)
+   (:root-click)
+   (:click)
+   (:new-mode-line)
+   (:destroy-mode-line)
+   (:mode-line-click)
+   (:pre-command)
+   (:post-command)
+   (:selection-notify)
+   (:menu-selection)
+   (:new-head)))
+
 (defvar *command-mode-start-hook* '(command-mode-start-message)
   "A hook called whenever command mode is started.")
 
@@ -198,7 +234,7 @@ with 1 argument: the menu.")
   "A hook called whenever a head is added. It is called with 2 arguments: the
  new head and the current screen.")
 
-;; Data types and globals used by stumpwm
+;; Data types and globals used by wm
 (defvar *display* nil
   "The display for the X server")
 
@@ -306,32 +342,28 @@ Include only those we are ready to support.")
 (defvar *message-window-gravity* :top-right
   "This variable controls where the message window appears. The following
 are valid values.
-@table @asis
-@item :top-left
-@item :top-right
-@item :bottom-left
-@item :bottom-right
-@item :center
-@item :top
-@item :left
-@item :right
-@item :bottom
-@end table")
+:top-left
+:top-right
+:bottom-left
+:bottom-right
+:center
+:top
+:left
+:right
+:bottom")
 
 (defvar *message-window-input-gravity* :top-left
   "This variable controls where the message window appears
 when the input window is being displayed. The following are valid values.
-@table @asis
-@item :top-left
-@item :top-right
-@item :bottom-left
-@item :bottom-right
-@item :center
-@item :top
-@item :left
-@item :right
-@item :bottom
-@end table")
+:top-left
+:top-right
+:bottom-left
+:bottom-right
+:center
+:top
+:left
+:right
+:bottom")
 
 ;; line editor
 (defvar *editor-bindings* nil
@@ -340,17 +372,15 @@ when the input window is being displayed. The following are valid values.
 (defvar *input-window-gravity* :top-right
   "This variable controls where the input window appears. The following
 are valid values.
-@table @asis
-@item :top-left
-@item :top-right
-@item :bottom-left
-@item :bottom-right
-@item :center
-@item :top
-@item :left
-@item :right
-@item :bottom
-@end table")
+:top-left
+:top-right
+:bottom-left
+:bottom-right
+:center
+:top
+:left
+:right
+:bottom")
 
 ;; default values. use the set-* functions to these attributes
 (defparameter +default-foreground-color+ "White")
@@ -379,7 +409,7 @@ and to *standard-output*.
 Valid values are :message, :break, :abort. :break will break to the
 debugger. This can be problematic because if the user hit's a
 mapped key the ENTIRE keyboard will be frozen and you will have
-to login remotely to regain control. :abort quits stumpwm.")
+to login remotely to regain control. :abort quits wm.")
 
 (defvar *window-name-source* :title
   "This variable controls what is used for the window's name. The default is @code{:title}.
@@ -540,6 +570,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
 (define-wm-class screen ()
   ((id :initarg :id :reader screen-id)
    (host :initarg :host :reader screen-host)
+   ;; ??? holds an actual screen
    (number :initarg :number :reader screen-number)
    (heads :initform () :accessor screen-heads)
    (groups :initform () :accessor screen-groups)

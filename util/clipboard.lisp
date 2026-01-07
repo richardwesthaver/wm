@@ -1,3 +1,6 @@
+;;; util/clipboard.lisp --- WM Clipboard Support
+
+;;; Code:
 (in-package #:wm/clipboard)
 
 (defmacro push-max-stack (stack val max-depth)
@@ -60,7 +63,6 @@
     (wm:cancel-timer *clipboard-timer*)
     (setq *clipboard-timer* nil)))
 
-
 (defvar *clipboard-poll-timeout* 5)
 
 (defun start-clipboard-manager ()
@@ -70,7 +72,6 @@
                                    (mod (get-decoded-time) *clipboard-poll-timeout*))
                                 *clipboard-poll-timeout*
                                 'poll-clipboard-selection)))
-
 
 (defmethod std:init ((self (eql :wm/clipboard)) &key)
   (start-clipboard-manager))
