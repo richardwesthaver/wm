@@ -1,3 +1,6 @@
+;;; replace-class.lisp --- WM REPLACE-CLASS Mixin
+
+;;; Code:
 (in-package :wm)
 
 (defmethod replace-class-in-mixin ((object mixin-object)

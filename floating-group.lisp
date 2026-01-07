@@ -1,9 +1,11 @@
-;;; implementation of a floating style window management group
+;;; floating-group.lisp --- Floating WM Groups
 
+;; implementation of a floating style window management group
+
+;;; Code:
 (in-package #:wm)
 
 ;;; floating window
-
 (define-wm-class float-window (window)
   ((last-width :initform 0 :accessor float-window-last-width)
    (last-height :initform 0 :accessor float-window-last-height)
@@ -139,7 +141,6 @@
   (raise-window window))
 
 ;;; floating group
-
 (define-wm-class float-group (group)
   ((current-window :accessor float-group-current-window)))
 
@@ -417,7 +418,6 @@
     (call-next-method)))
 
 ;;; Bindings
-
 (defvar *float-group-top-map* nil)
 (defvar *float-group-root-map* nil
   "Commands specific to a floating group context hang from this keymap.

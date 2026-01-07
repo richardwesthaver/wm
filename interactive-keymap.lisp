@@ -1,20 +1,6 @@
+;;; interactive-keymap.lisp --- Interactive Commands
+
 ;; Copyright (C) 2016, 2017 Caio Oliveira
-
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -46,9 +32,9 @@ the keymap on keypress. "
                                                      (kbd "C-g"))))
      &body key-bindings)
   "Declare an interactive keymap mode. This can be used for developing
-interactive modes or command trees, such as @command{iresize}.
+interactive modes or command trees, such as IRESIZE.
 
-The NAME argument follows the same convention as in @command{defcommand}.
+The NAME argument follows the same convention as in DEFCOMMAND.
 
 ON-ENTER and ON-EXIT are optional functions to run before and after the
 interactive keymap mode, respectively. If ABORT-IF is defined, the interactive

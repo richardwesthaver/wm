@@ -7,16 +7,6 @@
   (:use #:cl #:wm)
   (:export :*golden-ratio* :*golden-ratio-on* :toggle-golden-ratio))
 
-(defpackage #:wm/beckon
-  (:use #:cl)
-  (:import-from 
-   #:wm 
-   #:defcommand 
-   #:window-frame 
-   #:ratwarp #:current-window #:frame-x #:frame-y 
-   #:frame-height #:frame-width)
-  (:export #:beckon #:*window-height-fraction* #:*window-width-fraction*))
-
 (defpackage #:wm/clipboard
   (:use #:cl)
   (:export 
@@ -58,7 +48,11 @@
    ;; string wrappers for tag data storage
    #:utf8-to-string
    ;; groups
-   #:find-group)
+   #:find-group
+   #:defcommand 
+   #:ratwarp 
+   #:frame-x #:frame-y 
+   #:frame-height #:frame-width)
   ;; global
   (:export
    :goto-window :with-global-windowlist
@@ -66,7 +60,9 @@
   ;; urgent
   (:export :raise-urgent :*urgent-window-message*)
   ;; tags
-  (:export :window-tags :clear-tags))
+  (:export :window-tags :clear-tags)
+  ;; beckon
+  (:export #:beckon #:*window-height-fraction* #:*window-width-fraction*))
 
 (defpackage #:wm/screenshot
   (:use #:cl :wm :dat/png))

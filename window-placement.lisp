@@ -1,5 +1,6 @@
-;;; Window placement routines
+;;; window-placement.lisp --- WM Window Placement
 
+;;; Code:
 (in-package :wm)
 
 (defun xwin-to-window (xwin)

@@ -1,26 +1,12 @@
+;;; color.lisp --- WM Color Support
+
 ;; Copyright (C) 2007-2008 Jonathan Moore Liles
 ;; Copyright (C) 2014 Joram Schrijver
 
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
-
 ;;; Commentary:
 
-;; A change in color, or presentation in general, is started by a ^. If that
-;; ^ is followed by a single number, that's taken as the index into the color
+;; A change in color, or presentation in general, is started by a ^. If that ^
+;; is followed by a single number, that's taken as the index into the color
 ;; map to be set as the foreground color. If the ^ is followed by two numbers,
 ;; the first is taken as the index of the foreground color, and the second as
 ;; the index of the background color. Either of those can also be *, which
@@ -52,6 +38,8 @@
 ;;      used. In a string you'll probably only want to specify an integer.
 ;;    - :> takes no arguments. It triggers right-alignment for the rest of the
 ;;      line.
+
+;;; Code:
 (in-package :wm)
 
 (defvar *colors*

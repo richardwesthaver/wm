@@ -1,20 +1,6 @@
+;;; kmap.lisp --- WM Keymaps
+
 ;; Copyright (C) 2003-2008 Shawn Betts
-
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -25,12 +11,12 @@
 
 (defvar *top-map* nil
   "The top level key map. This is where you'll find the binding for the
-@dfn{prefix map}.")
+prefix map.")
 
 (defvar *root-map* nil
-  "This is the keymap by default bound to @kbd{C-t} (along with 
+  "This is the keymap by default bound to C-t (along with 
  *group-root-map* and either *tile-group-root-map*, *float-group-root-map*,
- or *dynamic-group-map*). It is known as the @dfn{prefix map}.")
+ or *dynamic-group-map*). It is known as the prefix map.")
 
 (defvar *key-seq-color* "^5"
   "Color of a keybinding when displayed in windows such as the prefix
@@ -48,18 +34,18 @@ keybinding in the which-key window.")
 (defun make-sparse-keymap ()
   "Create an empty keymap. If you want to create a new list of bindings
 in the key binding tree, this is where you start. To hang frame
-related bindings off @kbd{C-t C-f} one might use the following code:
+related bindings off 'C-t C-f' one might use the following code:
 
-@example
-\(defvar *my-frame-bindings*
+Example:
+
+(defvar *my-frame-bindings*
   (let ((m (wm:make-sparse-keymap)))
     (wm:define-key m (wm:kbd \"f\") \"curframe\")
     (wm:define-key m (wm:kbd \"M-b\") \"move-focus left\")
     m ; NOTE: this is important
   ))
 
-\(wm:define-key wm:*root-map* (wm:kbd \"C-f\") '*my-frame-bindings*)
-@end example"
+(wm:define-key wm:*root-map* (wm:kbd \"C-f\") '*my-frame-bindings*)"
   (make-kmap))
 
 (defun lookup-command (keymap command)
@@ -85,9 +71,9 @@ related bindings off @kbd{C-t C-f} one might use the following code:
 
 (defun x11-mods (key &optional with-numlock with-capslock)
   "Return the modifiers for key in a format that xlib understands. if
-WITH-NUMLOCK is non-nil then include the numlock modifier. if
-WITH-CAPSLOCK is non-nil then include the capslock modifier. Most of
-the time these just gets in the way."
+WITH-NUMLOCK is non-nil then include the numlock modifier. if WITH-CAPSLOCK is
+non-nil then include the capslock modifier. Most of the time these just gets
+in the way."
   (let (mods)
     (when (key-shift key) (push :shift mods))
     (when (key-control key) (push :control mods))
@@ -154,7 +140,7 @@ kbd-parse if the key failed to parse."
   (let* ((p (when (> (length string) 2)
               (position #\- string :from-end t :end (- (length string) 1))))
          (%mods (parse-mods string (if p (1+ p) 0)))
-         (keysym (stumpwm-name->keysym (subseq string (if p (1+ p) 0))))
+         (keysym (wm-name-to-keysym (subseq string (if p (1+ p) 0))))
          (mods (if (keysym-requires-altgr keysym)
                    (append '(:altgr t) %mods)
                    %mods)))
@@ -195,7 +181,7 @@ others."
 (defun print-key (key)
   (format nil "~a~a"
           (print-mods key)
-          (keysym->stumpwm-name (key-keysym key))))
+          (keysym-to-wm-name (key-keysym key))))
 
 (defun print-key-seq (seq)
   (format nil

@@ -1,4 +1,6 @@
+;;; font-rendering.lisp --- Default WM Font Rendering
 
+;;; Code:
 (in-package :wm)
 
 (defgeneric font-exists-p (font))

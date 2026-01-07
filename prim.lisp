@@ -1,20 +1,6 @@
+;;; prim.lisp --- WM Primitives
+
 ;; Copyright (C) 2003-2008 Shawn Betts
-
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -1297,7 +1283,7 @@ first @var{COUNT} rules are removed."
   "Define a rule for a window to be fullscreened within the frame.  Each rule is a
 function which will be called when a window is made fullscreen.  If the rule
 returns NIL then the fullscreen window takes up the entire head, otherwise it
-takes up only its frame. Within the body of the rule @var{WINDOW-ARGUMENT} is
+takes up only its frame. Within the body of the rule WINDOW-ARGUMENT is
 bound to the window being processed."
   `(flet ((,name (,window-argument) ,@body))
      (add-fullscreen-in-frame-rule ',name #',name)))
@@ -1348,23 +1334,21 @@ within an interactive call to a command.")
 (defvar *window-border-style* :thick
   "This controls the appearance of the border around windows. valid
 values are:
-@table @var
-@item :thick
+- :thick
 All space within the frame not used by the window is dedicated to the
 border.
 
-@item :thin
+- :thin
 Only the border width as controlled by *maxsize-border-width*
 *normal-border-width* and *transient-border-width* is used as the
 border. The rest is filled with the unfocus color.
 
-@item :tight
+- :tight
 The same as :thin but the border surrounds the window and the wasted
 space within the frame is not obscured, revealing the background.
 
-@item :none
+- :none
 Like :tight but no border is ever visible.
-@end table
 
 After changing this variable you may need to call
 sync-all-frame-windows to see the change.")

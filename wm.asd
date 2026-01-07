@@ -10,7 +10,7 @@
   :depends-on (#:core #:xlib)
   :components ((:file "pkg")
                (:file "debug")
-               (:file "primitives")
+               (:file "prim")
                (:file "wrappers")
                (:file "font-rendering")
                (:file "keysyms")

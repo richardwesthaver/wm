@@ -1,5 +1,8 @@
-;;; a dumping spot for window stuff that has tiling stuff in it
+;;; tile-window.lisp --- WM Tile Window
 
+;; window stuff that has tiling stuff in it
+
+;;; Code:
 (in-package :wm)
 
 (defvar *ignore-wm-inc-hints* nil

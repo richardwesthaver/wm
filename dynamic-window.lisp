@@ -1,3 +1,8 @@
+;;; dynamic-window.lisp --- Expose command
+
+;;
+
+;;; Code:
 (in-package :wm)
 
 (defvar *expose-n-max* 26 

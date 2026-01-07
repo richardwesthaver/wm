@@ -1,29 +1,14 @@
+;;; keysyms.lisp --- WM Keysyms
+
 ;; Copyright (C) 2006-2008 Matthew Kennedy
-;;
-;;  This file is part of stumpwm.
-;;
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
 
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;;; Commentary:
 
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
+;; Mapping a keysym to a name is a client side activity in X11. Some of the
+;; code here was taken from the CMUCL Hemlocks code base. The actual mappings
+;; were taken from Xorg's keysymdefs.h.
 
-;; Commentary:
-;;
-;; Mapping a keysym to a name is a client side activity in X11.  Some
-;; of the code here was taken from the CMUCL Hemlocks code base.  The
-;; actual mappings were taken from Xorg's keysymdefs.h.
-;;
-;; Code:
-
+;;; Code:
 (in-package #:wm)
 
 (load-xkbcommon)

@@ -1,20 +1,8 @@
+;;; mode-line-formatters.lisp --- WM Mode Line Formatters
+
 ;; Copyright (C) 2006-2008 Shawn Betts
 
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
+;;; Code:
 (in-package :wm)
 
 ;;; Settings
@@ -27,7 +15,6 @@ hidden windows, set this to an empty string.")
   "The string passed to FORMAT to highlight things in the mode line.")
 
 ;;; Clickable Text
-
 (defun format-with-on-click-id (string id &rest arguments)
   "Wrap STRING in :on-click and :on-click-end color formatters, using ID as the id
 to call when clicked and ARGUMENTS as the arguments to pass to the ID's
@@ -37,12 +24,10 @@ other color formatters."
           id arguments string))
 
 ;;; Utilities
-
 (defun mode-line-current-group (ml)
   (screen-current-group (mode-line-screen ml)))
 
 ;;; Formatters
-
 (add-screen-mode-line-formatter #\u 'fmt-urgent-window-list)
 (defun fmt-urgent-window-list (ml)
   "Using `*window-format*', return a 1 line list of the urgent windows, space separated."

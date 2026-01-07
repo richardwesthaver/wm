@@ -1,21 +1,9 @@
+;;; mode-line.lisp --- WM Mode Line
+
 ;; Copyright (C) 2006-2008 Shawn Betts
 ;; Copyright (C) 2016 Joram Schrijver
 
-;;  This file is part of stumpwm.
-
-;; stumpwm is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; stumpwm is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this software; see the file COPYING.  If not, see
-;; <http://www.gnu.org/licenses/>.
+;;; Code:
 (in-package :wm)
 
 ;;; Settings
@@ -111,12 +99,10 @@ timer.")
               (remove character *screen-mode-line-formatters* :key #'first))))
 
 ;;; Mode lines
-
 (defvar *mode-lines* ()
   "All current mode lines.")
 
 ;;; Utilities
-
 (defun screen-mode-lines (screen)
   (remove-if (lambda (mode-line)
                (not (eq screen (mode-line-screen mode-line))))
@@ -145,7 +131,6 @@ timer.")
       (setf *mode-line-timer* nil))))
 
 ;;; Creation
-
 (defun resize-mode-line (mode-line)
   (when (eq (mode-line-mode mode-line) :stump)
     ;; This is a StumpWM mode-line
@@ -235,7 +220,6 @@ timer.")
       (run-hook-with-args *new-mode-line-hook* mode-line))))
 
 ;;; Destruction
-
 (defun sync-mode-line (ml)
   (dolist (group (screen-groups (mode-line-screen ml)))
     (group-sync-head group (mode-line-head ml))))
@@ -254,7 +238,6 @@ timer.")
     (destroy-mode-line ml)))
 
 ;;; Formatting
-
 (defvar *current-mode-line-formatters* nil
   "used in formatting modeline strings.")
 
@@ -348,7 +331,6 @@ timer.")
     (redraw-mode-line ml t)))
 
 ;;; Registering mode line clickable areas
-
 (defvar *mode-line-on-click-functions* nil
   "An alist of IDs and and functions, used by :on-click formatter calls")
 
@@ -398,7 +380,6 @@ appropriate mode line click function."
 
 
 ;;; External mode lines
-
 (defun move-mode-line-to-head (mode-line head)
   (cond ((not (head-mode-line head))
          (setf (mode-line-head mode-line) head))
@@ -441,7 +422,6 @@ appropriate mode line click function."
       (sync-mode-line ml))))
 
 ;;; Toggling
-
 (defun toggle-mode-line (screen head
                          &optional (format '*screen-mode-line-format*))
   "Toggle the state of the mode line for the specified screen"
