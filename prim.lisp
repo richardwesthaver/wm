@@ -69,170 +69,104 @@ appear for. This must be an integer. If falsy, default to *timeout-wait*.")
   "The background color of the grabbed pointer.")
 
 ;;; Hooks
-#+nil
 (defhook *wm-hooks*
-  ((:command-mode-start '(command-mode-start-message))
-   (:command-mode-end '(command-mode-end-message))
-   (:urgent-window)
-   (:map-window)
-   (:unmap-window)
-   (:new-window)
-   (:destroy-window)
-   (:focus-window)
-   (:place-window)
-   (:pre-thread)
-   (:start)
-   (:quit)
-   (:restart)
-   (:internal-loop)
-   (:event-processing)
-   (:new-frame)
-   (:focus-frame)
-   (:split-frame)
-   (:remove-split)
-   (:message)
-   (:top-level-error)
-   (:focus-group)
-   (:key-press)
-   (:root-click)
-   (:click)
-   (:new-mode-line)
-   (:destroy-mode-line)
-   (:mode-line-click)
-   (:pre-command)
-   (:post-command)
-   (:selection-notify)
-   (:menu-selection)
-   (:new-head)))
-
-(defvar *command-mode-start-hook* '(command-mode-start-message)
-  "A hook called whenever command mode is started.")
-
-(defvar *command-mode-end-hook* '(command-mode-end-message)
-  "A hook called whenever command mode is ended.")
-
-(defvar *urgent-window-hook* '()
-  "A hook called whenever a window sets the property indicating that
-  it demands the user's attention. Called with the window as an argument.")
-
-(defvar *map-window-hook* '()
-  "A hook called whenever a window is mapped.")
-
-(defvar *unmap-window-hook* '()
-  "A hook called whenever a window is withdrawn.")
-
-(defvar *new-window-hook* '()
-  "A hook called whenever a window is added to the window list. This
+  ((:command-mode-start *command-mode-start-hook* '(command-mode-start-message)
+    "A hook called whenever command mode is started.")
+   (:command-mode-end *command-mode-end-hook* '(command-mode-end-message)
+    "A hook called whenever command mode is ended.")
+   (:urgent-window *urgent-window-hook* nil
+    "A hook called whenever a window sets the property indicating that
+it demands the user's attention. Called with the window as an argument.")
+   (:map-window *map-window-hook* nil
+                "A hook called whenever a window is mapped.")
+   (:unmap-window *unmap-window-hook* nil
+                  "A hook called whenever a window is unmapped.")
+   (:new-window *new-window-hook* nil
+                "A hook called whenever a window is added to the window list. This
 includes a genuinely new window as well as bringing a withdrawn window
 back into the window list. Called with the window as an argument.")
-
-(defvar *destroy-window-hook* '()
-  "A hook called whenever a window is destroyed or withdrawn.
+   (:destroy-window *destroy-window-hook* nil
+                    "A hook called whenever a window is destroyed or withdrawn.
 Called with the window as an argument.")
-
-(defvar *focus-window-hook* '()
+   (:focus-window *focus-window-hook* nil
   "A hook called when a window is given focus. It is called with 2
 arguments: the current window and the last window (could be nil).")
-
-(defvar *place-window-hook* '()
+   (:place-window *place-window-hook* nil
   "A hook called whenever a window is placed by rule. Arguments are
 window, group and frame.")
-
-(defvar *pre-thread-hook* '()
-  "A hook called before any threads are started. Useful if you need to fork.")
-
-(defvar *start-hook* '()
-  "A hook called when stumpwm starts.")
-
-(defvar *quit-hook* '()
-  "A hook called when stumpwm quits.")
-
-(defvar *restart-hook* '()
-  "A hook called when stumpwm restarts.")
-
-(defvar *internal-loop-hook* '()
-  "A hook called inside stumpwm's inner loop.")
-
-(defvar *event-processing-hook* '()
-  "A hook called inside stumpwm's inner loop, before the default event
+   (:pre-thread *pre-thread-hook* nil
+                "A hook called before any threads are started. Useful if you need to fork.")
+   (:start *start-hook* nil
+           "A hook called when WM starts.")
+   (:quit *quit-hook* nil
+          "A hook called when WM quits.")
+   (:restart *restart-hook* nil
+             "A hook called when WM restarts.")
+   (:internal-loop *internal-loop-hook* nil
+  "A hook called inside WM's inner loop.")
+   (:event-processing *event-processing-hook* nil
+                      "A hook called inside stumpwm's inner loop, before the default event
   processing takes place. This hook is run inside (with-event-queue ...).")
-
-(defvar *focus-frame-hook* '()
-  "A hook called when a frame is given focus. The hook functions are
-called with 2 arguments: the current frame and the last frame.")
-
-(defvar *new-frame-hook* '()
+   (:new-frame *new-frame-hook* nil
   "A hook called when a new frame is created. The hook is called with
 the frame as an argument.")
-
-(defvar *split-frame-hook* '()
+   (:focus-frame *focus-frame-hook* nil
+                 "A hook called when a frame is given focus. The hook functions are
+called with 2 arguments: the current frame and the last frame.")
+   (:split-frame *split-frame-hook* nil
   "A hook called when a frame is split. the hook is called with
 the old frame (window is removed), and two new frames as arguments.")
-
-(defvar *remove-split-hook* '()
+   (:remove-split *remove-split-hook* nil
   "A hook called when a split is removed. the hook is called with
 the current frame and removed frame as arguments.")
-
-(defvar *message-hook* '()
+   (:message *message-hook* nil
   "A hook called whenever stumpwm displays a message. The hook
 function is passed any number of arguments. Each argument is a
 line of text.")
-
-(defvar *top-level-error-hook* '()
+   (:top-level-error *top-level-error-hook* nil
   "Called when a top level error occurs. Note that this hook is
 run before the error is dealt with according to
 *top-level-error-action*.")
-
-(defvar *focus-group-hook* '()
+   (:focus-group *focus-group-hook* nil
   "A hook called whenever stumpwm switches groups. It is called with 2 arguments: the current group and the last group.")
-
-(defvar *key-press-hook* '()
+   (:key-press *key-press-hook* nil
   "A hook called whenever a key under *top-map* is pressed.
 It is called with 3 argument: the key, the (possibly incomplete) key
 sequence it is a part of, and command value bound to the key.")
-
-(defvar *root-click-hook* '()
+   (:root-click *root-click-hook* nil
   "A hook called whenever there is a mouse click on the root
 window. Called with 4 arguments, the screen containing the root
 window, the button clicked, and the x and y of the pointer.")
-
-(defvar *click-hook* '()
+   (:click *click-hook* nil
   "A hook called whenever there is a mouse click.
 Called with 4 arguments, the screen containing the
 window (or nil if there isn't one), the button clicked,
 and the x and y of the pointer.")
-
-(defvar *new-mode-line-hook* '()
+   (:new-mode-line *new-mode-line-hook* nil
   "Called whenever the mode-line is created. It is called with argument,
 the mode-line")
-
-(defvar *destroy-mode-line-hook* '()
+   (:destroy-mode-line *destroy-mode-line-hook* nil
   "Called whenever the mode-line is destroyed. It is called with argument,
 the mode-line")
-
-(defvar *mode-line-click-hook* '()
+   (:mode-line-click *mode-line-click-hook* nil
   "Called whenever the mode-line is clicked. It is called with 4 arguments,
 the mode-line, the button clicked, and the x and y of the pointer.")
-
-(defvar *pre-command-hook* '()
+   (:pre-command *pre-command-hook* nil
   "Called before a command is called. It is called with 1 argument:
 the command as a symbol.")
-
-(defvar *post-command-hook* '()
+   (:post-command *post-command-hook* nil
   "Called after a command is called. It is called with 1 argument:
 the command as a symbol.")
-
-(defvar *selection-notify-hook* '()
+   (:selection-notify *selection-notify-hook* nil
   "Called after a :selection-notify event is processed. It is called
 with 1 argument: the selection as a string.")
-
-(defvar *menu-selection-hook* '()
+   (:menu-selection *menu-selection-hook* nil
   "Called after an item is selected in the windows menu. It is called
 with 1 argument: the menu.")
-
-(defvar *new-head-hook* '()
+   (:new-head *new-head-hook* nil
   "A hook called whenever a head is added. It is called with 2 arguments: the
- new head and the current screen.")
+ new head and the current screen."))
+  :class 'std/prim::dynamic-hook)
 
 ;; Data types and globals used by wm
 (defvar *display* nil

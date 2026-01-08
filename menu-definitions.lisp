@@ -144,7 +144,7 @@ Example when entry1 and entry2 are marked with 'a', and entry3 is not marked:
   (throw :menu-quit nil))
 
 (defun get-input-char (key)
-  "If @var{key} is a character suitable for menu completion (e.g. not
+  "If KEY is a character suitable for menu completion (e.g. not
 backspace or F9), return it otherwise return nil"
   (let ((char (xlib:keysym->character *display* (key-keysym key))))
     (if (or (key-mods-p key) (null char)
