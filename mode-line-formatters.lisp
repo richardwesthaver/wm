@@ -174,6 +174,7 @@ critical."
 (defun rep (n char)
   (make-string n :initial-element char))
 
+;; TODO 2026-01-08: integrate SPARK:SPARK
 (defun bar (percent width full empty)
   "Return a progress bar string of WIDTH characters composed of characters FULL
   and EMPTY at PERCENT complete."

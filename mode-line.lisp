@@ -42,36 +42,33 @@ result is used as a mode line element.
 If it is a string the string is printed with the following formatting
 options:
 
-@table @asis
-@item %h
+- %h
 List the number of the head the mode-line belongs to
 
-@item %w
+- %w
 List all windows in the current group windows using @var{*window-format*}
 
-@item %W
+- %W
 List all windows on the current head of the current group using
-@var{*window-format*}
+*WINDOW-FORMAT*
 
-@item %g
-List the groups using @var{*group-format*}
+- %g
+List the groups using *GROUP-FORMAT*
 
-@item %n
+- %n
 The current group's name
 
-@item %u
-Using @var{*window-format*}, return a 1 line list of the urgent windows, space seperated.
+- %u
+Using *WINDOW-FORMAT*, return a 1 line list of the urgent windows, space seperated.
 
-@item %v
-Using @var{*window-format*}, return a 1 line list of the windows, space
+- %v
+Using *WINDOW-FORMAT*}, return a 1 line list of the windows, space
 separated. The currently focused window is highlighted with
 fmt-highlight. Any non-visible windows are colored the
 *hidden-window-color*.
 
-@item %d
-Using @var{*time-modeline-string*}, print the time.
-
-@end table
+- %d
+Using *TIME-MODELINE-STRING*, print the time.
 
 A number of modules have been written that extends the possible
 formatting strings.  See their documentation for details.")
@@ -133,7 +130,7 @@ timer.")
 ;;; Creation
 (defun resize-mode-line (mode-line)
   (when (eq (mode-line-mode mode-line) :wm)
-    ;; This is a StumpWM mode-line
+    ;; This is a WM mode-line
     (setf (xlib:drawable-height (mode-line-window mode-line))
           (+ (* 2 *mode-line-pad-y*)
              (nth-value 1 (rendered-size
