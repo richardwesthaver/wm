@@ -14,7 +14,7 @@
    (last-frame :initform nil :accessor tile-group-last-frame)
    (current-frame :accessor tile-group-current-frame)))
 
-(defmethod print-swm-object ((object tile-group) stream)
+(defmethod print-wm-object ((object tile-group) stream)
   (write-string "TILE-" stream)
   (call-next-method))
 

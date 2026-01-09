@@ -4,7 +4,7 @@
 
 ;;; Commentary:
 
-;; Window Manager commands that users can use to manipulate stumpwm.
+;; Window Manager commands that users can use to manipulate WM.
 
 ;;; Code:
 (in-package :wm)
@@ -25,7 +25,7 @@ menu, the error is re-signalled."
                                    r))
                            ;; a crusty way to get only
                            ;; the restarts from
-                           ;; stumpwm's top-level
+                           ;; WM's top-level
                            ;; restart inward.
                            (reverse (member 'top-level
                                             (reverse (compute-restarts))
@@ -138,8 +138,8 @@ with base. Automagically update the cache."
 (defcommand run-shell-command (cmd &optional collect-output-p) ((:shell "/bin/sh -c "))
   "Run the specified shell command. If @var{collect-output-p} is @code{T}
 then run the command synchonously and collect the output. Be
-careful. If the shell command doesn't return, it will hang StumpWM. In
-such a case, kill the shell command to resume StumpWM."
+careful. If the shell command doesn't return, it will hang WM. In
+such a case, kill the shell command to resume WM."
   (if collect-output-p
       (run-prog-collect-output *shell-program* "-c" cmd)
       (run-prog *shell-program* :args (list "-c" cmd) :wait nil)))
@@ -160,9 +160,9 @@ such a case, kill the shell command to resume StumpWM."
 (defcommand-alias eval eval-line)
 
 (defcommand echo (string) ((:rest "Echo: "))
-  "Display @var{string} in the message bar."
+  "Display STRING in the message bar."
   ;; The purpose of echo is always to pop up a message window.
-  (let ((*executing-stumpwm-command* nil))
+  (let ((*executing-wm-command* nil))
     (wm-message "~a" string)))
 
 (defun send-meta-key (screen key)
@@ -171,11 +171,11 @@ such a case, kill the shell command to resume StumpWM."
     (send-fake-key (screen-current-window screen) key)))
 
 (defcommand meta (key) ((:key "Key: "))
-  "Send a fake key to the current window. @var{key} is a typical StumpWM key, like @kbd{C-M-o}."
+  "Send a fake key to the current window. KEY is a typical WM key, like 'C-M-o'."
   (send-meta-key (current-screen) key))
 
 (defcommand loadrc () ()
-  "Reload the @file{~/.stumpwmrc} file."
+  "Reload the ~/.config/wmrc file."
   (handler-case 
       (with-restarts-menu (load-rc-file nil))
     (error (c)
@@ -195,21 +195,21 @@ such a case, kill the shell command to resume StumpWM."
 (defcommand-alias abort keyboard-quit)
 
 (defcommand quit-wm () ()
-  "Quit StumpWM."
+  "Quit WM."
   (throw :top-level :quit))
 
 (defcommand quit-confirm () ()
-  "Prompt the user to confirm quitting StumpWM."
+  "Prompt the user to confirm quitting WM."
   (if (y-or-n-p (format nil "~@{~a~^~%~}"
                         "You are about to quit the window manager to TTY."
-                        "Really ^1^Bquit^b^n ^B^2StumpWM^n^b?"
+                        "Really ^1^Bquit^b^n ^B^WM^n^b?"
                         "^B^6Confirm?^n "))
       (quit-wm)
       (xlib:unmap-window (screen-message-window (current-screen)))))
 
 (defcommand restart-soft () ()
-  "Soft restart StumpWM. The lisp process isn't restarted. Instead,
-control jumps to the very beginning of the stumpwm program. This
+  "Soft restart WM. The lisp process isn't restarted. Instead,
+control jumps to the very beginning of the WM program. This
 differs from RESTART, which restarts the unix process.
 
 Since the process isn't restarted, existing customizations remain
@@ -218,7 +218,7 @@ after the restart."
   (throw :top-level :restart))
 
 (defcommand restart-hard () ()
-  "Restart stumpwm. This is handy if a new stumpwm executable has been
+  "Restart WM. This is handy if a new WM executable has been
 made and you wish to replace the existing process with it.
 
 Any run-time customizations will be lost after the restart."
@@ -290,20 +290,21 @@ current frame instead of switching to the window."
           (pull-window win))
         (run-shell-command cmd))))
 
+;; TODO 2026-01-07: Use SYS
 (defcommand reload () ()
-  "Reload StumpWM using @code{asdf}."
-  (wm-message "Reloading StumpWM...")
+  "Reload WM using ASDF."
+  (wm-message "Reloading WM...")
   #+asdf (with-restarts-menu
            (asdf:operate 'asdf:load-op :wm))
-  #-asdf (wm-message "^B^1*Sorry, StumpWM can only be reloaded with asdf (for now).")
-  #+asdf (wm-message "Reloading StumpWM...^B^2*Done^n."))
+  #-asdf (wm-message "^B^1*Sorry, WM can only be reloaded with asdf (for now).")
+  #+asdf (wm-message "Reloading WM...^B^2*Done^n."))
 
 (defcommand emacs () ()
   "Start emacs unless it is already running, in which case focus it."
   (run-or-raise "emacs" '(:class "Emacs")))
 
 (defcommand copy-unhandled-error () ()
-  "When an unhandled error occurs, StumpWM restarts and attempts to
+  "When an unhandled error occurs, WM restarts and attempts to
 continue. Unhandled errors should be reported to the mailing list so
 they can be fixed. Use this command to copy the unhandled error and
 backtrace to the X11 selection so you can paste in your email when

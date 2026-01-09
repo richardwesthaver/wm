@@ -1,10 +1,8 @@
-;;; pkg.lisp -- StumpWM Packages
-
-;; Copyright (C) 2003-2008 Shawn Betts
+;;; pkg.lisp -- WM Packages
 
 ;;; Code:
 (defpackage :wm
-  (:use #:cl #:std #:obj/meta/mix)
+  (:use #:cl #:std #:obj/meta/mix #:obj/time)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)
@@ -79,7 +77,7 @@
    *screen-list*
    *initializing*
    *processing-existing-windows*
-   *executing-stumpwm-command*
+   *executing-wm-command*
    *debug-level*
    *debug-expose-events*
    *debug-stream*
@@ -206,10 +204,9 @@
    argument-pop
    argument-pop-or-read
    argument-pop-rest
-   define-stumpwm-command
    defcommand
    defcommand-alias
-   define-stumpwm-type
+   define-wm-type
    run-commands
    %interactivep%
    ;; menu-declarations.lisp

@@ -1,21 +1,18 @@
-;;; time.lisp --- WM Time Display
+;;; time.lisp --- WM Time Annotations
 
-;; Copyright (C) 2003-2008 Ivy Foster
+;; Printer Annotations specifically for displaying time in WM
 
 ;;; Commentary:
 
-;; This file contains code relating to the display of time.
+;; This file contains code relating to the display of time. It relies on
+;; OBJ/TIME:TIMESTAMP and the pre-existing annotations in that package,
+;; extending as needed.
 
-;; When setting `*time-format-string-default*' to look like you want, the
+;; When  `*time-format-string-default*' to look like you want, the
 ;; options are exactly the same as those in the output of date --help (with date
 ;; 6.12), with the exception of a few unimplemented functions (see the comments
 ;; in *time-format-string-alist*, below). `*time-modeline-string*' is also
 ;; customizable; it defaults to the same value as *time-format-string-default*.
-
-;; TODO:
-
-;; - Implement all options from date.
-;; - Simplify code (fewer helper functions somehow?)
 
 ;;; Code:
 (in-package :wm)
@@ -25,13 +22,6 @@
 
 (defvar *time-modeline-string* "%a %b %e %k:%M:%S"
   "The default time value to pass to the modeline.")
-
-(defvar *time-month-names*
-  #("January" "February" "March" "April" "May" "June" "July" "August"
-    "September" "October" "November" "December"))
-
-(defvar *time-day-names*
-  #("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday"))
 
 ;; `date --help` with date_6.12
 (defvar *time-format-string-alist*
@@ -89,16 +79,15 @@
 
 (defcommand refresh-time-zone () ()
   "Refresh the time zone information from the system.
-
 If you change the system time zone while StumpWM is running you can
 run this command to make StumpWM notice the change."
+  ;; TODO 2026-01-07: defarize
   (sb-alien:alien-funcall
     (sb-alien:extern-alien "tzset" (function sb-alien:void))))
 
-
-;;; ------------------------------------------------------------------
 ;;; Helper functions
-;;; ------------------------------------------------------------------
+;; TODO 2026-01-07: 
+#+nil (unix-to-timestamp (sb-posix:time))
 
 (defun get-decoded-system-time ()
   (decode-universal-time (+ (encode-universal-time 0 0 0 1 1 1970 0)
@@ -142,7 +131,7 @@ run this command to make StumpWM notice the change."
   (format nil "~2,'0D" (getf (time-plist) :month)))
 
 (defun time-month-name ()
-  (aref *time-month-names* (1- (getf (time-plist) :month))))
+  (aref +month-names+ (1- (getf (time-plist) :month))))
 
 (defun time-month-shortname ()
   (subseq (time-month-name) 0 3))
@@ -164,7 +153,7 @@ run this command to make StumpWM notice the change."
     (write-to-string (if (= dow 6) 0 (1+ dow)))))
 
 (defun time-dow-name ()
-  (aref *time-day-names* (getf (time-plist) :dow)))
+  (aref +day-names+ (getf (time-plist) :dow)))
 
 (defun time-dow-shortname ()
   (subseq (time-dow-name) 0 3))
@@ -218,5 +207,3 @@ run this command to make StumpWM notice the change."
 
 (defun time-format (str)
   (format-expand *time-format-string-alist* str))
-
-;;; End of file

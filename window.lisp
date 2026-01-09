@@ -36,7 +36,7 @@
    (plist   :initarg :plist   :accessor window-plist)
    (fullscreen :initform nil  :accessor window-fullscreen)))
 
-(defmethod print-swm-object ((object window) stream)
+(defmethod print-wm-object ((object window) stream)
   (format stream "WINDOW ~s #x~x" (window-name object) (window-id object)))
 
 ;;; Window Management API

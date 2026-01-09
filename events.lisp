@@ -295,7 +295,7 @@ ratpoison sends the rp_command_request window in 8 byte chunks."
          (cmd (utf8-to-string data)))
     (let ((msgs (screen-last-msg screen))
           (hlts (screen-last-msg-highlights screen))
-          (*executing-stumpwm-command* t))
+          (*executing-wm-command* t))
       (setf (screen-last-msg screen) '()
             (screen-last-msg-highlights screen) '())
       (eval-command cmd)

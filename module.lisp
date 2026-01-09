@@ -5,7 +5,7 @@
 
 ;;; Commentary:
 
-;; Use `set-module-dir' to set the location stumpwm searches for modules.
+;; Use `set-module-dir' to set the location WM searches for modules.
 
 ;;; Code:
 (in-package #:wm)
@@ -34,7 +34,7 @@
   configure script when WM was built, or later by the user using
   `add-to-load-path'")
 
-(define-stumpwm-type :module (input prompt)
+(define-wm-type :module (input prompt)
   (or (argument-pop-rest input)
       (completing-read (current-screen) prompt (list-modules) :require-match t)))
 

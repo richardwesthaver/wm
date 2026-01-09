@@ -271,7 +271,7 @@ When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
            :new-on-bottom-p (eq *queue-messages-p* :new-on-bottom))
         (setf strings combined-strings
               highlights combined-highlights)))
-    (unless *executing-stumpwm-command*
+    (unless *executing-wm-command*
       (multiple-value-bind (width height)
           (rendered-size strings (screen-message-cc screen))
         (setup-message-window screen width height)

@@ -132,7 +132,7 @@ timer.")
 
 ;;; Creation
 (defun resize-mode-line (mode-line)
-  (when (eq (mode-line-mode mode-line) :stump)
+  (when (eq (mode-line-mode mode-line) :wm)
     ;; This is a StumpWM mode-line
     (setf (xlib:drawable-height (mode-line-window mode-line))
           (+ (* 2 *mode-line-pad-y*)
@@ -281,7 +281,7 @@ timer.")
   (mode-line-format-elt (mode-line-format ml)))
 
 (defun redraw-mode-line (ml &optional force)
-  (when (eq (mode-line-mode ml) :stump)
+  (when (eq (mode-line-mode ml) :wm)
     (setf (mode-line-new-bounds ml) nil)
     (let* ((*current-mode-line-formatters* *screen-mode-line-formatters*)
            (*current-mode-line-formatter-args* (list ml))
@@ -438,7 +438,7 @@ appropriate mode line click function."
            (setf (mode-line-mode ml) :visible)
            (xlib:map-window (mode-line-window ml))
            (setf (xlib:window-priority (mode-line-window ml)) :below))
-          (:stump
+          (:wm
            ;; Delete it
            (destroy-mode-line ml)))
         (make-mode-line screen head format))

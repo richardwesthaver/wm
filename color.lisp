@@ -63,18 +63,18 @@ then call (update-color-map).")
 
 (defun hex-to-xlib-color (color)
   (cond
-   ((= 4 (length color))
-    (let ((red (/ (parse-integer (subseq color 1 2) :radix 16) 255.0))
-          (green (/ (parse-integer (subseq color 2 3) :radix 16) 255.0))
-          (blue (/ (parse-integer (subseq color 3 4) :radix 16) 255.0)))
-      (xlib:make-color :red (+ red (* 16 red))
-                       :green (+ green (* 16 green))
-                       :blue (+ blue (* 16 blue)))))
-   ((= 7 (length color))
-    (let ((red (/ (parse-integer (subseq color 1 3) :radix 16) 255.0))
-          (green (/ (parse-integer (subseq color 3 5) :radix 16) 255.0))
-          (blue (/ (parse-integer (subseq color 5 7) :radix 16) 255.0)))
-      (xlib:make-color :red red :green green :blue blue)))))
+    ((= 4 (length color))
+     (let ((red (/ (parse-integer (subseq color 1 2) :radix 16) 255.0))
+           (green (/ (parse-integer (subseq color 2 3) :radix 16) 255.0))
+           (blue (/ (parse-integer (subseq color 3 4) :radix 16) 255.0)))
+       (xlib:make-color :red (+ red (* 16 red))
+                        :green (+ green (* 16 green))
+                        :blue (+ blue (* 16 blue)))))
+    ((= 7 (length color))
+     (let ((red (/ (parse-integer (subseq color 1 3) :radix 16) 255.0))
+           (green (/ (parse-integer (subseq color 3 5) :radix 16) 255.0))
+           (blue (/ (parse-integer (subseq color 5 7) :radix 16) 255.0)))
+       (xlib:make-color :red red :green green :blue blue)))))
 
 (defun lookup-color (screen color)
   (cond
@@ -293,7 +293,7 @@ the form of (:FONT ...) modifiers."
          (loop for part in parts
                if (and (listp part)
                        (eq :font (first part)))
-                 collect (find-font cc (second part))))))
+               collect (find-font cc (second part))))))
 
 (defun reset-color-context (cc)
   (apply-color cc :fg)
@@ -313,11 +313,11 @@ string."
     (loop
       for part in parts
       if (stringp part)
-        do (incf width (text-line-width (ccontext-font cc)
-                                        part
-                                        :translate #'translate-id))
+      do (incf width (text-line-width (ccontext-font cc)
+                                      part
+                                      :translate #'translate-id))
       else
-        do (apply #'apply-color cc (first part) (rest part)))
+      do (apply #'apply-color cc (first part) (rest part)))
     (if resetp (reset-color-context cc))
     (values width height)))
 
@@ -359,39 +359,39 @@ rendered width."
                                         (font-height (ccontext-font cc)))
         for y-to-center = (floor (/ font-height-difference 2))
         if (stringp part)
-          do (draw-image-glyphs
-              (ccontext-px cc)
-              (ccontext-gc cc)
-              (ccontext-font cc)
-              draw-x (+ y y-to-center (font-ascent (ccontext-font cc)))
-              part
-              :translate #'translate-id
-              :size 16)
-             (incf draw-x (text-line-width (ccontext-font cc)
-                                           part
-                                           :translate #'translate-id))
+        do (draw-image-glyphs
+            (ccontext-px cc)
+            (ccontext-gc cc)
+            (ccontext-font cc)
+            draw-x (+ y y-to-center (font-ascent (ccontext-font cc)))
+            part
+            :translate #'translate-id
+            :size 16)
+           (incf draw-x (text-line-width (ccontext-font cc)
+                                         part
+                                         :translate #'translate-id))
         else
-          do (case (first part)
-               ((:on-click)
+        do (case (first part)
+             ((:on-click)
+              (when ml
+                (push (list draw-x (cadr part) (cddr part)) current-on-click)))
+             ((:on-click-end)
+              (when ml
+                (register (pop current-on-click))))
+             ((:>)
+              (let ((xbeg (- (xlib:drawable-width (ccontext-px cc))
+                             x
+                             (rendered-string-size rest cc))))
+                ;; Terminate all clickable areas as they cannot cross the :>
+                ;; boundary.
                 (when ml
-                  (push (list draw-x (cadr part) (cddr part)) current-on-click)))
-               ((:on-click-end)
-                (when ml
-                  (register (pop current-on-click))))
-               ((:>)
-                (let ((xbeg (- (xlib:drawable-width (ccontext-px cc))
-                               x
-                               (rendered-string-size rest cc))))
-                  ;; Terminate all clickable areas as they cannot cross the :>
-                  ;; boundary.
-                  (when ml
-                    (loop for top = (pop current-on-click)
-                          while top
-                          do (register top)))
-                  (render-string rest cc xbeg y :ml ml))
-                (loop-finish))
-               (otherwise
-                (apply #'apply-color cc (first part) (rest part)))))
+                  (loop for top = (pop current-on-click)
+                        while top
+                        do (register top)))
+                (render-string rest cc xbeg y :ml ml))
+              (loop-finish))
+             (otherwise
+              (apply #'apply-color cc (first part) (rest part)))))
       (values height draw-x))))
 
 (defun render-strings (cc padx pady strings highlights &key ml)
@@ -421,22 +421,22 @@ rendered width."
                            (xlib:drawable-width px)
                            (xlib:drawable-height px) t))
     (loop for parts in strings
-       for row from 0 to (length strings)
-       for line-height = (max-font-height parts cc)
-       if (find row highlights :test 'eql)
-       do (xlib:draw-rectangle px gc 0 (+ pady y) (xlib:drawable-width px) line-height t)
-         (xlib:with-gcontext (gc :foreground (xlib:gcontext-background gc)
-                                 :background (xlib:gcontext-foreground gc))
-           ;; If we don't switch the default colors, a color operation
-           ;; resetting either color to its default value would undo the
-           ;; switch.
-           (rotatef (ccontext-default-fg cc) (ccontext-default-bg cc))
-           (render-string parts cc (+ padx 0) (+ pady y) :ml ml)
-           (rotatef (ccontext-default-fg cc) (ccontext-default-bg cc)))
-       else
-         do (render-string parts cc (+ padx 0) (+ pady y) :ml ml)
-       end
-       do (incf y line-height))
+          for row from 0 to (length strings)
+          for line-height = (max-font-height parts cc)
+          if (find row highlights :test 'eql)
+          do (xlib:draw-rectangle px gc 0 (+ pady y) (xlib:drawable-width px) line-height t)
+             (xlib:with-gcontext (gc :foreground (xlib:gcontext-background gc)
+                                     :background (xlib:gcontext-foreground gc))
+               ;; If we don't switch the default colors, a color operation
+               ;; resetting either color to its default value would undo the
+               ;; switch.
+               (rotatef (ccontext-default-fg cc) (ccontext-default-bg cc))
+               (render-string parts cc (+ padx 0) (+ pady y) :ml ml)
+               (rotatef (ccontext-default-fg cc) (ccontext-default-bg cc)))
+          else
+          do (render-string parts cc (+ padx 0) (+ pady y) :ml ml)
+          end
+          do (incf y line-height))
     (xlib:copy-area px gc 0 0
                     (xlib:drawable-width px)
                     (xlib:drawable-height px) xwin 0 0)

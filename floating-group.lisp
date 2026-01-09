@@ -12,7 +12,7 @@
    (last-x :initform 0 :accessor float-window-last-x)
    (last-y :initform 0 :accessor float-window-last-y)))
 
-(defmethod print-swm-object ((object float-window) stream)
+(defmethod print-wm-object ((object float-window) stream)
   (write-string "FLOAT-" stream)
   (call-next-method))
 
@@ -144,7 +144,7 @@
 (define-wm-class float-group (group)
   ((current-window :accessor float-group-current-window)))
 
-(defmethod print-swm-object ((object float-group) stream)
+(defmethod print-wm-object ((object float-group) stream)
   (write-string "FLOAT-" stream)
   (call-next-method))
 

@@ -230,14 +230,14 @@ is a tile group.")
   (kbd "w") "where-is")
 
 (defcommand command-mode () ()
-"Command mode allows you to type StumpWM commands without needing the
-@key{C-t} prefix. Keys not bound in StumpWM will still get sent to the
+"Command mode allows you to type WM commands without needing the
+@key{C-t} prefix. Keys not bound in WM will still get sent to the
 current window. To exit command mode, type @key{C-g}."
   (run-hook *command-mode-start-hook*)
   (push-top-map *root-map*))
 
 (defcommand set-prefix-key (key) ((:key "Key: "))
-  "Change the stumpwm prefix key to KEY.
+  "Change the WM prefix key to KEY.
 @example
 \(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
 @end example

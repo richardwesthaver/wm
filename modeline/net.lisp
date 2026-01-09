@@ -30,10 +30,7 @@
 (defconstant +mask+ 7)
 (std:define-constant +ipv4-zero+ "00000000" :test 'equal)
 
-(defun now ()
-  (/ (get-internal-real-time) internal-time-units-per-second))
-
-(defvar *last-route-rescan-time* (now))
+(defvar *last-route-rescan-time* (real-time))
 (defvar *last-route-device* nil)
 
 (defun find-default ()
@@ -56,7 +53,7 @@ For the second case rescans route table every minute."
   (if *net-device*
       *net-device*
       (if (and *last-route-device*
-	       (< (- (now) *last-route-rescan-time*) 60))
+	       (< (- (real-time) *last-route-rescan-time*) 60))
 	  *last-route-device*
 	  (let ((new-device (or (find-default) "lo")))
 	    (when (string/= new-device *last-route-device*)
@@ -78,7 +75,7 @@ For the second case rescans route table every minute."
 		    *net-rx* nil
 		    *net-tx* nil
 		    *net-time* nil))
-	    (setq *last-route-rescan-time* (now)
+	    (setq *last-route-rescan-time* (real-time)
 		  *last-route-device* new-device)))))
 
 (defun net-sys-stat-read (device stat-file)
@@ -94,7 +91,7 @@ For the second case rescans route table every minute."
 
 (defun net-usage ()
   "Returns a list of 2 values: rx and tx bytes/second."
-  (let ((now (now))
+  (let ((now (real-time))
 	(rx-s 0.0)
 	(tx-s 0.0)
 	(t-s 0.1) ; don't want division by zero

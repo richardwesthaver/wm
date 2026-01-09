@@ -70,101 +70,102 @@ appear for. This must be an integer. If falsy, default to *timeout-wait*.")
 
 ;;; Hooks
 (defhook *wm-hooks*
-  ((:command-mode-start *command-mode-start-hook* '(command-mode-start-message)
-    "A hook called whenever command mode is started.")
-   (:command-mode-end *command-mode-end-hook* '(command-mode-end-message)
-    "A hook called whenever command mode is ended.")
-   (:urgent-window *urgent-window-hook* nil
-    "A hook called whenever a window sets the property indicating that
+    ((:command-mode-start *command-mode-start-hook* 
+      '(command-mode-start-message)
+      "A hook called whenever command mode is started.")
+     (:command-mode-end *command-mode-end-hook* '(command-mode-end-message)
+      "A hook called whenever command mode is ended.")
+     (:urgent-window *urgent-window-hook* nil
+      "A hook called whenever a window sets the property indicating that
 it demands the user's attention. Called with the window as an argument.")
-   (:map-window *map-window-hook* nil
-                "A hook called whenever a window is mapped.")
-   (:unmap-window *unmap-window-hook* nil
-                  "A hook called whenever a window is unmapped.")
-   (:new-window *new-window-hook* nil
-                "A hook called whenever a window is added to the window list. This
+     (:map-window *map-window-hook* nil
+      "A hook called whenever a window is mapped.")
+     (:unmap-window *unmap-window-hook* nil
+      "A hook called whenever a window is unmapped.")
+     (:new-window *new-window-hook* nil
+      "A hook called whenever a window is added to the window list. This
 includes a genuinely new window as well as bringing a withdrawn window
 back into the window list. Called with the window as an argument.")
-   (:destroy-window *destroy-window-hook* nil
-                    "A hook called whenever a window is destroyed or withdrawn.
+     (:destroy-window *destroy-window-hook* nil
+      "A hook called whenever a window is destroyed or withdrawn.
 Called with the window as an argument.")
-   (:focus-window *focus-window-hook* nil
-  "A hook called when a window is given focus. It is called with 2
+     (:focus-window *focus-window-hook* nil
+      "A hook called when a window is given focus. It is called with 2
 arguments: the current window and the last window (could be nil).")
-   (:place-window *place-window-hook* nil
-  "A hook called whenever a window is placed by rule. Arguments are
+     (:place-window *place-window-hook* nil
+      "A hook called whenever a window is placed by rule. Arguments are
 window, group and frame.")
-   (:pre-thread *pre-thread-hook* nil
-                "A hook called before any threads are started. Useful if you need to fork.")
-   (:start *start-hook* nil
-           "A hook called when WM starts.")
-   (:quit *quit-hook* nil
-          "A hook called when WM quits.")
-   (:restart *restart-hook* nil
-             "A hook called when WM restarts.")
-   (:internal-loop *internal-loop-hook* nil
-  "A hook called inside WM's inner loop.")
-   (:event-processing *event-processing-hook* nil
-                      "A hook called inside stumpwm's inner loop, before the default event
+     (:pre-thread *pre-thread-hook* nil
+      "A hook called before any threads are started. Useful if you need to fork.")
+     (:start *start-hook* nil
+      "A hook called when WM starts.")
+     (:quit *quit-hook* nil
+      "A hook called when WM quits.")
+     (:restart *restart-hook* nil
+      "A hook called when WM restarts.")
+     (:internal-loop *internal-loop-hook* nil
+      "A hook called inside WM's inner loop.")
+     (:event-processing *event-processing-hook* nil
+      "A hook called inside stumpwm's inner loop, before the default event
   processing takes place. This hook is run inside (with-event-queue ...).")
-   (:new-frame *new-frame-hook* nil
-  "A hook called when a new frame is created. The hook is called with
+     (:new-frame *new-frame-hook* nil
+      "A hook called when a new frame is created. The hook is called with
 the frame as an argument.")
-   (:focus-frame *focus-frame-hook* nil
-                 "A hook called when a frame is given focus. The hook functions are
+     (:focus-frame *focus-frame-hook* nil
+      "A hook called when a frame is given focus. The hook functions are
 called with 2 arguments: the current frame and the last frame.")
-   (:split-frame *split-frame-hook* nil
-  "A hook called when a frame is split. the hook is called with
+     (:split-frame *split-frame-hook* nil
+      "A hook called when a frame is split. the hook is called with
 the old frame (window is removed), and two new frames as arguments.")
-   (:remove-split *remove-split-hook* nil
-  "A hook called when a split is removed. the hook is called with
+     (:remove-split *remove-split-hook* nil
+      "A hook called when a split is removed. the hook is called with
 the current frame and removed frame as arguments.")
-   (:message *message-hook* nil
-  "A hook called whenever stumpwm displays a message. The hook
+     (:message *message-hook* nil
+      "A hook called whenever stumpwm displays a message. The hook
 function is passed any number of arguments. Each argument is a
 line of text.")
-   (:top-level-error *top-level-error-hook* nil
-  "Called when a top level error occurs. Note that this hook is
+     (:top-level-error *top-level-error-hook* nil
+      "Called when a top level error occurs. Note that this hook is
 run before the error is dealt with according to
 *top-level-error-action*.")
-   (:focus-group *focus-group-hook* nil
-  "A hook called whenever stumpwm switches groups. It is called with 2 arguments: the current group and the last group.")
-   (:key-press *key-press-hook* nil
-  "A hook called whenever a key under *top-map* is pressed.
+     (:focus-group *focus-group-hook* nil
+      "A hook called whenever stumpwm switches groups. It is called with 2 arguments: the current group and the last group.")
+     (:key-press *key-press-hook* nil
+      "A hook called whenever a key under *top-map* is pressed.
 It is called with 3 argument: the key, the (possibly incomplete) key
 sequence it is a part of, and command value bound to the key.")
-   (:root-click *root-click-hook* nil
-  "A hook called whenever there is a mouse click on the root
+     (:root-click *root-click-hook* nil
+      "A hook called whenever there is a mouse click on the root
 window. Called with 4 arguments, the screen containing the root
 window, the button clicked, and the x and y of the pointer.")
-   (:click *click-hook* nil
-  "A hook called whenever there is a mouse click.
+     (:click *click-hook* nil
+      "A hook called whenever there is a mouse click.
 Called with 4 arguments, the screen containing the
 window (or nil if there isn't one), the button clicked,
 and the x and y of the pointer.")
-   (:new-mode-line *new-mode-line-hook* nil
-  "Called whenever the mode-line is created. It is called with argument,
+     (:new-mode-line *new-mode-line-hook* nil
+      "Called whenever the mode-line is created. It is called with argument,
 the mode-line")
-   (:destroy-mode-line *destroy-mode-line-hook* nil
-  "Called whenever the mode-line is destroyed. It is called with argument,
+     (:destroy-mode-line *destroy-mode-line-hook* nil
+      "Called whenever the mode-line is destroyed. It is called with argument,
 the mode-line")
-   (:mode-line-click *mode-line-click-hook* nil
-  "Called whenever the mode-line is clicked. It is called with 4 arguments,
+     (:mode-line-click *mode-line-click-hook* nil
+      "Called whenever the mode-line is clicked. It is called with 4 arguments,
 the mode-line, the button clicked, and the x and y of the pointer.")
-   (:pre-command *pre-command-hook* nil
-  "Called before a command is called. It is called with 1 argument:
+     (:pre-command *pre-command-hook* nil
+      "Called before a command is called. It is called with 1 argument:
 the command as a symbol.")
-   (:post-command *post-command-hook* nil
-  "Called after a command is called. It is called with 1 argument:
+     (:post-command *post-command-hook* nil
+      "Called after a command is called. It is called with 1 argument:
 the command as a symbol.")
-   (:selection-notify *selection-notify-hook* nil
-  "Called after a :selection-notify event is processed. It is called
+     (:selection-notify *selection-notify-hook* nil
+      "Called after a :selection-notify event is processed. It is called
 with 1 argument: the selection as a string.")
-   (:menu-selection *menu-selection-hook* nil
-  "Called after an item is selected in the windows menu. It is called
+     (:menu-selection *menu-selection-hook* nil
+      "Called after an item is selected in the windows menu. It is called
 with 1 argument: the menu.")
-   (:new-head *new-head-hook* nil
-  "A hook called whenever a head is added. It is called with 2 arguments: the
+     (:new-head *new-head-hook* nil
+      "A hook called whenever a head is added. It is called with 2 arguments: the
  new head and the current screen."))
   :class 'std/prim::dynamic-hook)
 
@@ -373,13 +374,13 @@ when they are touched")))
   ;; modes autoenabled.
   (pushnew obj (wm-class-new-objects obj) :test #'eq))
 
-(defgeneric print-swm-object (object stream)
+(defgeneric print-wm-object (object stream)
   (:method (object stream)
     (format stream "~A" (type-of object))))
 
 (defmethod print-object ((object wm-class) stream)
   (print-unreadable-object (object stream)
-    (print-swm-object object stream)
+    (print-wm-object object stream)
     (when-let ((minor-modes (list-minor-modes object)))
       (format stream " :MINOR-MODES ~A" minor-modes))))
 
@@ -437,7 +438,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
     :accessor frame-window
     :initarg :window)))
 
-(defmethod print-swm-object ((object frame) stream)
+(defmethod print-wm-object ((object frame) stream)
   (format stream "FRAME ~d ~a ~d ~d ~d ~d"
           (frame-number object) (frame-window object) (frame-x object) (frame-y object) (frame-width object) (frame-height object)))
 
@@ -450,11 +451,11 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
 
 (defun copy-frame (instance)
   (make-wm-class-instance 'frame :number (frame-number instance)
-                                  :x (frame-x instance)
-                                  :y (frame-y instance)
-                                  :width (frame-width instance)
-                                  :height (frame-height instance)
-                                  :window (frame-window instance)))
+                                 :x (frame-x instance)
+                                 :y (frame-y instance)
+                                 :width (frame-width instance)
+                                 :height (frame-height instance)
+                                 :window (frame-window instance)))
 
 (define-wm-class head (frame)
   ((name
@@ -462,7 +463,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
     :accessor head-name
     :initarg :name)))
 
-(defmethod print-swm-object ((object head) stream)
+(defmethod print-wm-object ((object head) stream)
   (write-string "HEAD-" stream)
   (call-next-method))
 
@@ -494,17 +495,17 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
 
 (defun copy-head (instance)
   (make-wm-class-instance 'head :number (frame-number instance)
-                                 :x (frame-x instance)
-                                 :y (frame-y instance)
-                                 :width (frame-width instance)
-                                 :height (frame-height instance)
-                                 :window (frame-window instance)
-                                 :name (head-name instance)))
+                                :x (frame-x instance)
+                                :y (frame-y instance)
+                                :width (frame-width instance)
+                                :height (frame-height instance)
+                                :window (frame-window instance)
+                                :name (head-name instance)))
 
 (define-wm-class screen ()
   ((id :initarg :id :reader screen-id)
    (host :initarg :host :reader screen-host)
-   ;; ??? holds an actual screen
+   ;; REVIEW 2026-01-07: holds an actual screen
    (number :initarg :number :reader screen-number)
    (heads :initform () :accessor screen-heads)
    (groups :initform () :accessor screen-groups)
@@ -551,6 +552,7 @@ exist, in which case they go into the current group.")
    (last-msg :initform nil :accessor screen-last-msg)
    (last-msg-highlights :initform nil :accessor screen-last-msg-highlights)))
 
+;; color context
 (defstruct ccontext
   screen
   win
@@ -592,6 +594,7 @@ char."
         ;; translate the frame number to a char. FIXME: it loops after 9
         (char (prin1-to-string num) 0))))
 
+;; TODO 2026-01-07: change to DEFINE-BITFIELD
 (defstruct modifiers
   (meta nil)
   (alt nil)
@@ -606,7 +609,7 @@ char."
 (defvar *modifiers* nil
   "A mapping from modifier type to x11 modifier.")
 
-(defmethod print-swm-object ((object screen) stream)
+(defmethod print-wm-object ((object screen) stream)
   (format stream "SCREEN ~s" (screen-number object)))
 
 (defvar *screen-list* '()
@@ -620,7 +623,7 @@ loads the rc file.")
 (defvar *processing-existing-windows* nil
   "True when processing pre-existing windows at startup.")
 
-(defvar *executing-stumpwm-command* nil
+(defvar *executing-wm-command* nil
   "True when executing external commands.")
 
 (defvar *interactivep* nil
@@ -985,7 +988,7 @@ The group's name.
 ;;      (font-ascent font)))
 
 (defvar *x-selection* nil
-  "This is a plist of stumpwm's current selections. The different properties are
+  "This is a plist of WM's current selections. The different properties are
 generally set when killing text in the input bar.")
 
 (defvar *last-command* nil
@@ -1014,7 +1017,7 @@ running instance. Set it to @code{NIL} to search only the current screen. If
 @var{*run-or-raise-all-groups*} is @code{NIL} this variable has no effect.")
 
 (defvar *deny-map-request* nil
-  "A list of window properties that stumpwm should deny matching windows'
+  "A list of window properties that WM should deny matching windows'
 requests to become mapped for the first time.")
 
 (defvar *deny-raise-request* nil
@@ -1099,15 +1102,15 @@ window, and returns the preferred frame or a list of the above preferences.")
   (with-output-to-string (*standard-output*)
     (backtrace 100 *standard-output*)))
 
-(defvar *startup-message* "^2*Welcome to The ^BStump^b ^BW^bindow ^BM^banager!
+(defvar *startup-message* "^2*Welcome to The ^BW^bindow ^BM^banager!
 Press ^5*~a ?^2* for help."
-  "This is the message StumpWM displays when it starts. Set it to NIL to
+  "This is the message WM displays when it starts. Set it to NIL to
 suppress.")
 
 (defvar *default-wm-package* (find-package '#:wm-user)
   "This is the package eval reads and executes in. You might want to set
-this to @code{:wm} if you find yourself using a lot of internal
-stumpwm symbols. Setting this variable anywhere but in your rc file
+this to :WM if you find yourself using a lot of internal
+WM symbols. Setting this variable anywhere but in your rc file
 will have no effect.")
 
 (defun concat (&rest strings)
@@ -1145,7 +1148,7 @@ When this is nil, this rule will only match when @var{target-group}
 matches the group designated by @var{from-group}.
 When non-nil, this rule matches regardless
 of the group and the window is sent to @var{target-group}. If
-@var{lock} and @var{raise} are both non-nil, then stumpwm will jump to
+@var{lock} and @var{raise} are both non-nil, then WM will jump to
 the specified group and focus the matched window.
 
 @item from-group
@@ -1256,7 +1259,7 @@ bound to the window being processed."
 (defvar *mouse-focus-policy* :ignore
   "The mouse focus policy decides how the mouse affects input
 focus. Possible values are :ignore, :sloppy, and :click. :ignore means
-stumpwm ignores the mouse. :sloppy means input focus follows the
+WM ignores the mouse. :sloppy means input focus follows the
 mouse; the window that the mouse is in gets the focus. :click means
 input focus is transfered to the window you click on.
 
@@ -1319,23 +1322,23 @@ After changing this variable you may need to call
 sync-all-frame-windows to see the change.")
 
 (defvar *data-dir* nil
-  "The directory used by stumpwm to store data between sessions.")
+  "The directory used by WM to store data between sessions.")
 
 (defun ensure-data-dir ()
   (ensure-directories-exist *data-dir* :mode #o700))
 
 (defun default-data-dir ()
-  "Return the default data dir pathname based on the loaded StumpWM configuration file."
+  "Return the default data dir pathname based on the loaded WM configuration file."
   (or (xdg-data-dir :wm)
       (xdg-config-dir :wm)))
 
 (defun data-dir-file (name &optional type)
-  "Return a pathname inside stumpwm's data dir with the specified name and type"
+  "Return a pathname inside WM's data dir with the specified name and type"
   (ensure-data-dir)
   (make-pathname :name name :type type :defaults *data-dir*))
 
 (defmacro with-data-file ((s file &rest keys &key (if-exists :supersede) &allow-other-keys) &body body)
-  "Open a file in StumpWM's data directory. keyword arguments are sent
+  "Open a file in WM's data directory. keyword arguments are sent
 directly to OPEN. Note that IF-EXISTS defaults to :supersede, instead
 of :error."
   (declare (ignorable if-exists))
@@ -1411,7 +1414,7 @@ of :error."
   cc
   height
   factor
-  (mode :stump)
+  (mode :wm)
   on-click-bounds
   new-bounds)
 

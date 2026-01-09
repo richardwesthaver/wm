@@ -52,7 +52,7 @@
   ((superfluous :initform nil
                 :accessor superfluous-window-tag)))
 
-(defmethod print-swm-object ((object dynamic-window) stream)
+(defmethod print-wm-object ((object dynamic-window) stream)
   (format stream "DYNAMIC-WINDOW ~s #x~x" (window-name object) (window-id object)))
 
 (defmethod superfluous-window-p ((window dynamic-window))
@@ -147,7 +147,7 @@ stack windows, and SEVENTH is the major split ratio."))
   (:documentation "A group type that implements dynamic tiling à la DWM with a
 single master window and a window stack."))
 
-(defmethod print-swm-object ((object dynamic-window) stream)
+(defmethod print-wm-object ((object dynamic-window) stream)
   (format stream "DYNAMIC-WINDOW ~s #x~x" (window-name object) (window-id object)))
 
 (defun dynamic-group-p (thing)
@@ -1127,7 +1127,7 @@ window. "
     (throw 'error :abort))
   (add-group (current-screen) name :type 'dynamic-group :background t))
 
-(define-stumpwm-type :rotation-direction (input prompt)
+(define-wm-type :rotation-direction (input prompt)
   (let* ((values '(("Forward" :f)
                    ("Backward" :b)))
          (string (argument-pop-or-read input prompt (mapcar 'first values)))
@@ -1169,7 +1169,7 @@ backward (counterclockwise)"
             (throw 'error (format nil "Frame ~A has no window"
                                   (or (and w1 f2) (and w2 f1)))))))))
 
-(define-stumpwm-type :dynamic-layout (input prompt)
+(define-wm-type :dynamic-layout (input prompt)
   (let* ((values '(("Top" :top)
                    ("Left" :left)
                    ("Right" :right)

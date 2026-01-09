@@ -13,7 +13,7 @@ like xterm and emacs.")
   ((frame   :initarg :frame   :accessor window-frame :type frame)
    (normal-size :initform nil :accessor window-normal-size)))
 
-(defmethod print-swm-object ((object tile-window) stream)
+(defmethod print-wm-object ((object tile-window) stream)
   (write-string "TILE-" stream)
   (call-next-method))
 

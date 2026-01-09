@@ -26,7 +26,7 @@ select the screen."
     (unless (eq frame old-frame)
       (show-frame-indicator group))))
 
-(define-stumpwm-type :global-window-names (input prompt)
+(define-wm-type :global-window-names (input prompt)
   (labels
       ((global-window-names ()
          (mapcar (lambda (window) (window-name window)) (global-windows))))

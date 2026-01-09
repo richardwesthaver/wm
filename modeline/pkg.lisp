@@ -13,7 +13,7 @@
   (:export #:*refresh-time* #:*prefer-sysfs*))
 
 (defpackage #:wm/net
-  (:use #:cl #:wm #:ppcre #:net #:cli/tools/net)
+  (:use #:cl #:wm #:ppcre #:net #:cli/tools/net #:time)
   (:export #:*net-device*))
 
 (defpackage #:wm/tray
