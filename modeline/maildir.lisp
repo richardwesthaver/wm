@@ -1,15 +1,12 @@
-;;;; maildir.lisp
+;;; maildir.lisp
+
+;; Maildir monitoring for WM's modeline
+
+;; Copyright 2007 Morgan Veyret.
+
+;;; Code:
 (in-package #:wm/modeline)
 
-;;; "maildir" goes here. Hacks and glory await!
-
-;;; Maildir monitoring for stumpwm's modeline
-;;;
-;;; Copyright 2007 Morgan Veyret.
-;;;
-;;; Maintainer: Morgan Veyret
-
-;;; CODE:
 (export '(*maildir-alist*
 	  *maildir-modeline-fmt*
 	  *maildir-update-time*))

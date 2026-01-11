@@ -371,7 +371,7 @@ KMAPS are enabled"
       (add-wm-hook *key-press-hook* 'which-key-mode-key-press-hook)))
 
 (defcommand modifiers () ()
-  "List the modifiers stumpwm recognizes and what MOD-X it thinks they're on."
+  "List the modifiers WM recognizes and what MOD-X it thinks they're on."
   (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
                "Meta" (modifiers-meta *modifiers*)
                "Alt" (modifiers-alt *modifiers*)

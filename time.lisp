@@ -79,8 +79,8 @@
 
 (defcommand refresh-time-zone () ()
   "Refresh the time zone information from the system.
-If you change the system time zone while StumpWM is running you can
-run this command to make StumpWM notice the change."
+If you change the system time zone while WM is running you can
+run this command to make WM notice the change."
   ;; TODO 2026-01-07: defarize
   (sb-alien:alien-funcall
     (sb-alien:extern-alien "tzset" (function sb-alien:void))))

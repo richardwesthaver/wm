@@ -17,7 +17,7 @@
 
 ;;; The group API
 (defgeneric group-startup (group)
-  (:documentation "Called on all groups while stumpwm is starting up."))
+  (:documentation "Called on all groups while WM is starting up."))
 (defgeneric group-add-window (group window &key &allow-other-keys)
   (:documentation "Called when a window is added to the group. All
 house keeping is already taken care of. Only the group's specific

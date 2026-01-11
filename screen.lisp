@@ -198,7 +198,7 @@ identity with a range check."
   (mapc 'update-border-for-screen *screen-list*))
 
 (defun internal-window-p (screen win)
-  "Return t if win is a window used by stumpwm"
+  "Return t if win is a window used by WM"
   (or (xlib:window-equal (screen-message-window screen) win)
       (xlib:window-equal (screen-input-window screen) win)
       (xlib:window-equal (screen-focus-window screen) win)
@@ -314,7 +314,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                           (list focus-window) :window 32
                           :transform #'xlib:drawable-id)
     (xlib:change-property focus-window :_NET_WM_NAME
-                          "stumpwm"
+                          "wm"
                           :string 8 :transform #'xlib:char->card8)
 
     ;; _NET_CLIENT_LIST

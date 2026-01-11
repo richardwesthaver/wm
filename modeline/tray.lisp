@@ -61,7 +61,7 @@ first on the list by default.")
 
 ;;;; Tray appearance
 ;; Dimensions The tray height depends on the modeline height. In
-;; stumpwm there is a modeline for every X screen.
+;; WM there is a modeline for every X screen.
 (defvar *tray-cursor-thickness* 2)
 (defvar *tray-cursor-icon-distance* 1)
 (defparameter *tray-icon-spacing* 10
@@ -519,8 +519,8 @@ instead of its current position in the list."
 (defun fdo-tray-selection-name (tray)
   "Returns the selection atom name for TRAY as specified by the FDO
 System Tray protocol."
-  (let* ((stumpwm-screen (tray-screen tray))
-	 (screen (slot-value stumpwm-screen 'wm::number))
+  (let* ((wm-screen (tray-screen tray))
+	 (screen (slot-value wm-screen 'wm::number))
 	(display (tray-display tray)))
     (intern 
      (format nil "_NET_SYSTEM_TRAY_S~a" (xlib::screen-position screen display))
@@ -645,11 +645,11 @@ passed to `xlib:process-event'."
 ;(in-package :wm)
 (defun new-mode-line-hook (mode-line)
   "If *tray-autoshow*, then creates tray window"
-  (let ((stumpwm-screen (wm::mode-line-screen mode-line)))
-    (unless (screen-tray stumpwm-screen)
-      (let* ((tray (create-tray stumpwm-screen mode-line))
+  (let ((wm-screen (wm::mode-line-screen mode-line)))
+    (unless (screen-tray wm-screen)
+      (let* ((tray (create-tray wm-screen mode-line))
              (hnd (make-tray-handler tray)))
-        (setf (screen-tray stumpwm-screen) tray)
+        (setf (screen-tray wm-screen) tray)
         (tray-init tray)
         (map-tray tray)
         (let ((event-handler (lambda ()
@@ -660,8 +660,8 @@ passed to `xlib:process-event'."
 
 (defun destroy-mode-line-hook (mode-line)
   "Destroys tray, when mode-line is destroyed"
-  (let* ((stumpwm-screen (wm::mode-line-screen mode-line))
-         (tray (screen-tray stumpwm-screen)))
+  (let* ((wm-screen (wm::mode-line-screen mode-line))
+         (tray (screen-tray wm-screen)))
     (when (and
            tray
            (xlib:window-equal
@@ -697,10 +697,10 @@ passed to `xlib:process-event'."
   "Enable tray for current screen"
   (if (current-tray)
       (destroy-tray (current-tray))
-      (let* ((stumpwm-screen (wm:current-screen))
-             (tray (create-tray stumpwm-screen (screen-mode-line stumpwm-screen)))
+      (let* ((wm-screen (wm:current-screen))
+             (tray (create-tray wm-screen (screen-mode-line wm-screen)))
              (hnd (make-tray-handler tray)))
-        (setf (screen-tray stumpwm-screen) tray)
+        (setf (screen-tray wm-screen) tray)
         (tray-init tray)
         (map-tray tray)
         (let ((event-handler (lambda ()

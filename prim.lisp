@@ -106,7 +106,7 @@ window, group and frame.")
      (:internal-loop *internal-loop-hook* nil
       "A hook called inside WM's inner loop.")
      (:event-processing *event-processing-hook* nil
-      "A hook called inside stumpwm's inner loop, before the default event
+      "A hook called inside WM's inner loop, before the default event
   processing takes place. This hook is run inside (with-event-queue ...).")
      (:new-frame *new-frame-hook* nil
       "A hook called when a new frame is created. The hook is called with
@@ -121,7 +121,7 @@ the old frame (window is removed), and two new frames as arguments.")
       "A hook called when a split is removed. the hook is called with
 the current frame and removed frame as arguments.")
      (:message *message-hook* nil
-      "A hook called whenever stumpwm displays a message. The hook
+      "A hook called whenever WM displays a message. The hook
 function is passed any number of arguments. Each argument is a
 line of text.")
      (:top-level-error *top-level-error-hook* nil
@@ -129,7 +129,7 @@ line of text.")
 run before the error is dealt with according to
 *top-level-error-action*.")
      (:focus-group *focus-group-hook* nil
-      "A hook called whenever stumpwm switches groups. It is called with 2 arguments: the current group and the last group.")
+      "A hook called whenever WM switches groups. It is called with 2 arguments: the current group and the last group.")
      (:key-press *key-press-hook* nil
       "A hook called whenever a key under *top-map* is pressed.
 It is called with 3 argument: the key, the (possibly incomplete) key
@@ -385,7 +385,7 @@ when they are touched")))
       (format stream " :MINOR-MODES ~A" minor-modes))))
 
 (defun make-wm-class-instance (class &rest initargs)
-  "Make an instance of a StumpWM class and autoenable any relevant minor
+  "Make an instance of a WM class and autoenable any relevant minor
 modes. CLASS must be a symbol denoting a class which descends, directly or
 indirectly, from wm-class. INITARGS must be all initargs one would pass to
 make-instance."
@@ -613,11 +613,11 @@ char."
   (format stream "SCREEN ~s" (screen-number object)))
 
 (defvar *screen-list* '()
-  "The list of screens managed by stumpwm.")
+  "The list of screens managed by WM.")
 
 (defvar *initializing* nil
-  "True when starting stumpwm. Use this variable in your rc file to
-run code that should only be executed once, when stumpwm starts up and
+  "True when starting WM. Use this variable in your rc file to
+run code that should only be executed once, when WM starts up and
 loads the rc file.")
 
 (defvar *processing-existing-windows* nil
@@ -1107,15 +1107,6 @@ Press ^5*~a ?^2* for help."
   "This is the message WM displays when it starts. Set it to NIL to
 suppress.")
 
-(defvar *default-wm-package* (find-package '#:wm-user)
-  "This is the package eval reads and executes in. You might want to set
-this to :WM if you find yourself using a lot of internal
-WM symbols. Setting this variable anywhere but in your rc file
-will have no effect.")
-
-(defun concat (&rest strings)
-  (apply 'concatenate 'string strings))
-
 (defvar *window-placement-rules* '()
   "List of rules governing window placement. Use define-frame-preference to
 add rules")
@@ -1348,23 +1339,6 @@ of :error."
                          ,@keys)
        ,@body)))
 
-(defun rotate-log ()
-  (let ((log-filename (merge-pathnames "wm.log" *data-dir*))
-        (bkp-log-filename (merge-pathnames "wm.log.1" *data-dir*)))
-    (when (probe-file log-filename)
-      (rename-file log-filename bkp-log-filename))))
-
-(defun open-log ()
-  (rotate-log)
-  (let ((log-filename (merge-pathnames "wm.log" *data-dir*)))
-    (setf *debug-stream* (open log-filename :direction :output
-                                            :if-exists :supersede
-                                            :if-does-not-exist :create))))
-(defun close-log ()
-  (when (boundp '*debug-stream*)
-    (close *debug-stream*)
-    (makunbound '*debug-stream*)))
-
 (defmacro move-to-head (list elt)
   "Move the specified element in in LIST to the head of the list."
   `(progn
@@ -1385,18 +1359,6 @@ of :error."
   ()
   (:documentation "Adds a message slot to warning. Any wm specific warning
   should inherit from this."))
-
-(defun intern1 (thing &optional (package *package*) (rt *readtable*))
-  "A DWIM intern."
-  (intern
-   (ecase (readtable-case rt)
-     (:upcase (string-upcase thing))
-     (:downcase (string-downcase thing))
-     ;; Prooobably this is what they want? It could make sense to
-     ;; upcase them as well.
-     (:preserve thing)
-     (:invert (string-downcase thing)))
-   package))
 
 (defun command-mode-start-message ()
   (wm-message "Press C-g to exit command-mode."))

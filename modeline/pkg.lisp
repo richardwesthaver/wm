@@ -1,4 +1,4 @@
-;;; pkg.lisp --- StumpWM Modeline Packages
+;;; pkg.lisp --- WM Modeline Packages
 
 ;; 
 

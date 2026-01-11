@@ -105,7 +105,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
             (and (screen-urgent-windows (current-screen))
                  (focus-all (first (screen-urgent-windows (current-screen))))))
 
-;; Since StumpWM already uses the term 'group' to refer to Virtual Desktops,
+;; Since WM already uses the term 'group' to refer to Virtual Desktops,
 ;; we'll call the grouped windows of an application a 'gang'
 
 ;; maybe follow transient_for to find leader.
@@ -272,7 +272,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
 
 (defun get-normalized-normal-hints (xwin)
   (macrolet ((validate-hint (fn)
-               (setf fn (intern1 (concatenate 'string (string '#:wm-size-hints-) (string fn)) :xlib))
+               (setf fn (intern (concatenate 'string (string '#:wm-size-hints-) (string-upcase fn)) :xlib))
                `(setf (,fn hints) (and (,fn hints)
                                        (plusp (,fn hints))
                                        (,fn hints)))))
@@ -389,9 +389,9 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
   (let ((win (gensym))
         (val (gensym)))
     `(progn
-      (defun ,(intern1 (format nil "WINDOW-~a" attr)) (,win)
+      (defun ,(intern (format nil "WINDOW-~a" attr) :wm) (,win)
         (gethash ,attr (window-plist ,win)))
-      (defun (setf ,(intern1 (format nil "WINDOW-~a" attr))) (,val ,win)
+      (defun (setf ,(intern (format nil "WINDOW-~a" attr) :wm)) (,val ,win)
         (setf (gethash ,attr (window-plist ,win)) ,val)))))
 
 (defgeneric sort-windows-by-number (window-list-spec)
@@ -668,7 +668,7 @@ and bottom_end_x."
     (setf (window-parent window) master-window)))
 
 (defun process-existing-windows (screen)
-  "Windows present when stumpwm starts up must be absorbed by stumpwm."
+  "Windows present when WM starts up must be absorbed by WM."
   (let ((children (xlib:query-tree (screen-root screen)))
         (*processing-existing-windows* t)
         (stacking (xlib:get-property (screen-root screen) :_NET_CLIENT_LIST_STACKING :type :window)))

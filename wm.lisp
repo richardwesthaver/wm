@@ -181,15 +181,11 @@ further up."
              '(simple-array character (*)))
      display screen
      (cond (protocol
-            (intern1 protocol :keyword))
+            (keywordicate (string-upcase protocol)))
            ((or (string= host "")
                 (string-equal host "unix"))
             :local)
            (t :internet)))))
-
-(defun close-resources ()
-  (xlib:close-display *display*)
-  (close-log))
 
 (defun wm-internal (display-str)
   (multiple-value-bind (host display screen protocol) (parse-display-string display-str)
@@ -212,7 +208,7 @@ further up."
                ;; screens are initialized.
                (push #'minor-mode-top-maps *minor-mode-maps*)
                ;; Load rc file
-               (let ((*package* (find-package *default-wm-package*)))
+               (let ((*package* (find-package *default-package*)))
                  (multiple-value-bind (success err rc) (load-rc-file)
                    (if success
                        (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
@@ -241,10 +237,10 @@ further up."
              ;; the first time they try to run a command.
              (sb-thread:make-thread #'rehash)
              ;; Let's manage.
-             (let ((*package* (find-package *default-wm-package*)))
+             (let ((*package* (find-package *default-package*)))
                (run-hook *start-hook*)
                (wm-internal-loop)))
-        (close-resources))))
+        (xlib:close-display *display*))))
   :quit)
   
 (defun force-wm-restart (&key (close-display t))
@@ -259,7 +255,6 @@ further up."
   (setf *data-dir* (default-data-dir))  
   (ensure-data-dir)
   (init-load-path *module-dir*)
-  (open-log)
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm~%")
     (force-wm-restart))

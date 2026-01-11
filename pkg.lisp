@@ -2,7 +2,7 @@
 
 ;;; Code:
 (defpackage :wm
-  (:use #:cl #:std #:obj/meta/mix #:obj/time #:log)
+  (:use #:cl #:std #:obj/meta/mix #:time #:log)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)
@@ -78,7 +78,6 @@
    *initializing*
    *processing-existing-windows*
    *executing-wm-command*
-   *debug-stream*
    *window-formatters*
    *window-format*
    *group-formatters*
@@ -101,7 +100,6 @@
    *new-frame-action*
    *new-window-preferred-frame*
    *startup-message*
-   *default-wm-package*
    *window-placement-rules*
    *mouse-focus-policy*
    *root-click-focuses-frame*
@@ -114,9 +112,7 @@
    add-wm-hook
    remove-wm-hook
    clear-window-placement-rules
-   concat
    data-dir-file
-   dformat
    define-frame-preference
    redirect-all-output
    remove-all-hooks
@@ -324,11 +320,10 @@
    idle-time
    run-with-timer
    *toplevel-io*
-   stumpwm
+   wm
    call-in-main-thread
    in-main-thread-p
    push-event
-   close-resources
    defprogram-shortcut
    programs-in-path
    restarts-menu
@@ -453,3 +448,6 @@
   (:shadowing-import-from :wm :completing-read)
   (:use #:core-lisp #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
 
+(eval-when (:load-toplevel)
+  (pushnew :wm *features*)
+  (setq *default-package* "WM-USER"))

@@ -58,7 +58,7 @@
     (update-configuration win))
 
   (defun configure-unmanaged-window (xwin x y width height border-width value-mask)
-    "Call this function for windows that stumpwm isn't
+    "Call this function for windows that WM isn't
      managing. Basically just give the window what it wants."
     (xlib:with-state (xwin)
       (when (has-x value-mask)
@@ -287,8 +287,8 @@ ratpoison sends the rp_command_request window in 8 byte chunks."
                bytes-after)))
     (loop while (> (one-cmd) 0))))
 
-(defun handle-stumpwm-commands (root)
-  "Handle a StumpWM style command request."
+(defun handle-wm-commands (root)
+  "Handle a WM style command request."
   (let* ((win root)
          (screen (find-screen root))
          (data (xlib:get-property win :wm_command :delete-p t :result-type '(vector (unsigned-byte 8))))
@@ -375,7 +375,7 @@ converted to an atom is removed."
      (let* ((screen (find-screen window)))
        (when (and (eq state :new-value)
                   screen)
-         (handle-stumpwm-commands window))))
+         (handle-wm-commands window))))
     (t
      (when-let ((window (find-window window)))
        (update-window-properties window atom)))))
@@ -665,7 +665,7 @@ they should be windows. So use this function to make a window out of DRAWABLE."
     (when eventfn
       ;; XXX: In sbcl x libraries, sometimes what should be a window
       ;; will be a pixmap instead. In this case, we need to manually
-      ;; translate it to a window to avoid breakage in stumpwm. So far
+      ;; translate it to a window to avoid breakage in WM. So far
       ;; the only slot that seems to be affected is the :window slot
       ;; for configure-request and reparent-notify events. It appears
       ;; as though the hash table of XIDs and x structures gets out
@@ -676,12 +676,12 @@ they should be windows. So use this function to make a window out of DRAWABLE."
         (setf (getf event-slots :window) (make-xlib-window win)))
       (handler-case
           (progn
-            ;; This is not the stumpwm top level, but if the restart
+            ;; This is not the WM top level, but if the restart
             ;; is in the top level then it seems the event being
             ;; processed isn't popped off the stack and is immediately
             ;; reprocessed after restarting to the top level. So fake
             ;; it, and put the restart here.
-            (with-simple-restart (top-level "Return to stumpwm's top level")
+            (with-simple-restart (top-level "Return to WM's top level")
               (apply eventfn event-slots))
             (xlib:display-finish-output *display*))
         ((or xlib:window-error xlib:drawable-error) (c)

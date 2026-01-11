@@ -5,7 +5,7 @@
 ;;; Commentary:
 
 ;; Provides a simple way to remap keybindings in applications running under
-;; StumpWM
+;; WM
 
 ;;; Code:
 (in-package #:wm)

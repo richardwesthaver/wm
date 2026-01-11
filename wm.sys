@@ -4,7 +4,6 @@
  :require (:core :xlib)
  :components 
  ((:file "pkg")
-  (:file "log")
   (:file "prim")
   (:file "wrappers")
   (:file "font-rendering")

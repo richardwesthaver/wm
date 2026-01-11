@@ -30,7 +30,7 @@
 (defun float-window-modifier ()
   "Convert the *FLOAT-WINDOW-MODIFIER* to its corresponding X11."
   (when-let ((fn (find-symbol (concat "MODIFIERS-" (symbol-name *float-window-modifier*))
-                              (find-package "STUMPWM"))))
+                              (find-package "WM"))))
     (funcall fn *modifiers*)))
 
 ;; some book keeping functions

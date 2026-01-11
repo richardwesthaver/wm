@@ -1,4 +1,4 @@
-;;; pkg.lisp --- StumpWM Util Packages
+;;; pkg.lisp --- WM Util Packages
 
 ;; 
 

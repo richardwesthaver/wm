@@ -57,7 +57,7 @@ HEIGHT are subtracted."
           (multiple-value-setq (ox oy ow oh) (gaps-offsets win)))
 
       ;; Only do width or height subtraction if result will be positive,
-      ;; otherwise stumpwm will crash. Also, only modify window dimensions
+      ;; otherwise WM will crash. Also, only modify window dimensions
       ;; if needed (i.e. window at least fills frame minus gap).
       (when (and (< ow width)
                  (>= width (- (frame-width frame) ow)))

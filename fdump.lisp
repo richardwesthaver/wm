@@ -57,9 +57,9 @@
   "Convert NAME to a pathname for dump data. If NAME is an absolute path, then it will
 be used as is. Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME 
 location."
-  (if (uiop:absolute-pathname-p name)
+  (if (absolute-pathname-p name)
       name
-      (merge-pathnames (ensure-directories-exist (uiop:xdg-data-home #p"stumpwm/"))
+      (merge-pathnames (ensure-directories-exist (xdg-data-directory "wm"))
                        (make-pathname :type "dump"
                                       :name name))))
 

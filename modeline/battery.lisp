@@ -3,7 +3,7 @@
 (in-package #:wm/battery)
 ;;; "battery-portable" goes here. Hacks and glory await!
 
-;;; Portable battery information for StumpWM's mode-line.
+;;; Portable battery information for WM's mode-line.
 ;;;
 ;;; Written by Julian Stecklina with inspiration from John Li and
 ;;; Rupert Swarbrick.
@@ -251,7 +251,7 @@
       (format stream "~D:~2,'0D" hours (floor rest 60)))))
 
 (defun battery-info-string ()
-  "Compiles a string suitable for StumpWM's mode-line."
+  "Compiles a string suitable for WM's mode-line."
   (with-output-to-string (fmt)
     (let ((current-fs (cond ((and *preferred-drivers-failed*
                                   *non-preferred-drivers-failed*)
