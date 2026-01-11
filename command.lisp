@@ -46,44 +46,40 @@ command's arguments.
 
 TYPE can be one of the following:
 
-@table @var
-@item :y-or-n
+:y-or-n
 A yes or no question returning T or NIL.
-@item :variable
+:variable
 A lisp variable
-@item :function
+:function
 A lisp function
-@item :command
+:command
 A WM command as a string.
-@item :key-seq
+:key-seq
 A key sequence starting from *TOP-MAP*
-@item :window-number
+:window-number
 An existing window number
-@item :number
+:number
 An integer number
-@item :string
+:string
 A string
-@item :key
+:key
 A single key chord
-@item :window-name
+:window-name
 An existing window's name
-@item :direction
+:direction
 A direction symbol. One of :UP :DOWN :LEFT :RIGHT
-@item :gravity
+:gravity
 A gravity symbol. One of :center :top :right :bottom :left :top-right :top-left :bottom-right :bottom-left
-@item :group
+:group
 An existing group
-@item :frame
+:frame
 A frame
-@item :shell
+:shell
 A shell command
-@item :rest
+:rest
 The rest of the input yet to be parsed.
-@item :module
-An existing WM module
-@item :rotation
+:rotation
 A rotation symbol. One of :CL, :CLOCKWISE, :CCL, OR :COUNTERCLOCKWISE
-@end table
 
 Note that new argument types can be created with DEFINE-WM-TYPE.
 

@@ -254,7 +254,6 @@ further up."
   (std:init :xdg)
   (setf *data-dir* (default-data-dir))  
   (ensure-data-dir)
-  (init-load-path *module-dir*)
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm~%")
     (force-wm-restart))

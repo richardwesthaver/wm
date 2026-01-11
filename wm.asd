@@ -32,7 +32,6 @@
                (:file "window-placement")
                (:file "message-window")
                (:file "selection")
-               (:file "module")
                (:file "ioloop")
                (:file "timers")
                (:file "wm")

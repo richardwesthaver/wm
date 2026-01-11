@@ -302,15 +302,6 @@
    get-x-selection
    set-x-selection
    *default-selections*
-   ;; module.lisp
-   load-wm-module
-   list-modules
-   *load-path*
-   *module-dir*
-   init-load-path
-   set-module-dir
-   find-module
-   add-to-load-path
    ;; ioloop.lisp
    io-channel-ioport io-channel-events io-channel-handle
    io-loop io-loop-add io-loop-remove io-loop-update

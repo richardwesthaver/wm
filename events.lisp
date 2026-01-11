@@ -235,8 +235,7 @@ kmap."
 (defvar *current-key-seq* nil
   "The sequence of keys which were used to invoke a command, available
   within a command definition as a dynamic var binding. Commands may
-  dispatch further based on the value in *current-key-seq*. See the
-  REMAP-KEYS contrib module for a working use case.")
+  dispatch further based on the value in *current-key-seq*.")
 
 (defvar *custom-key-event-handler* nil
   "A custom key event handler can be set in this variable,

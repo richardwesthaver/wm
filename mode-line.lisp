@@ -42,36 +42,29 @@ result is used as a mode line element.
 If it is a string the string is printed with the following formatting
 options:
 
-- %h
-List the number of the head the mode-line belongs to
+- %h :: List the number of the head the mode-line belongs to
 
-- %w
-List all windows in the current group windows using @var{*window-format*}
+- %w :: List all windows in the current group windows using
+@var{*window-format*}
 
-- %W
-List all windows on the current head of the current group using
+- %W :: List all windows on the current head of the current group using
 *WINDOW-FORMAT*
 
-- %g
-List the groups using *GROUP-FORMAT*
+- %g :: List the groups using *GROUP-FORMAT*
 
-- %n
-The current group's name
+- %n :: The current group's name
 
-- %u
-Using *WINDOW-FORMAT*, return a 1 line list of the urgent windows, space seperated.
+- %u :: Using *WINDOW-FORMAT*, return a 1 line list of the urgent windows,
+space seperated.
 
-- %v
-Using *WINDOW-FORMAT*}, return a 1 line list of the windows, space
-separated. The currently focused window is highlighted with
-fmt-highlight. Any non-visible windows are colored the
-*hidden-window-color*.
+- %v :: Using *WINDOW-FORMAT*}, return a 1 line list of the windows, space
+separated. The currently focused window is highlighted with fmt-highlight. Any
+non-visible windows are colored the *hidden-window-color*.
 
-- %d
-Using *TIME-MODELINE-STRING*, print the time.
+- %d :: Using *TIME-MODELINE-STRING*, print the time.
 
-A number of modules have been written that extends the possible
-formatting strings.  See their documentation for details.")
+A number of extensions have been written that extends the possible formatting
+strings. See their documentation for details.")
 
 (defvar *screen-mode-line-formatters* ()
   "An alist containing format character format function pairs for
@@ -88,7 +81,6 @@ timer.")
   "The timer that updates the modeline")
 
 ;;; Formatters
-
 (defun add-screen-mode-line-formatter (character fmt-fun)
   "Add a format function to a format character (or overwrite an existing one)."
   (setf *screen-mode-line-formatters*
@@ -117,9 +109,11 @@ timer.")
 (defun turn-on-mode-line-timer ()
   (when (timer-p *mode-line-timer*)
     (cancel-timer *mode-line-timer*))
-  (setf *mode-line-timer* (run-with-timer *mode-line-timeout*
-                                          *mode-line-timeout*
-                                          'update-all-mode-lines)))
+  (setf *mode-line-timer* 
+        (run-with-timer 
+         *mode-line-timeout*
+         *mode-line-timeout*
+         'update-all-mode-lines)))
 
 (defun maybe-cancel-mode-line-timer ()
   (unless *mode-lines*
@@ -257,8 +251,7 @@ timer.")
           (mode-line-format-elt val)))
       (symbol-name elt)))
 
-(defmethod mode-line-format-elt ((elt null))
-  "")
+(defmethod mode-line-format-elt ((elt null)) "")
 
 (defmethod mode-line-format-elt ((elt list))
   (etypecase (first elt)
@@ -374,7 +367,6 @@ appropriate mode line click function."
   (register-ml-on-click-id :ml-on-click-switch-to-group
                            #'ml-on-click-switch-to-group)
   (register-ml-on-click-id :ml-on-click-do-nothing #'ml-on-click-do-nothing))
-
 
 ;;; External mode lines
 (defun move-mode-line-to-head (mode-line head)
