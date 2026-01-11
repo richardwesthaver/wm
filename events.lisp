@@ -439,9 +439,11 @@ converted to an atom is removed."
         ((setf ml (find-mode-line-by-window window))
          (setf screen (mode-line-screen ml))
          (redraw-mode-line ml t)))
+      ;; NOTE 2026-01-10: disabled, removed *DEBUG-EXPOSE-EVENTS*
       ;; Show the area.
-      (when (and *debug-expose-events* screen)
-        (draw-cross screen window x y width height)))))
+      ;; (when (and *debug-expose-events* screen)
+      ;; (draw-cross screen window x y width height))
+      )))
 
 (define-wm-event-handler :reparent-notify (window parent)
   (let ((win (find-window window)))

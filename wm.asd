@@ -9,7 +9,7 @@
   :serial t
   :depends-on (#:core #:xlib #:skel)
   :components ((:file "pkg")
-               (:file "debug")
+               (:file "log")
                (:file "prim")
                (:file "wrappers")
                (:file "font-rendering")

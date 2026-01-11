@@ -247,7 +247,6 @@ further up."
         (close-resources))))
   :quit)
   
-
 (defun force-wm-restart (&key (close-display t))
   (when close-display
     (xlib:close-display *display*))

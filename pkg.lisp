@@ -2,7 +2,7 @@
 
 ;;; Code:
 (defpackage :wm
-  (:use #:cl #:std #:obj/meta/mix #:obj/time)
+  (:use #:cl #:std #:obj/meta/mix #:obj/time #:log)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)
@@ -78,8 +78,6 @@
    *initializing*
    *processing-existing-windows*
    *executing-wm-command*
-   *debug-level*
-   *debug-expose-events*
    *debug-stream*
    *window-formatters*
    *window-format*
