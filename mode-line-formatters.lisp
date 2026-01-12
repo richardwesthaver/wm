@@ -103,7 +103,7 @@ other color formatters."
                          #'< :key #'window-number))))
 
 (defun fmt-hidden (s)
-  (format nil (concat "^[" *hidden-window-color* "~A^]") s))
+  (format nil (concatenate 'string "^[" *hidden-window-color* "~A^]") s))
 
 (add-screen-mode-line-formatter #\v 'fmt-head-window-list-hidden-windows)
 (defun fmt-head-window-list-hidden-windows (ml)

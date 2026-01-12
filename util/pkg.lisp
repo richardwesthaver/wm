@@ -4,11 +4,11 @@
 
 ;;; Code:
 (defpackage #:wm/golden-ratio
-  (:use #:cl #:wm)
+  (:use #:std-lisp #:wm)
   (:export :*golden-ratio* :*golden-ratio-on* :toggle-golden-ratio))
 
 (defpackage #:wm/clipboard
-  (:use #:cl #:wm)
+  (:use #:std-lisp #:wm)
   (:export 
    #:start-clipboard-manager
    #:stop-clipboard-manager
@@ -16,12 +16,12 @@
    #:*clipboard-history-max-length*))
 
 (defpackage #:wm/history
-  (:use :cl :wm)
+  (:use :std-lisp :wm)
   (:export
    :*command-history-file*))
 
 (defpackage #:wm/windows
-  (:use #:cl :wm)
+  (:use #:std-lisp :wm)
   (:import-from 
    :wm
    :*window-format*
@@ -65,10 +65,10 @@
   (:export #:beckon #:*window-height-fraction* #:*window-width-fraction*))
 
 (defpackage #:wm/screenshot
-  (:use #:cl :wm :dat/png))
+  (:use #:std-lisp :wm :dat/png))
 
 (defpackage #:wm/gaps
-  (:use #:cl :wm)
+  (:use #:std-lisp :wm)
   (:export 
    :*inner-gaps-size* :*outer-gaps-size* 
    :*head-gaps-size* :*gaps-on* 
@@ -76,7 +76,7 @@
 
 (defpackage #:wm/ttf-fonts
   (:shadowing-import-from :wm :version :message)
-  (:use #:cl #:wm #:ttf)
+  (:use #:std-lisp #:wm #:ttf)
   (:import-from :wm
    :font-exists-p :open-font 
    :close-font :font-ascent :font-descent :text-line-width

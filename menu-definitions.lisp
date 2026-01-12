@@ -18,7 +18,7 @@
           lst))
 
 (defmethod menu-entry-display ((entry menu-entry))
-  (concat (string (menu-entry-icon entry)) " " (menu-entry-label entry)))
+  (concatenate 'string (string (menu-entry-icon entry)) " " (menu-entry-label entry)))
 
 (defmethod menu-entry-apply ((entry menu-entry) function)
   (if (slot-boundp entry 'data)

@@ -53,7 +53,7 @@
   (disk:disk-available-space path))
 
 (defun disk-get-available (path)
-  (std:human-readable-size (disk:disk-available-space path t)))
+  (human-readable-size (disk:disk-available-space path t)))
 
 (defun disk-get-use-percent (path)
   (let ((value (truncate (* 100

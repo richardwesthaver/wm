@@ -87,7 +87,7 @@
 
   (defclass procfs-battery (battery)
     ((path :initarg :path :initform (error ":path missing")
-           :reader path-of)
+           :reader path)
      (info-hash :initform (make-hash-table :test 'equal)
                 :reader info-hash-of)))
 
@@ -96,7 +96,7 @@
     (loop
        for filename in '("state" "info")
        do (with-open-file (file (merge-pathnames (make-pathname :name filename)
-                                                 (path-of battery)))
+                                                 (path battery)))
             (loop
                for line = (read-line file nil nil)
                while line
@@ -160,7 +160,7 @@
 
   (defclass sysfs-battery (battery)
     ((path :initarg :path :initform (error ":path missing")
-           :reader path-of)))
+           :reader path)))
 
   (defun sysfs-field (path name)
     (with-open-file (file (merge-pathnames (make-pathname :name name)
@@ -185,7 +185,7 @@
 
   (defmethod state-of ((battery sysfs-battery))
     (handler-case
-        (let* ((path (path-of battery))
+        (let* ((path (path battery))
                (present (sysfs-field path "present")))
           (if (or (not present) (string= present "0"))
               :unknown

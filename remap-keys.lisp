@@ -4,8 +4,7 @@
 
 ;;; Commentary:
 
-;; Provides a simple way to remap keybindings in applications running under
-;; WM
+;; Provides a simple way to remap keybindings in applications running under WM.
 
 ;;; Code:
 (in-package #:wm)

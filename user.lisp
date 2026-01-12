@@ -318,10 +318,10 @@ submitting the bug report."
 (defmacro defprogram-shortcut (name &key (command (string-downcase (string name)))
                                          (props `'(:class ,(string-capitalize command)))
                                          (map '*top-map*)
-                                         (key `(kbd ,(concat "H-" (subseq command 0 1))))
+                                         (key `(kbd ,(concatenate 'string "H-" (subseq command 0 1))))
                                          (pullp nil)
-                                         (pull-name (intern (concat (string-upcase name) "-PULL") :wm))
-                                         (pull-key `(kbd ,(concat "H-M-" (subseq command 0 1)))))
+                                         (pull-name (intern (concatenate 'string (string-upcase name) "-PULL") :wm))
+                                         (pull-key `(kbd ,(concatenate 'string "H-M-" (subseq command 0 1)))))
   "Define a command and key binding to run or raise a program. If
 @var{pullp} is set, also define a command and key binding to run or
 pull the program."

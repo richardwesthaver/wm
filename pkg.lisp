@@ -169,7 +169,6 @@
    lookup-command
    lookup-key
    make-sparse-keymap
-   undefine-key
    ;; input.lisp
    *input-history-ignore-duplicates*
    *input-candidate-selected-hook*
@@ -437,7 +436,7 @@
 
 (std:defpkg :wm-user
   (:shadowing-import-from :wm :completing-read)
-  (:use #:core-lisp #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
+  (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
 
 (eval-when (:load-toplevel)
   (pushnew :wm *features*)

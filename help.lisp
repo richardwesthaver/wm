@@ -111,19 +111,19 @@ which-key window. Two arguments will be passed to this formatter:
     (if-let ((cmd (loop for map in (top-maps)
                         for cmd = (lookup-key-sequence map keys)
                         when cmd return cmd)))
-      (let ((cmd-without-args (argument-pop
-                               (make-argument-line :string cmd :start 0))))
-        (message-no-timeout "~{~A~^ ~} is bound to \"~A\".~%~A"
-                            printed-key cmd
-                            (describe-command-to-stream cmd-without-args nil)))
-      (cond ((and (help-key-p keys)
-                  (cdr printed-key))
-             (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
-                          printed-key (butlast printed-key)))
-            ((cancel-key-p keys)
-             (wm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
-                          (lastcar printed-key)))
-            (t (wm-message "~{~A~^ ~} is not bound." printed-key))))))
+            (let ((cmd-without-args (argument-pop
+                                     (make-argument-line :string cmd :start 0))))
+              (message-no-timeout "~{~A~^ ~} is bound to \"~A\".~%~A"
+                                  printed-key cmd
+                                  (describe-command-to-stream cmd-without-args nil)))
+            (cond ((and (help-key-p keys)
+                        (cdr printed-key))
+                   (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
+                               printed-key (butlast printed-key)))
+                  ((cancel-key-p keys)
+                   (wm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
+                               (lastcar printed-key)))
+                  (t (wm-message "~{~A~^ ~} is not bound." printed-key))))))
 
 (defun describe-variable-to-stream (var stream)
   "Write the help for the variable to the stream."
@@ -150,7 +150,7 @@ which-key window. Two arguments will be passed to this formatter:
   (format stream "function:^5 ~a^n~%" (string-downcase (symbol-name fn)))
   (when-let ((lambda-list (sb-introspect:function-lambda-list
                            (symbol-function fn))))
-    (format stream "(^5~a ^B~{~a~^ ~}^b^n)~&~%" (string-downcase (symbol-name fn)) lambda-list))
+            (format stream "(^5~a ^B~{~a~^ ~}^b^n)~&~%" (string-downcase (symbol-name fn)) lambda-list))
   (format stream "~&~a"(or (documentation fn 'function) "")))
 
 (defcommand describe-function (fn) ((:function "Describe function: "))
@@ -268,18 +268,18 @@ FIND-BINDING-IN-KMAP."
            (struct (get-command-structure com nil))
            (name (command-name struct))
            (text 
-             (wrap (concat
+             (wrap (concatenate
                     (unless (eq deref struct)
                       (format nil "\"~a\" is an alias for the command \"~a\":~%"
                               (command-alias-from deref)
                               name))
                     (when-let ((message (where-is-to-stream name nil)))
-                      (format nil "~&~A~&" message))
+                              (format nil "~&~A~&" message))
                     (when-let ((lambda-list (sb-introspect:function-lambda-list
                                              (symbol-function name))))
-                      (format nil "~%^5~a ^B~{~a~^ ~}^b^n~&~%"
-                              name
-                              lambda-list))
+                              (format nil "~%^5~a ^B~{~a~^ ~}^b^n~&~%"
+                                      name
+                                      lambda-list))
                     (format nil "~&~a" (or (documentation name 'function) "")))
                    *message-max-width*
                    nil)))
@@ -310,9 +310,9 @@ FIND-BINDING-IN-KMAP."
                (symbol comm))))
     (let ((cmd (string-downcase cmd)))
       (if-let ((bindings (keys cmd)))
-        (format stream "\"~a\" is on ~{~a~^, ~}." cmd
-                (mapcar 'print-key-seq bindings))
-        (format stream "Command \"~a\" is not currently bound." cmd))
+              (format stream "\"~a\" is on ~{~a~^, ~}." cmd
+                      (mapcar 'print-key-seq bindings))
+              (format stream "Command \"~a\" is not currently bound." cmd))
       (let ((reverse-hash (make-hash-table :size (hash-table-size *command-hash*)
                                            :test 'eq)))
         (loop for k being each hash-key of *command-hash* using (hash-value v)
@@ -321,11 +321,11 @@ FIND-BINDING-IN-KMAP."
                          (when (not (eql sym (sym v #'command-alias-to)))
                            (cons sym #1#)))))
         (when-let ((aliases (gethash (intern (string-upcase cmd)) reverse-hash)))
-          (format stream "~%\"~a\" is aliased to ~{\"~a\"~^, ~}."
-                  cmd (mapcar #'string-downcase aliases))
-          (loop for a in aliases
-                for k = #2=(keys (string-downcase (symbol-name a))) then #2#
-                when k do (format stream "~%\"~a\" is on ~{~a~^, ~}." (string-downcase a) (mapcar 'print-key-seq k))))))))
+                  (format stream "~%\"~a\" is aliased to ~{\"~a\"~^, ~}."
+                          cmd (mapcar #'string-downcase aliases))
+                  (loop for a in aliases
+                        for k = #2=(keys (string-downcase (symbol-name a))) then #2#
+                        when k do (format stream "~%\"~a\" is on ~{~a~^, ~}." (string-downcase a) (mapcar 'print-key-seq k))))))))
 
 (defcommand where-is (cmd) ((:command "Where is command: "))
   "Print the key sequences bound to the specified command."
@@ -362,7 +362,7 @@ KMAPS are enabled"
     (let* ((oriented-key-seq (reverse key-seq))
            (maps (get-kmaps-at-key-seq (dereference-kmaps (top-maps)) oriented-key-seq)))
       (when-let ((only-maps (remove-if-not 'kmap-p maps)))
-        (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
+                (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
 
 (defcommand which-key-mode () ()
   "Toggle which-key-mode"
@@ -373,8 +373,8 @@ KMAPS are enabled"
 (defcommand modifiers () ()
   "List the modifiers WM recognizes and what MOD-X it thinks they're on."
   (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
-               "Meta" (modifiers-meta *modifiers*)
-               "Alt" (modifiers-alt *modifiers*)
-               "Super" (modifiers-super *modifiers*)
-               "Hyper" (modifiers-hyper *modifiers*)
-               "AltGr" (modifiers-altgr *modifiers*)))
+              "Meta" (modifiers-meta *modifiers*)
+              "Alt" (modifiers-alt *modifiers*)
+              "Super" (modifiers-super *modifiers*)
+              "Hyper" (modifiers-hyper *modifiers*)
+              "AltGr" (modifiers-altgr *modifiers*)))

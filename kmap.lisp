@@ -154,8 +154,7 @@ kbd-parse if the key failed to parse."
 
 (defun kbd (keys)
   "This compiles a key string into a key structure used by
-`define-key', `undefine-key', `set-prefix-key' and
-others."
+`define-key', `set-prefix-key' and others."
   ;; XXX: define-key needs to be fixed to handle a list of keys
   (first (parse-key-seq keys)))
 
@@ -210,11 +209,6 @@ Now when you type C-t C-z, you'll see the text ``Zzzzz...'' pop up."
     ;; We need to tell the X server when changing the top-map bindings.
     (when (eq map *top-map*)
       (sync-keys))))
-
-;; Not really needed.  Keep it for backward compatibility.
-(defun undefine-key (map key)
-  "Clear the key binding in the specified keybinding."
-  (define-key map key nil))
 
 (defun lookup-key-sequence (kmap key-seq)
   "Return the command bound to the key sequenc, KEY-SEQ, in keymap KMAP."

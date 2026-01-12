@@ -264,10 +264,6 @@ great example."
   "Hang a key binding off the escape key."
   (define-key *root-map* (kbd key) command))
 
-(defcommand unbind-key (key) ((:string "Key chord: "))
-  "Remove a key binding from the escape key."
-  (undefine-key *root-map* (kbd key)))
-
 (defcommand send-escape () ()
   "Send the escape key to the current window."
   (send-meta-key (current-screen) *escape-key*))

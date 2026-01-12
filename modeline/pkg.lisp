@@ -4,20 +4,20 @@
 
 ;;; Code:
 (defpackage #:wm/cpu
-  (:use #:cl :wm)
+  (:use #:std-lisp :wm)
   (:export #:*cpu-modeline-fmt*
            #:*acpi-thermal-zone*))
 
 (defpackage #:wm/battery
-  (:use :cl :wm :ppcre)
+  (:use :std-lisp :wm :ppcre)
   (:export #:*refresh-time* #:*prefer-sysfs*))
 
 (defpackage #:wm/net
-  (:use #:cl #:wm #:ppcre #:net #:cli/tools/net #:time)
+  (:use #:std-lisp #:wm #:ppcre #:net #:cli/tools/net #:time)
   (:export #:*net-device*))
 
 (defpackage #:wm/tray
-  (:use #:cl #:std)
+  (:use #:std-lisp)
   (:export 
    :*tray-viwin-background*
    :*tray-hiwin-background*
@@ -27,10 +27,10 @@
    :remove-mode-line-hooks))
 
 (defpackage #:wm/disk
-  (:use :cl :wm :disk)
+  (:use :std-lisp :wm :disk)
   (:export :*disk-modeline-fmt*
            :*disk-usage-paths*))
 
 (pkg:defpkg :wm/modeline
-  (:use #:cl #:wm)
+  (:use #:std-lisp #:wm)
   (:use-reexport #:wm/cpu #:wm/battery #:wm/net #:wm/tray #:wm/disk))
