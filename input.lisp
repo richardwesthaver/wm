@@ -145,7 +145,6 @@ and complete the input by mutating it."))
     map)
   "This is the keymap containing all input editing key bindings.")
 
-
 (defvar *input-history* nil
   "History for the input line.")
 
@@ -185,7 +184,6 @@ Available completion styles include
   "A keycode to keycode map to re-wire numpads when the numlock key is active")
 
 ;;; keysym functions
-
 (defun is-modifier (keycode)
   "Return t if keycode is a modifier"
   (or (find keycode *all-modifiers* :test 'eql)
@@ -205,7 +203,6 @@ Available completion styles include
     (xlib:keysym->character *display* (xlib:keycode->keysym *display* code idx) 0)))
 
 ;;; line and key reading functions
-
 (defun setup-input-window (screen prompt input)
   "Set the input window up to read input"
   (let* ((height (+ (font-height (screen-font screen))
@@ -386,7 +383,6 @@ match with an element of the completions."
      (* (font-height font) index)
      (font-ascent font)))
 
-
 (defun get-completion-preview-list (input-line all-completions)
   (if (and (string= "" input-line) (not *input-completion-show-empty*))
       '()
@@ -438,7 +434,6 @@ match with an element of the completions."
                                           (* *message-window-y-padding* 2)
                                           (* completions-length (font-height font))))
       (setup-win-gravity screen win *input-window-gravity*)
-
       ;; Display the input window text.
       (loop for i from 0 below (+ prompt-lines-length completions-length)
          if (< i prompt-lines-length)

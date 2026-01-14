@@ -124,6 +124,8 @@ function expects to be wrapped in a with-state for win."
   (setf *frame-indicator-timer* (run-with-timer *timeout-frame-indicator-wait* nil
                                                 'unmap-all-frame-indicator-windows)))
 
+;; TODO 2026-01-12: return second value indicating if we were successful in
+;; drawing the outline.
 (defun show-frame-outline (group &optional (clear t))
   ;; Don't draw if this isn't a current group!
   (when (find group (mapcar 'screen-current-group *screen-list*))
@@ -322,7 +324,6 @@ message does not time out."
     (apply 'wm-message fmt args)))
 
 ;;; Commands
-
 (defvar *lastmsg-nth* nil)
 
 (defcommand lastmsg () ()

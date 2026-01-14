@@ -9,8 +9,8 @@
   "Dynamically bound to T during the execution of the main wm function.")
 
 ;;; Main
-(defun load-rc-file (&optional (catch-errors t))
-  "Load the user's wmrc file or the system wide one if that
+(defun load-init-file (&optional (catch-errors t))
+  "Load the user's WM init file or the system wide one if that
 doesn't exist. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the rc file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
@@ -209,7 +209,7 @@ further up."
                (push #'minor-mode-top-maps *minor-mode-maps*)
                ;; Load rc file
                (let ((*package* (find-package *default-package*)))
-                 (multiple-value-bind (success err rc) (load-rc-file)
+                 (multiple-value-bind (success err rc) (load-init-file)
                    (if success
                        (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
                        (wm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))

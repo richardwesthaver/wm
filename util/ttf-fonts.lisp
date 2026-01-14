@@ -1,7 +1,8 @@
 ;;; ttf-fonts.lisp
+
+;;; Code:
 (in-package :wm/ttf-fonts)
-;;; "ttf-fonts" goes here. Hacks and glory await!
-;;;; TTF fonts
+
 (defmethod font-exists-p ((font font))
   ;; if we can list the font then it exists
   t)

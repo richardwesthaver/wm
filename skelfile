@@ -31,7 +31,7 @@
     :purify t
     :compression t)))
  (modules () (:install () #$mkdir -pv $USER_WM_DIR/lisp && cp -rf util modeline $USER_WM_DIR/lisp/$#))
- (:install (install-modules)
+ (:install ()
   (with-sudo 
    "install -m 755 .stash/wm /usr/local/bin/"))
  (clean ()

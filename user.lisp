@@ -175,14 +175,14 @@ such a case, kill the shell command to resume WM."
   (send-meta-key (current-screen) key))
 
 (defcommand loadrc () ()
-  "Reload the ~/.config/wmrc file."
+  "Reload the wmrc and init files."
   (handler-case 
-      (with-restarts-menu (load-rc-file nil))
+      (with-restarts-menu (load-init-file nil))
     (error (c)
-      (wm-message "^1*^BError loading rc file: ^n~A" c))
+      (wm-message "^1*^BError loading init file: ^n~A" c))
     (:no-error (&rest args)
       (declare (ignore args))
-      (wm-message "rc file loaded successfully."))))
+      (wm-message "init file loaded successfully."))))
 
 (defcommand keyboard-quit () ()
   "This way you can exit from command mode. Also aliased as abort."
@@ -244,24 +244,18 @@ number, with group being more significant (think radix sort)."
 
 (defun run-or-raise (cmd props &optional (all-groups *run-or-raise-all-groups*)
                                          (all-screens *run-or-raise-all-screens*))
-  "Run the shell command, @var{cmd}, unless an existing window
-matches @var{props}. @var{props} is a property list with the following keys:
+  "Run the shell command, CMD, unless an existing window
+matches PROPS. PROPS is a property list with the following keys:
 
-@table @code
-@item :class
-Match the window's class.
-@item :instance
-Match the window's instance or resource-name.
-@item :role
-Match the window's @code{WM_WINDOW_ROLE}.
-@item :title
-Match the window's title.
-@end table
+- :class :: Match the window's class.
+- :instance :: Match the window's instance or resource-name.
+- :role :: Match the window's @code{WM_WINDOW_ROLE}.
+- :title :: Match the window's title.
 
-By default, the global @var{*run-or-raise-all-groups*} decides whether
+By default, the global *RUN-OR-RAISE-ALL-GROUPS* decides whether
 to search all groups or the current one for a running
-instance. @var{all-groups} overrides this default. Similarily for
-@var{*run-or-raise-all-screens*} and @var{all-screens}."
+instance. ALL-GROUPS overrides this default. Similarily for
+*RUN-OR-RAISE-ALL-SCREENS* and ALL-SCREENS."
   (let* ((matches (find-matching-windows props all-groups all-screens))
          ;; other-matches is list of matches "after" the current
          ;; win, if current win matches. getting 2nd element means
