@@ -35,8 +35,8 @@
 
 ;; More or less yanked from the wiki.
 (defun current-cpu-usage ()
-  "Return the average CPU usage since the last call.  First value is percent
-of CPU in use.  Second value is percent of CPU in use by system processes.
+  "Return the average CPU usage since the last call. First value is percent
+of CPU in use. Second value is percent of CPU in use by system processes.
 Third value is percent of time since last call spent waiting for IO (or 0 if
 not available). Don't make calculation more than once a second."
   (let ((cpu-result 0)
