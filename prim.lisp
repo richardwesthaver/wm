@@ -626,11 +626,7 @@ loads the rc file.")
 (defvar *executing-wm-command* nil
   "True when executing external commands.")
 
-(defvar *interactivep* nil
-  "True when a defcommand is executed from colon or a keybinding")
-
 ;;; The restarts menu macro
-
 (defmacro with-restarts-menu (&body body)
   "Execute BODY. If an error occurs allow the user to pick a
 restart from a menu of possible restarts. If a restart is not
@@ -684,7 +680,6 @@ display a message whenever you switch frames:
   `(setf ,hook NIL))
 
 ;; Misc. utility functions
-
 (defun sort1 (list sort-fn &rest keys &key &allow-other-keys)
   "Return a sorted copy of list."
   (let ((copy (copy-list list)))
@@ -925,67 +920,49 @@ Does not trim if `TRIM-COUNT' is nil, and returns the empty string if it is zero
   "This variable decides how the window list is formatted. It is a string
 with the following formatting options:
 
-@table @asis
-@item %n
-Substitutes the window's number translated via *window-number-map*, if there
-are more windows than *window-number-map* then will use the window-number.
-@item %s
-Substitute the window's status. * means current window, + means last
-window, and - means any other window.
-@item %t
-Substitute the window's name.
-@item %c
-Substitute the window's class.
-@item %i
-Substitute the window's resource ID.
-@item %m
-Draw a # if the window is marked.
-@end table
+- %n :: Substitutes the window's number translated via *window-number-map*, if
+   there are more windows than *window-number-map* then will use the
+   window-number.
+- %s :: Substitute the window's status. * means current window, + means last
+   window, and - means any other window.
+- %t :: Substitute the window's name.
+- %c :: Substitute the window's class.
+- %i :: Substitute the window's resource ID.
+- %m :: Draw a # if the window is marked.
 
 Note, a prefix number can be used to crop the argument to a specified
-size. For instance, @samp{%20t} crops the window's title to 20
+size. For instance, %20t crops the window's title to 20
 characters.")
 
 (defvar *window-info-format* "%wx%h %n (%t)"
   "The format used in the info command. See
-  @var{*window-format*} for formatting details.")
+  *WINDOW-FORMAT* for formatting details.")
 
 (defparameter *window-format-by-class* "%m%n %c %s%50t"
   "The format used in the info winlist-by-class command. See
- @var{*window-format*} for formatting details.")
+ *WINDOW-FORMAT* for formatting details.")
 
 (defvar *group-formatters* '((#\n group-map-number)
                              (#\s fmt-group-status)
                              (#\t group-name))
   "An alist of characters and formatter functions. The character can be
-used as a format character in @var{*group-format*}. When the character
-is encountered in the string, the corresponding function is called
-with a group as an argument. The functions return value is inserted
-into the string. If the return value isn't a string it is converted to
-one using @code{prin1-to-string}.")
+used as a format character in *GROUP-FORMAT*. When the character is
+encountered in the string, the corresponding function is called with a group
+as an argument. The functions return value is inserted into the string. If the
+return value isn't a string it is converted to one using PRIN1-TO-STRING.")
 
 (defvar *group-format* "%n%s%t"
   "The format string that decides what information will show up in the
 group listing. The following format options are available:
 
-@table @asis
-@item %n
-Substitutes the group number translated via *group-number-map*, if there
-are more windows than *group-number-map* then will use the group-number.
-
-@item %s
-The group's status. Similar to a window's status.
-
-@item %t
-The group's name.
-@end table")
+- %n :: Substitutes the group number translated via *group-number-map*, if
+there are more windows than *group-number-map* then will use the group-number.
+- %s :: The group's status. Similar to a window's status.
+- %t :: The group's name.")
 
 (defvar *list-hidden-groups* nil
-  "Controls whether hidden groups are displayed by 'groups' and 'vgroups' commands")
-
-;; (defun font-height (font)
-;;   (+ (font-descent font)
-;;      (font-ascent font)))
+  "Controls whether hidden groups are displayed by 'groups' and 'vgroups'
+commands")
 
 (defvar *x-selection* nil
   "This is a plist of WM's current selections. The different properties are
@@ -1066,41 +1043,22 @@ less than this value.")
   "When a new frame is created, this variable controls what is put in the
 new frame. Valid values are
 
-@table @code
-@item :empty
-The frame is left empty
-
-@item :last-window
-The last focused window that is not currently visible is placed in the
-frame. This is the default.
-@end table")
+- :empty :: The frame is left empty
+- :last-window The last focused window that is not currently visible is placed
+  in the frame. This is the default.")
 
 (defvar *new-window-preferred-frame* '(:focused)
   "This variable controls what frame a new window appears in. It is a
-list of preferences. The first preference that is satisfied is
-used. Valid list elements are as follows:
+list of preferences. The first preference that is satisfied is used. Valid
+list elements are as follows:
 
-@table @code
-@item :focused
-Choose the focused frame.
-
-@item :last
-Choose the last focused frame.
-
-@item :empty
-Choose any empty frame.
-
-@item :unfocused
-Choose any unfocused frame.
-@end table
+- :focused :: Choose the focused frame.
+- :last :: Choose the last focused frame.
+- :empty :: Choose any empty frame.
+- :unfocused :: Choose any unfocused frame.
 
 Alternatively, it can be set to a function that takes one argument, the new
 window, and returns the preferred frame or a list of the above preferences.")
-
-(defun backtrace-string ()
-  "Similar to print-backtrace, but return the backtrace as a string."
-  (with-output-to-string (*standard-output*)
-    (backtrace 100 *standard-output*)))
 
 (defvar *startup-message* "^2*Welcome to The ^BW^bindow ^BM^banager!
 Press ^5*~a ?^2* for help."
@@ -1113,89 +1071,72 @@ add rules")
 
 (defmacro define-frame-preference (target-group &body frame-rules)
   "Create a rule that matches windows and automatically places them in
-a specified group and frame or converts them to floating windows. Each
-frame rule is a lambda list:
-@example
-\(frame-number raise lock &key from-group create restore dump-name class class-not
+a specified group and frame or converts them to floating windows. Each frame
+rule is a lambda list:
+
+(frame-number raise lock &key from-group create restore dump-name class class-not
 instance instance-not type type-not role role-not title title-not
 match-properties-and-function match-properties-or-function)
-@end example
 
-@table @var
-@item target-group
-When nil, rule applies in the current group. When non nil, @var{lock} determines
-applicability of rule
+- target-group :: When nil, rule applies in the current group. When non nil,
+LOCK determines applicability of rule
 
-@item frame-number
-The frame number to send matching windows to. If set to :float instead of a
-frame number, the window will be converted to a floating window. This is
-convenient for applications that should be launched as pop-ups.
+- frame-number :: The frame number to send matching windows to. If set to
+:float instead of a frame number, the window will be converted to a floating
+window. This is convenient for applications that should be launched as
+pop-ups.
 
-@item raise
-When non-nil, raise and focus the window in its frame
+- raise :: When non-nil, raise and focus the window in its frame
 
-@item lock
-When this is nil, this rule will only match when @var{target-group}
-matches the group designated by @var{from-group}.
-When non-nil, this rule matches regardless
-of the group and the window is sent to @var{target-group}. If
-@var{lock} and @var{raise} are both non-nil, then WM will jump to
-the specified group and focus the matched window.
+- lock :: When this is nil, this rule will only match when TARGET-GROUP
+matches the group designated by FROM-GROUP.  When non-nil, this rule matches
+regardless of the group and the window is sent to TARGET-GROUP. If LOCK and
+RAISE are both non-nil, then WM will jump to the specified group and focus the
+matched window.
 
-@item from-group
-When @var{lock} is NIL, and this is non-NIL, this rule will only match
-when @var{target-group} matches @var{from-group}. This should be set
-to either a group name(a string), or an expression that returns a group(e.g (current-group)).
-When this is NIL, the rule matches if @var{target-group} matches
-the group the window is in, or the current group if the window has no group.
-@item create
-When non-NIL the group is created and eventually restored when the value of
-create is a group dump filename in *DATA-DIR*. Defaults to NIL.
+- from-group :: When LOCK is NIL, and this is non-NIL, this rule will
+only match when TARGET-GROUP matches FROM-GROUP. This should be
+set to either a group name(a string), or an expression that returns a
+group(e.g (current-group)).  When this is NIL, the rule matches if
+TARGET-GROUP matches the group the window is in, or the current group if
+the window has no group.  
 
-@item restore
-When non-NIL the group is restored even if it already exists. This arg should
-be set to the dump filename to use for forced restore. Defaults to NIL
+- create :: When non-NIL the group is created and eventually restored when the
+value of create is a group dump filename in *DATA-DIR*. Defaults to NIL.
 
-@item class
-The windows class must match @var{class}.
+- restore :: When non-NIL the group is restored even if it already
+exists. This arg should be set to the dump filename to use for forced
+restore. Defaults to NIL
 
-@item class-not
-The windows class must not match @var{class-not}
+- class :: The windows class must match CLASS.
 
-@item instance
-The windows instance/resource name must match @var{instance}.
+- class-not :: The windows class must not match CLASS-NOT
 
-@item instance-not
-The windows instance/resource name must not match @var{instance-not}.
+- instance :: The windows instance/resource name must match INSTANCE.
 
-@item type
-The windows type must match @var{type}.
+- instance-not :: The windows instance/resource name must not match INSTANCE-NOT.
 
-@item type-not
-The windows type must not match @var{type-not}.
+- type :: The windows type must match TYPE.
 
-@item role
-The windows role must match @var{role}.
+- type-not :: The windows type must not match TYPE-NOT.
 
-@item role-not
-The windows role must not match @var{role-not}.
+- role :: The windows role must match ROLE.
 
-@item title
-The windows title must match @var{title}.
+- role-not :: The windows role must not match ROLE-NOT.
 
-@item title-not
-The windows title must not match @var{title-not}.
+- title :: The windows title must match TITLE.
 
-@item match-properties-and-function
-A function that, if provided, must return true alongside the provided properties
-in order for the rule to match. This function takes one argument, the window. 
-Must be an unquoted symbol to be looked up at runtime. 
+- title-not :: The windows title must not match TITLE-NOT.
 
-@item match-properties-or-function
-A function that, if provided and returning true, will cause the rule to match
-regardless of whether the window properties match. Takes one argument, the window.
-Must be an unquoted symbol to be looked up at runtime. 
-@end table"
+- match-properties-and-function :: A function that, if provided, must return
+true alongside the provided properties in order for the rule to match. This
+function takes one argument, the window. Must be an unquoted symbol to be
+looked up at runtime.
+
+- match-properties-or-function :: A function that, if provided and returning
+true, will cause the rule to match regardless of whether the window properties
+match. Takes one argument, the window. Must be an unquoted symbol to be
+looked up at runtime."
   (let ((x (gensym "X")))
     `(dolist (,x ',frame-rules)
        ;; verify the correct structure
@@ -1221,48 +1162,48 @@ fullscreen in frame.")
         *fullscreen-in-frame-p-window-functions*))
 
 (defun add-fullscreen-in-frame-rule (name function &key shadow)
-  "Add a function to the fullscreen-in-frame window rules alist.  If @var{NAME}
-already exists as a key in the alist and @var{SHADOW} is nil, then
-@var{FUNCTION} replaces the existing value.  Otherwise @var{NAME} and
-@var{FUNCTION} are pushed onto the alist."
+  "Add a function to the fullscreen-in-frame window rules alist. If NAME
+already exists as a key in the alist and SHADOW is nil, then FUNCTION replaces
+the existing value. Otherwise NAME and FUNCTION are pushed onto the alist."
   (let ((present (assoc name *fullscreen-in-frame-p-window-functions*)))
     (if (and present (not shadow))
         (setf (cdr present) function)
         (push (cons name function) *fullscreen-in-frame-p-window-functions*))))
 
 (defun remove-fullscreen-in-frame-rule (name &key count)
-  "Remove rules named @var{NAME} from the fullscreen-in-frame window rules alist.
-If @var{COUNT} is NIL then all matching rules are removed, otherwise only the
-first @var{COUNT} rules are removed."
+  "Remove rules named NAME from the fullscreen-in-frame window rules alist.
+If COUNT is NIL then all matching rules are removed, otherwise only the
+first COUNT rules are removed."
   (setf *fullscreen-in-frame-p-window-functions*
         (remove name *fullscreen-in-frame-p-window-functions*
                 :key #'car :count count)))
 
 (defmacro define-fullscreen-in-frame-rule (name (window-argument) &body body)
-  "Define a rule for a window to be fullscreened within the frame.  Each rule is a
-function which will be called when a window is made fullscreen.  If the rule
+  "Define a rule for a window to be fullscreened within the frame. Each rule is a
+function which will be called when a window is made fullscreen. If the rule
 returns NIL then the fullscreen window takes up the entire head, otherwise it
-takes up only its frame. Within the body of the rule WINDOW-ARGUMENT is
-bound to the window being processed."
+takes up only its frame. Within the body of the rule WINDOW-ARGUMENT is bound
+to the window being processed."
   `(flet ((,name (,window-argument) ,@body))
      (add-fullscreen-in-frame-rule ',name #',name)))
 
 (defvar *mouse-focus-policy* :ignore
   "The mouse focus policy decides how the mouse affects input
-focus. Possible values are :ignore, :sloppy, and :click. :ignore means
-WM ignores the mouse. :sloppy means input focus follows the
-mouse; the window that the mouse is in gets the focus. :click means
-input focus is transfered to the window you click on.
+focus. Possible values are :ignore, :sloppy, and :click. :ignore means WM
+ignores the mouse. :sloppy means input focus follows the mouse; the window
+that the mouse is in gets the focus. :click means input focus is transfered to
+the window you click on.
 
-If *MOUSE-FOCUS-POLICY* holds any value other than those listed above,
-mouse focus will behave as though it contains :IGNORE")
+If *MOUSE-FOCUS-POLICY* holds any value other than those listed above, mouse
+focus will behave as though it contains :IGNORE")
 
 (defvar *root-click-focuses-frame* t
   "Set to NIL if you don't want clicking the root window to focus the frame
   containing the pointer.")
 
 (defvar *banish-pointer-to* :head
-  "Where to put the pointer when no argument is given to (banish-pointer) or the banish
+  "Where to put the pointer when no argument is given to (banish-pointer) or the
+banish
   command. May be one of :screen :head :frame or :window")
 
 (defvar *xwin-to-window* (make-hash-table)
@@ -1293,21 +1234,18 @@ within an interactive call to a command.")
 (defvar *window-border-style* :thick
   "This controls the appearance of the border around windows. valid
 values are:
-- :thick
-All space within the frame not used by the window is dedicated to the
-border.
 
-- :thin
-Only the border width as controlled by *maxsize-border-width*
-*normal-border-width* and *transient-border-width* is used as the
-border. The rest is filled with the unfocus color.
+- :thick :: All space within the frame not used by the window is dedicated to
+the border.
 
-- :tight
-The same as :thin but the border surrounds the window and the wasted
-space within the frame is not obscured, revealing the background.
+- :thin :: Only the border width as controlled by *maxsize-border-width*
+*normal-border-width* and *transient-border-width* is used as the border. The
+rest is filled with the unfocus color.
 
-- :none
-Like :tight but no border is ever visible.
+- :tight :: The same as :thin but the border surrounds the window and the
+wasted space within the frame is not obscured, revealing the background.
+
+- :none :: Like :tight but no border is ever visible.
 
 After changing this variable you may need to call
 sync-all-frame-windows to see the change.")

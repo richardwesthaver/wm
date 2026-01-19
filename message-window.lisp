@@ -316,7 +316,7 @@ message does not time out."
   (let ((*suppress-echo-timeout* t))
     (echo-string (current-screen)
                  (concat (apply 'format nil fmt args)
-                         (backtrace-string)))))
+                         (get-backtrace)))))
 
 (defun message-no-timeout (fmt &rest args)
   "Like message, but the window doesn't disappear after a few seconds."

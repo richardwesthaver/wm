@@ -106,8 +106,8 @@ out, an element can just be the argument type."
            ,@(when docstring
                (list docstring))
            ,@decls
-           (let ((%interactivep% *interactivep*)
-                 (*interactivep* nil))
+           (let ((%interactivep% *interactive*)
+                 (*interactive* nil))
              (declare (ignorable %interactivep%))
              (run-hook-with-args *pre-command-hook* ',name)
              (multiple-value-prog1
@@ -179,7 +179,6 @@ only return active commands."
     (sort acc 'string<)))
 
 ;;; command arguments
-
 (defstruct argument-line
   string start)
 
@@ -260,15 +259,14 @@ only return active commands."
       (throw 'error :abort)))
 
 (defmacro define-wm-type (type (input prompt) &body body)
-  "Create a new type that can be used for command arguments. @var{type} can be any symbol.
+  "Create a new type that can be used for command arguments. TYPE can be any
+symbol.
 
-When @var{body} is evaluated @var{input} is bound to the
-argument-line. It is passed to @code{argument-pop},
-@code{argument-pop-rest}, etc. @var{prompt} is the prompt that should
-be used when prompting the user for the argument.
+When BODY is evaluated INPUT is bound to the argument-line. It is passed to
+ARGUMENT-POP, ARGUMENT-POP-REST, etc. PROMPT is the prompt that should be used
+when prompting the user for the argument.
 
-@example
-\(define-wm-type :symbol (input prompt)
+(define-wm-type :symbol (input prompt)
  (or (find-symbol
        (string-upcase
          (or (argument-pop input)
@@ -286,14 +284,12 @@ be used when prompting the user for the argument.
        \"WM\")
      (throw 'error \"Symbol not in WM package\")))
 
-\(defcommand \"symbol\" (sym) ((:symbol \"Pick a symbol: \"))
+(defcommand \"symbol\" (sym) ((:symbol \"Pick a symbol: \"))
   (wm-message \"~a\" (with-output-to-string (s)
                     (describe sym s))))
-@end example
 
-This code creates a new type called @code{:symbol} which finds the
-symbol in the wm package. The command @code{symbol} uses it and
-then describes the symbol."
+This code creates a new type called :SYMBOL which finds the symbol in the wm
+package. The command SYMBOL uses it and then describes the symbol."
   `(setf (gethash ,type *command-type-hash*)
     (lambda (,input ,prompt)
       ,@body)))
@@ -305,7 +301,6 @@ then describes the symbol."
     (member s positive-responses :test #'equalp)))
 
 (defun lookup-symbol (string)
-  ;; FIXME: should we really use string-upcase?
   (let* ((ofs (split-string string ":"))
          (pkg (if (> (length ofs) 1)
                   (find-package (string-upcase (pop ofs)))
@@ -361,24 +356,13 @@ then describes the symbol."
       (window-number win)
       (throw 'error "No such window."))))
 
-(defun parse-fraction (n)
-  "Parse two integers separated by a / and divide the first by the second. "
-  (multiple-value-bind (num i) (parse-integer n :junk-allowed t)
-    (cond ((= i (length n))
-           num)
-          ((char-equal (char n i) #\/)
-           (/ num (parse-integer (subseq n (+ i 1)))))
-          (t (error 'parse-error)))))
-
 (define-wm-type :number (input prompt)
   (when-let ((n (or (argument-pop input)
                     (read-one-line (current-screen) prompt))))
-    (handler-case
-        (parse-fraction n)
-      (parse-error (c)
+    (handler-case (parse-number n)
+      (invalid-number (c)
         (declare (ignore c))
         (throw 'error "Number required.")))))
-
 
 (define-wm-type :string (input prompt)
   (or (argument-pop input)
@@ -472,12 +456,10 @@ then describes the symbol."
   (or (argument-pop-rest input)
       (read-one-line (current-screen) prompt)))
 
-;;;
-
 (defun call-interactively (command &optional (input ""))
   "Parse the command's arguments from input given the command's
-argument specifications then execute it. Returns a string or nil if
-user aborted."
+argument specifications then execute it. Returns a string or nil if user
+aborted."
   (declare (type (or string symbol) command)
            (type (or string argument-line) input))
   ;; Catch parse errors
@@ -516,13 +498,13 @@ user aborted."
           (apply (command-name cmd-data) args)
         (setf *last-command* command)))))
 
-(defun eval-command (cmd &optional interactivep)
+(defun eval-command (cmd &optional interactive)
   "exec cmd and echo the result."
   (labels ((parse-and-run-command (input)
              (let* ((arg-line (make-argument-line :string input
                                                   :start 0))
                     (cmd (argument-pop arg-line)))
-               (let ((*interactivep* interactivep))
+               (let ((*interactive* interactive))
                  (call-interactively cmd arg-line)))))
     (multiple-value-bind (result error-p)
         ;; this fancy footwork lets us grab the backtrace from where the
@@ -533,7 +515,7 @@ user aborted."
                           (invoke-restart 'eval-command-error
                                           (format nil "^B^1*Error In Command '^b~a^B': ^n~A~a"
                                                   cmd c (if *show-command-backtrace*
-                                                            (backtrace-string) ""))))))
+                                                            (get-backtrace) ""))))))
               (parse-and-run-command cmd))
           (eval-command-error (err-text)
             :interactive (lambda ()
@@ -557,23 +539,21 @@ user aborted."
 used to ratpoison's rc file and you just want to run commands or don't
 know lisp very well. One might put the following in one's rc file:
 
-@example
-\(wm:run-commands
+(wm:run-commands
   \"escape C-z\"
   \"exec firefox\"
-  \"split\")
-@end example"
+  \"split\")"
   (loop for i in commands do
         (eval-command i)))
 
 (defcommand colon (&optional initial-input) (:rest)
-  "Read a command from the user. @var{initial-text} is optional. When
+  "Read a command from the user with optional INITIAL-TEXT. When
 supplied, the text will appear in the prompt.
 
-String arguments with spaces may be passed to the command by
-delimiting them with double quotes. A backslash can be used to escape
-double quotes or backslashes inside the string. This does not apply to
-commands taking :REST or :SHELL type arguments."
+String arguments with spaces may be passed to the command by delimiting them
+with double quotes. A backslash can be used to escape double quotes or
+backslashes inside the string. This does not apply to commands taking :REST or
+:SHELL type arguments."
   (let ((cmd (completing-read (current-screen) ": " (all-commands) :initial-input (or initial-input ""))))
     (unless cmd
       (throw 'error :abort))
