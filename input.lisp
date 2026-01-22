@@ -348,7 +348,7 @@ match with an element of the completions."
                              (draw-input-bucket screen prompt input))
                             ;; skip modifiers
                             ((is-modifier (car key)))
-                            ((process-input screen prompt input (car key) (cdr key))
+                            ((process-screen-input screen prompt input (car key) (cdr key))
                              (if (or (not require-match)
                                      (match-input))
                                  (return (input-line-string input))
@@ -791,7 +791,7 @@ to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
                               :wm-selection)))
 
 ;;; Misc functions
-(defun process-input (screen prompt input code state)
+(defun process-screen-input (screen prompt input code state)
   "Process the key (code and state), given the current input
 buffer. Returns a new modified input buffer."
   (labels ((process-key (code state)

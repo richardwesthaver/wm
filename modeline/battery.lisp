@@ -140,7 +140,7 @@
   (defun sysfs-field (path name)
     (with-open-file (file (merge-pathnames (make-pathname :name name)
                                            path))
-      (read-line-from-sysfs file)))
+      (read-line file)))
 
   (defun sysfs-int-field (path name)
     (handler-case (parse-integer (sysfs-field path name) :junk-allowed t)

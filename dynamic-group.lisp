@@ -45,7 +45,6 @@
 
 ;;; Code:
 (in-package :wm)
-
 ;; The window definition remains unchanged, as at its core it is a tile
 ;; window. All we do is add a single tag.
 (define-wm-class dynamic-window (tile-window)
@@ -1077,9 +1076,6 @@ window. "
 ;;; Dynamic Group Commands ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *dynamic-group-blacklisted-commands* nil
-  "A blacklist of commands for dynamic groups specifically.")
-
 ;; The above needed due to the class hierarchy. dynamic groups inherit from
 ;; tiling groups. Because the hierarchy is group -> tile-group -> dynamic-group,
 ;; all commands defined for tiling groups are valid in dynamic groups, even when
@@ -1088,15 +1084,15 @@ window. "
 ;; changing the hierarchy to group -> tile-group -> manual-tile-group
 ;;                                               |> dynamic-tile-group
 
-(defun dyn-blacklist-command (cmd &aux (command (get-command-structure cmd nil)))
+(defun dyn-blacklist-command (cmd &aux (command (get-command cmd nil)))
   "Add CMD to the command blacklist for dynamic groups"
-  (unless (member command *dynamic-group-blacklisted-commands*)
-    (push command *dynamic-group-blacklisted-commands*)))
+  (unless (member command *dynamic-command-blacklist*)
+    (push command *dynamic-command-blacklist*)))
 
-(defun dyn-unblacklist-command (cmd &aux (command (get-command-structure cmd nil)))
+(defun dyn-unblacklist-command (cmd &aux (command (get-command cmd nil)))
   "Remove CMD to the command blacklist for dynamic groups"
-  (setf *dynamic-group-blacklisted-commands*
-        (remove command *dynamic-group-blacklisted-commands*)))
+  (setf *dynamic-command-blacklist*
+        (remove command *dynamic-command-blacklist*)))
 
 (flet ((bl (&rest cmds)
          (loop for cmd in cmds
@@ -1115,47 +1111,53 @@ window. "
       "pull"
       "pull-marked"))
 
-(defcommand gnew-dynamic (name) ((:rest "Group name: "))
+(defcommand gnew-dynamic (name) 
   "Create a new dynamic group named NAME."
+  (declare (interactive (rest "Group name: ")))
   (unless name 
-    (throw 'error :abort))
+    (throw 'cmd :abort))
   (add-group (current-screen) name :type 'dynamic-group))
 
-(defcommand gnewbg-dynamic (name) ((:rest "Group name: "))
+(defcommand gnewbg-dynamic (name)
   "Create a new dynamic group named NAME in the background."
+  (declare (interactive (rest "Group name: ")))
   (unless name
-    (throw 'error :abort))
+    (throw 'cmd :abort))
   (add-group (current-screen) name :type 'dynamic-group :background t))
 
-(define-wm-type :rotation-direction (input prompt)
+(define-command-type :rotation-direction (input prompt)
   (let* ((values '(("Forward" :f)
                    ("Backward" :b)))
          (string (argument-pop-or-read input prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
-        (throw 'error (format nil "no direction matching ~A" string)))))
+        (throw 'cmd (format nil "no direction matching ~A" string)))))
 
-(defcommand (rotate-windows dynamic-group) (direction)
-    ((:rotation-direction "Direction: "))
+(setq *default-command-class* 'wm-dynamic-command)
+
+(defcommand rotate-windows (direction)
   "Rotate all windows in the current group and head forward (clockwise) or
 backward (counterclockwise)"
+  (declare (interactive (rotation-direction "Direction: ")))
   (let* ((g (current-group))
          (h (current-head g)))
     (case direction
       ((:f) (rotate-windows-forward g h))
       ((:b) (rotate-windows-backward g h)))))
 
-(defcommand (rotate-stack dynamic-group) (direction)
-    ((:rotation-direction "Direction: "))
+(defcommand rotate-stack (direction)
   "Rotate the stack windows in current group and head forward (clockwise) or
 backward (counterclockwise)"
+  (declare (interactive (rotation-direction "Direction: ")))
   (let* ((g (current-group))
          (h (current-head g)))
     (case direction
       ((:f) (rotate-stack-forward g h))
       ((:b) (rotate-stack-backward g h)))))
 
-(defcommand (swap-windows tile-group) () ()
+(setq *default-command-class* 'wm-tiling-command)
+
+(defcommand swap-windows ()
   "Exchange two windows"
   (let* ((f1 (progn (wm-message "Select Window One")
                     (choose-frame-by-number (current-group))))
@@ -1166,10 +1168,10 @@ backward (counterclockwise)"
             (w2 (frame-window f2)))
         (if (and w1 w2)
             (exchange-windows w1 w2)
-            (throw 'error (format nil "Frame ~A has no window"
+            (throw 'cmd (format nil "Frame ~A has no window"
                                   (or (and w1 f2) (and w2 f1)))))))))
 
-(define-wm-type :dynamic-layout (input prompt)
+(define-command-type :dynamic-layout (input prompt)
   (let* ((values '(("Top" :top)
                    ("Left" :left)
                    ("Right" :right)
@@ -1177,48 +1179,55 @@ backward (counterclockwise)"
          (string (argument-pop-or-read input prompt (mapcar #'first values)))
          (layout (second (assoc string values :test 'string-equal))))
     (or layout
-        (throw 'error (format nil "No layout matching ~A" string)))))
+        (throw 'cmd (format nil "No layout matching ~A" string)))))
 
-(defcommand (change-layout dynamic-group) (layout) ((:dynamic-layout "Layout: "))
+(setq *default-command-class* 'wm-dynamic-command)
+
+(defcommand change-layout (layout)
   "Change the layout of the current head and group."
+  (declare (interactive (dynamic-layout "Layout: ")))
   (setf (dynamic-group-head-layout (current-group) (current-head)) layout))
 
-(defcommand (change-split-ratio dynamic-group) (ratio) ((:number "Ratio: "))
+(defcommand change-split-ratio (ratio)
   "Change the size of the master window of the current head and group."
+  (declare (interactive (number "Ratio: ")))
   (setf (dynamic-group-head-split-ratio (current-group) (current-head)) ratio))
 
-(defcommand (change-default-layout dynamic-group)
-    (layout &optional (update-heads :unset)) ((:dynamic-layout "Layout: "))
+(defcommand change-default-layout (layout &optional (update-heads :unset))
   "Change the default layout for dynamic groups."
+  (declare (interactive (dynamic-layout "Layout: ")))
   (setf (dynamic-group-master-layout (current-group) update-heads) layout))
 
-(defcommand (change-default-split-ratio dynamic-group)
-    (ratio &optional (update-heads :unset)) ((:number "Ratio: "))
+(defcommand change-default-split-ratio (ratio &optional (update-heads :unset))
   "Change the default size of the master window for dynamic groups."
+  (declare (interactive (number "Ratio: ")))
   (setf (dynamic-group-default-split-ratio (current-group) update-heads) ratio))
 
-(defcommand (retile dynamic-group) (&optional (retile-floats t))
-    ((:y-or-n "Retile floating windows? "))
+(defcommand retile (&optional (retile-floats t))
   "Force a retile of all windows."
+  (declare (interactive (y-or-n "Retile floating windows? ")))
   (dynamic-group-retile-head (current-group) (current-head) retile-floats))
 
+(setq *default-command-class* 'wm-command)
 
 (defcommand select-floating-window (&optional (fmt *window-format*) window-list)
-    ((:rest))
   "Select a floating window from a menu."
+  (declare (interactive rest))
   (if-let ((windows (remove-if-not #'float-window-p
                                    (or window-list
                                        (sort-windows-by-number
                                         (group-windows (current-group)))))))
     (if-let ((window (select-window-from-menu windows fmt)))
       (group-focus-window (current-group) window)
-      (throw 'error :abort))
+      (throw 'cmd :abort))
     (wm-message "No Managed Floating Windows")))
 
-(defcommand (exchange-with-master dynamic-group) () ()
+(setq *default-command-class* 'wm-dynamic-command)
+
+(defcommand exchange-with-master ()
   (swap-window-with-master (current-group) (current-head) (current-window)))
 
-(defcommand (hnext dynamic-group) () ()
+(defcommand hnext ()
   "Move focus to the next head in a dynamic group"
   (let* ((group (current-group))
          (head (current-head))
@@ -1234,7 +1243,7 @@ backward (counterclockwise)"
                                              master-window)))
           (focus-frame group next-head)))))
 
-(defcommand (hprev dynamic-group) () ()
+(defcommand hprev ()
   "Move focus to the previous head in a dynamic group"
   (let* ((group (current-group))
          (head (current-head))
@@ -1250,12 +1259,12 @@ backward (counterclockwise)"
                                              master-window)))
           (focus-frame group next-head)))))
 
-(defcommand (fnext-in-head dynamic-group) () ()
+(defcommand fnext-in-head ()
   "Focus the next frame in the current head"
   (let ((group (current-group)))
     (focus-frame-after group (head-frames group (current-head)))))
 
-(defcommand (fprev-in-head dynamic-group) () ()
+(defcommand fprev-in-head ()
   "Focus the previous frame in the current head"
   (let ((group (current-group)))
     (focus-frame-after group (reverse (head-frames group (current-head))))))
@@ -1286,3 +1295,5 @@ is a dynamic group.")
              (kbd "RET") "exchange-with-master")
 
 (pushnew '(dynamic-group *dynamic-group-top-map*) *group-top-maps*)
+
+(setq *default-command-class* 'wm-command)

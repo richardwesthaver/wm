@@ -1126,12 +1126,16 @@ windows used to draw the numbers in. The caller must destroy them."
           (show-frame-indicator group))
         (wm-message "Cannot split smaller than minimum size."))))
 
-(defcommand (hsplit tile-group) (&optional (ratio "1/2")) (:string)
+(setq *default-command-class* 'wm-tiling-command)
+
+(defcommand hsplit (&optional (ratio "1/2"))
 "Split the current frame into 2 side-by-side frames."
+  (declare (interactive string))
   (split-frame-in-dir (current-group) :column (read-from-string ratio)))
 
-(defcommand (vsplit tile-group) (&optional (ratio "1/2")) (:string)
+(defcommand vsplit (&optional (ratio "1/2"))
 "Split the current frame into 2 frames, one on top of the other."
+  (declare (interactive string))
   (split-frame-in-dir (current-group) :row (read-from-string ratio)))
 
 (defun split-frame-eql-parts* (group dir amt)
@@ -1158,29 +1162,28 @@ windows used to draw the numbers in. The caller must destroy them."
                         :initial-value (tile-group-frame-head group head)))
           (wm-message "Cannot split. Maybe current frame is too small.")))))
 
-(defcommand (hsplit-equally tile-group) (amt)
+(defcommand hsplit-equally (amt)
     ((:number "Enter the number of frames: "))
 "Deprecated. Use `vsplit-uniformly' instead."
   (split-frame-eql-parts (current-group) :row amt))
 
-(defcommand (vsplit-uniformly tile-group) (amt)
+(defcommand vsplit-uniformly (amt)
     ((:number "Enter the number of frames: "))
 "Split current frame in n rows of equal size."
   (split-frame-eql-parts (current-group) :row amt))
 
-(defcommand (vsplit-equally tile-group) (amt)
+(defcommand vsplit-equally (amt)
     ((:number "Enter the number of frames: "))
 "Deprecated. Use `hsplit-uniformly' instead."
   (split-frame-eql-parts (current-group) :column amt))
 
-(defcommand (hsplit-uniformly tile-group) (amt)
+(defcommand hsplit-uniformly (amt)
     ((:number "Enter the number of frames: "))
 "Split current frame in n columns of equal size."
   (split-frame-eql-parts (current-group) :column amt))
 
-(defcommand (remove-split tile-group)
-    (&optional (group (current-group))
-               (frame (tile-group-current-frame group))) ()
+(defcommand remove-split (&optional (group (current-group))
+                                    (frame (tile-group-current-frame group)))
 "Remove the specified frame in the specified group (defaults to current group,
 current frame). Windows in the frame are migrated to the frame taking up its
 space."
@@ -1224,7 +1227,7 @@ space."
               (unmap-all-frame-indicator-windows))
           (run-hook-with-args *remove-split-hook* l frame)))))
 
-(defcommand-alias remove remove-split)
+(command-alias :remove :remove-split)
 
 (defun only-one-frame-p ()
   "T if there is only one maximized frame in the current head.
@@ -1233,7 +1236,7 @@ This can be used around a the \"only\" command to avoid the warning message."
          (head (current-head group)))
     (atom (tile-group-frame-head group head))))
 
-(defcommand (only tile-group) () ()
+(defcommand only ()
   "Delete all the frames but the current one and grow it to take up the entire head."
   (let* ((screen (current-screen))
          (group (screen-current-group screen))
@@ -1261,7 +1264,7 @@ This can be used around a the \"only\" command to avoid the warning message."
           (sync-frame-windows group (tile-group-current-frame group))
           (unmap-all-frame-indicator-windows)))))
 
-(defcommand (curframe tile-group) () ()
+(defcommand curframe ()
 "Display a window indicating which frame is focused."
   (show-frame-indicator (current-group) t))
 
@@ -1300,20 +1303,20 @@ the current frame."
 (defun focus-prev-frame (group)
   (focus-frame-after group (nreverse (group-frames group))))
 
-(defcommand (fnext tile-group) () ()
+(defcommand fnext ()
 "Cycle through the frame tree to the next frame."
   (focus-next-frame (current-group)))
 
-(defcommand (fprev tile-group) () ()
+(defcommand fprev ()
   "Cycle through the frame tree to the previous frame."
   (focus-prev-frame (current-group)))
 
-(defcommand (sibling tile-group) () ()
+(defcommand sibling ()
 "Jump to the frame's sibling. If a frame is split into two frames,
 these two frames are siblings."
   (focus-frame-next-sibling (current-group)))
 
-(defcommand (fother tile-group) () ()
+(defcommand fother ()
 "Jump to the last frame that had focus."
   (focus-last-frame (current-group)))
 
@@ -1350,20 +1353,21 @@ select one. Returns the selected frame or nil if aborted."
       (clear-frame-outlines group))))
 
 
-(defcommand (fselect tile-group) (frame-number) ((:frame t))
+(defcommand fselect (frame-number)
 "Display a number in the corner of each frame and let the user to
 select a frame by number or click. If @var{frame-number} is specified,
 just jump to that frame."
+  (declare (interactive (frame t)))
   (let ((group (current-group)))
     (focus-frame group frame-number)))
 
-(defcommand (resize tile-group) (width height) ((:number "+ Width: ")
-                                                (:number "+ Height: "))
+(defcommand resize (width height)
   "Move the frame split directly to the right of the current frame as much as
 possible up to @var{width} pixels, or if impossible try the split directly to
 the left instead. Similarly, also move the frame split directly below the
 current frame as much as possible up to @var{height} pixels, or if impossible
 try the split directly above instead."
+  (declare (interactive (number "+ Width: ") (number "+ Height: ")))
   (let* ((group (current-group))
          (f (tile-group-current-frame group)))
     (if (atom (tile-group-frame-tree group))
@@ -1378,7 +1382,7 @@ try the split directly above instead."
   "Clear the given frame."
   (frame-raise-window group frame nil (eq (tile-group-current-frame group) frame)))
 
-(defcommand (fclear tile-group) () ()
+(defcommand fclear ()
 "Clear the current frame."
   (clear-frame (tile-group-current-frame (current-group)) (current-group)))
 
@@ -1443,40 +1447,40 @@ try the split directly above instead."
           (pull-window window new-frame)
           (focus-frame group new-frame)))))
 
-(defcommand (move-focus tile-group) (dir) ((:direction "Direction: "))
+(defcommand move-focus (dir)
 "Focus the frame adjacent to the current one in the specified
 direction. The following are valid directions:
-@table @asis
-@item up
-@item down
-@item left
-@item right
-@end table"
+- up
+- down
+- left
+- right"
+  (declare (interactive (direction "Direction: ")))
   (move-focus-and-or-window dir))
 
-(defcommand (move-window tile-group) (dir) ((:direction "Direction: "))
+(defcommand move-window (dir)
 "Just like move-focus except that the current is pulled along."
+  (declare (interactive (direction "Direction: ")))
   (move-focus-and-or-window dir t))
 
-(defcommand (next-in-frame tile-group) () ()
+(defcommand next-in-frame ()
 "Go to the next window in the current frame."
   (let ((group (current-group)))
     (if (group-current-window group)
         (focus-forward group (frame-sort-windows group (tile-group-current-frame group)))
         (other-window-in-frame group))))
 
-(defcommand (prev-in-frame tile-group) () ()
+(defcommand prev-in-frame ()
 "Go to the previous window in the current frame."
   (let ((group (current-group)))
     (if (group-current-window group)
         (focus-forward group (reverse (frame-sort-windows group (tile-group-current-frame group))))
         (other-window-in-frame group))))
 
-(defcommand (other-in-frame tile-group) () ()
+(defcommand other-in-frame ()
 "Go to the last accessed window in the current frame."
   (other-window-in-frame (current-group)))
 
-(defcommand (balance-frames tile-group) (&aux (group (current-group))) ()
+(defcommand balance-frames (&aux (group (current-group)))
   "Make frames the same height or width in the current frame's subtree."
   (let ((tree (tile-group-frame-head group (current-head))))
     (if (frame-p tree)
@@ -1548,15 +1552,17 @@ direction. The following are valid directions:
                      (lambda (f) (eq frame f)))
     (sync-minor-modes window)))
 
-(defcommand (float-this tile-group) () ()
+(defcommand float-this ()
   "Transforms a tile-window into a float-window"
   (float-window (current-window) (current-group)))
 
-(defcommand (unfloat-this tile-group) () ()
+(defcommand unfloat-this ()
   "Transforms a float-window into a tile-window"
   (unfloat-window (current-window) (current-group)))
 
-(defcommand flatten-floats () ()
+(setq *default-command-class* 'wm-command)
+
+(defcommand flatten-floats ()
   "Transform all floating windows in this group to tiled windows.
 Puts all tiled windows in the first frame of the group. "
   (let ((group (current-group)))

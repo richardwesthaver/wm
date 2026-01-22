@@ -340,7 +340,7 @@ modes."
   (let ((modes (mapcan #'list-minor-modes
                        (list-current-mode-objects :screen screen))))
     (prog1 modes 
-      (when %interactivep%
+      (when *interactive*
         (wm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
 
 (defcommand enabled-minor-modes () ()
@@ -348,7 +348,7 @@ modes."
   (let ((modes (remove-duplicates (mapcan #'list-minor-modes
                                           (list-mode-objects)))))
     (prog1 modes
-      (when %interactivep%
+      (when *interactive*
         (wm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
 
 (defun minor-mode-enabled-p (minor-mode &optional (screen (current-screen)))

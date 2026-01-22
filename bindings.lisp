@@ -238,13 +238,11 @@ current window. To exit command mode, type @key{C-g}."
 
 (defcommand set-prefix-key (key) ((:key "Key: "))
   "Change the WM prefix key to KEY.
-@example
-\(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
-@end example
 
-This will change the prefix key to @key{Control} + @key{Meta} + @key{Hyper} + @key{Super} +
-the @key{z} key. By most standards, a terrible prefix key but it makes a
-great example."
+(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
+
+This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
+most standards, a terrible prefix key but it makes a great example."
   (check-type key key)
   (copy-key-into key *escape-key*)
   ;; if the escape key has no modifiers then disable the fake key by
@@ -256,7 +254,7 @@ great example."
                                        -1)) *escape-fake-key*)
   (sync-keys))
 
-(defcommand-alias escape set-prefix-key)
+(command-alias :escape :set-prefix-key)
 
 (defcommand bind-key (key command)
                  ((:string "Key chord: ")

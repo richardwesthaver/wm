@@ -23,7 +23,6 @@
   clicking on the top border. Valid values are :META :ALT :HYPER :SUPER, :ALTGR
   and :NUMLOCK.")
 
-
 (defun float-window-p (window)
   (typep window 'float-window))
 
@@ -433,10 +432,12 @@ is a float group.")
 
 (pushnew '(float-group *float-group-top-map*) *group-top-maps*)
 
-(defcommand gnew-float (name) ((:rest "Group name: "))
+(defcommand gnew-float (name)
   "Create a floating window group with the specified name and switch to it."
+  (declare (interactive (rest "Group name: ")))
   (add-group (current-screen) name :type 'float-group))
 
-(defcommand gnewbg-float (name) ((:rest "Group name: "))
+(defcommand gnewbg-float (name)
   "Create a floating window group with the specified name, but do not switch to it."
+  (declare (interactive (rest "Group name: ")))
   (add-group (current-screen) name :background t :type 'float-group))

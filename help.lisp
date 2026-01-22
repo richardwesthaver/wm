@@ -9,10 +9,6 @@
 ;;; Code:
 (in-package #:wm)
 
-(defvar *message-max-width* 80
-  "The maximum width of a message before it wraps.")
-(defvar *help-max-height* 10
-  "Maximum number of lines for help to display.")
 (defvar *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
   "The format string that decides how keybindings will show up in the
 which-key window. Two arguments will be passed to this formatter:
@@ -68,29 +64,15 @@ which-key window. Two arguments will be passed to this formatter:
                         (print-key-seq key-seq)
                         (or (columnize data cols) '("(EMPTY MAP)")))))
 
-(defcommand commands () ()
+(defcommand commands ()
   "List all available commands."
   (let* ((screen (current-screen))
-         (data (all-commands))
+         (data (list-all-commands))
          (cols (ceiling (length data)
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
                                   (font-height (screen-font screen))))))
     (message-no-timeout "~{~a~^~%~}"
                         (columnize data cols))))
-
-(defun wrap (words &optional (max-col *message-max-width*) stream)
-  "Word wrap at the MAX-COL."
-  ;; Format insanity edited from Gene Michael Stover's "Advanced Use of Lisp's
-  ;; FORMAT Function (2004)"
-
-  ;; Note that using format without a constant format string is not very
-  ;; efficient. Not doing so comes at the cost of *message-max-width* being
-  ;; available at compile time, so users would not be able to configure it at
-  ;; runtime.
-  (format stream (concatenate 'string "~{~<~%~1,"
-                              (with-output-to-string (s) (princ max-col s) s)
-                              ":;~A~> ~}")
-          (split-string words " ")))
 
 (defun final-key-p (keys class)
   "Determine if the key is a memeber of a class"
@@ -104,9 +86,10 @@ which-key window. Two arguments will be passed to this formatter:
   "If a key is the cancelling key binding."
   (final-key-p keys '("C-g")))
 
-(defcommand describe-key (keys) ((:key-seq "Describe key:"))
+(defcommand describe-key (keys)
   "Either interactively type the key sequence or supply it as text. This
   command prints the command bound to the specified key sequence."
+  (declare (interactive (key-seq "Describe key:")))
   (let ((printed-key (mapcar 'print-key keys)))
     (if-let ((cmd (loop for map in (top-maps)
                         for cmd = (lookup-key-sequence map keys)
@@ -132,15 +115,16 @@ which-key window. Two arguments will be passed to this formatter:
           (or (documentation var 'variable) "")
           (let* ((value (format nil "~a" (symbol-value var)))
                  (split (split-string value (format nil "~%"))))
-            (if (> (1+ *help-max-height*)
+            (if (> (1+ *print-lines*)
                    (length split))
                 value
                 (format nil "~a.."
-                        (wrap (format nil "~{~a~^~%~}"
-                                      (take* *help-max-height* split))))))))
+                        (word-wrap (format nil "~{~a~^~%~}"
+                                      (take* *print-lines* split))))))))
 
-(defcommand describe-variable (var) ((:variable "Describe variable: "))
+(defcommand describe-variable (var)
   "Print the online help associated with the specified variable."
+  (declare (interactive (variable "Describe variable: ")))
   (message-no-timeout "~a"
                       (with-output-to-string (s)
                         (describe-variable-to-stream var s))))
@@ -153,8 +137,9 @@ which-key window. Two arguments will be passed to this formatter:
             (format stream "(^5~a ^B~{~a~^ ~}^b^n)~&~%" (string-downcase (symbol-name fn)) lambda-list))
   (format stream "~&~a"(or (documentation fn 'function) "")))
 
-(defcommand describe-function (fn) ((:function "Describe function: "))
+(defcommand describe-function (fn)
   "Print the online help associated with the specified function."
+  (declare (interactive (function "Describe function: ")))
   (message-no-timeout "~a"
                       (with-output-to-string (s)
                         (describe-function-to-stream fn s))))
@@ -264,11 +249,9 @@ FIND-BINDING-IN-KMAP."
                      list))))
   (defun describe-command-to-stream (com stream)
     "Write the help for the command to the stream."
-    (let* ((deref (dereference-command-symbol com))
-           (struct (get-command-structure com nil))
-           (name (command-name struct))
+    (let* ((cmd (command com))
            (text 
-             (wrap (concatenate
+             (word-wrap (concatenate 'string
                     (unless (eq deref struct)
                       (format nil "\"~a\" is an alias for the command \"~a\":~%"
                               (command-alias-from deref)
@@ -276,11 +259,11 @@ FIND-BINDING-IN-KMAP."
                     (when-let ((message (where-is-to-stream name nil)))
                               (format nil "~&~A~&" message))
                     (when-let ((lambda-list (sb-introspect:function-lambda-list
-                                             (symbol-function name))))
-                              (format nil "~%^5~a ^B~{~a~^ ~}^b^n~&~%"
-                                      name
-                                      lambda-list))
-                    (format nil "~&~a" (or (documentation name 'function) "")))
+                                             (kernel cmd))))
+                      (format nil "~%^5~a ^B~{~a~^ ~}^b^n~&~%"
+                              cmd
+                              lambda-list))
+                    (format nil "~&~a" (or (kernel-documentation cmd) "")))
                    *message-max-width*
                    nil)))
       (let ((bindings (when (stringp com)
@@ -292,9 +275,10 @@ FIND-BINDING-IN-KMAP."
                     (make-even-lengths bindings))
             (format stream "~A" text))))))
 
-(defcommand describe-command (com) ((:command "Describe command: "))
+(defcommand describe-command (com)
   "Print the online help associated with the specified command."
-  (if (null (get-command-structure com nil))
+  (declare (interactive (command "Describe command: ")))
+  (if (null (get-command com nil))
       (message-no-timeout "Error: Command \"~a\" not found."
                           (command-name com))
       (message-no-timeout "~a" (describe-command-to-stream com nil))))
@@ -327,8 +311,9 @@ FIND-BINDING-IN-KMAP."
                         for k = #2=(keys (string-downcase (symbol-name a))) then #2#
                         when k do (format stream "~%\"~a\" is on ~{~a~^, ~}." (string-downcase a) (mapcar 'print-key-seq k))))))))
 
-(defcommand where-is (cmd) ((:command "Where is command: "))
+(defcommand where-is (cmd)
   "Print the key sequences bound to the specified command."
+  (declare (interactive (command "Where is command: ")))
   (let ((stream (make-string-output-stream)))
     (where-is-to-stream cmd stream)
     (message-no-timeout "~A" (get-output-stream-string stream))))
@@ -364,13 +349,13 @@ KMAPS are enabled"
       (when-let ((only-maps (remove-if-not 'kmap-p maps)))
                 (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
 
-(defcommand which-key-mode () ()
+(defcommand which-key-mode ()
   "Toggle which-key-mode"
   (if (find 'which-key-mode-key-press-hook *key-press-hook*)
       (remove-wm-hook *key-press-hook* 'which-key-mode-key-press-hook)
       (add-wm-hook *key-press-hook* 'which-key-mode-key-press-hook)))
 
-(defcommand modifiers () ()
+(defcommand modifiers ()
   "List the modifiers WM recognizes and what MOD-X it thinks they're on."
   (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
               "Meta" (modifiers-meta *modifiers*)

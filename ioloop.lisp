@@ -2,8 +2,7 @@
 
 ;; Copyright (C) 2016  Fredrik Tolf <fredrik@dolda2000.com>
 
-;;; Code:
-(in-package :wm)
+;;; Commentary:
 
 ;; This file implements a generic multiplexing I/O loop for listening
 ;; to I/O events from multiple sources. The model is as follows:
@@ -51,6 +50,32 @@
 ;; IO-LOOP-ADD, unregistered with IO-LOOP-REMOVE, and updated with
 ;; IO-LOOP-UPDATE (as described above). Call IO-LOOP on the
 ;; multiplexer to actually run it.
+
+;;; Code:
+(in-package :wm)
+
+(defvar *toplevel-io* nil
+  "Top-level I/O loop")
+
+;; from timers.lisp
+(defun idle-time (screen)
+  "Returns the time in seconds since idle according to the root window
+of the `screen'."
+  (/ (xlib:screen-saver-get-idle
+      *display* (screen-root screen))
+     1000.0))
+
+(defun run-with-timer (secs repeat function &rest args)
+  "Perform an action after a delay of SECS seconds.
+Repeat the action every REPEAT seconds, if repeat is non-nil.
+SECS and REPEAT may be reals.
+The action is to call FUNCTION with arguments ARGS."
+  (check-type secs (real 0 *))
+  (check-type repeat (or null (real 0 *)))
+  (check-type function (or function symbol))
+  (let ((timer (make-timer (lambda () (apply function args)) :thread t)))
+    (schedule-timer timer secs :repeat-interval repeat)
+    timer))
 
 ;;; General interface
 (defgeneric io-channel-ioport (io-loop channel)
@@ -181,13 +206,13 @@
 (defun get-max-blocking-time (lowest-timeout)
   (declare (type (or null (integer 0)) lowest-timeout))
   (if lowest-timeout
-    (let ((remaining (- lowest-timeout (get-internal-real-time))))
-      (if (> remaining 0)
-        (multiple-value-bind (whole-secs sub-sec)
-                             (truncate (/ remaining internal-time-units-per-second))
-          (values whole-secs (nth-value 0 (truncate (* sub-sec 1000000)))))
-        (values 0 0)))
-    (values nil nil)))
+      (let ((remaining (- lowest-timeout (get-internal-real-time))))
+        (if (> remaining 0)
+            (multiple-value-bind (whole-secs sub-sec)
+                (truncate (/ remaining internal-time-units-per-second))
+              (values whole-secs (nth-value 0 (truncate (* sub-sec 1000000)))))
+            (values 0 0)))
+      (values nil nil)))
 
 (defmethod io-loop ((info sbcl-io-loop) &key &allow-other-keys)
   (let ((*current-io-loop* info))
@@ -218,7 +243,7 @@
                       (ev-fd (io-channel-ioport info ch)))
                   (case ev-type
                     (:loop
-                     (push ch loop-channels))
+                      (push ch loop-channels))
                     (:read
                      (setf highest-fd (max highest-fd ev-fd))
                      (sb-unix:fd-set ev-fd rfds)
@@ -230,7 +255,7 @@
                     (:timeout
                      (setf earliest-timeout (min (or earliest-timeout ev-data) ev-data))
                      (push (cons ch ev-data) timeout-channels)))))
-                (push ch inactive-channels)))
+              (push ch inactive-channels)))
 
           (dolist (ch inactive-channels)
             (io-loop-remove info ch))
@@ -247,31 +272,30 @@
           ;; select(2). After that, notify the interested :READ
           ;; and :WRITE handlers.
           (multiple-value-bind (secs usecs)
-                               (get-max-blocking-time earliest-timeout)
+              (get-max-blocking-time earliest-timeout)
             (multiple-value-bind (count errno)
-                                 (sb-unix:unix-fast-select
-                                   (1+ highest-fd)
-                                   (sb-alien:addr rfds)
-                                   (sb-alien:addr wfds)
-                                   (sb-alien:addr efds)
-                                   secs
-                                   usecs)
+                (sb-unix:unix-fast-select
+                 (1+ highest-fd)
+                 (sb-alien:addr rfds)
+                 (sb-alien:addr wfds)
+                 (sb-alien:addr efds)
+                 secs
+                 usecs)
               (declare (ignore count))
               (if (and errno (plusp errno))
-                (unless (eql errno sb-unix:eintr)
-                  (dformat 1
-                           "Unexpected ~S error: ~A~%"
-                           'sb-unix:unix-fast-select
-                           (sb-int:strerror errno)))
-                (progn
-                  (loop :for (ch . fd) :in read-channels
-                        :do (when (or (sb-unix:fd-isset fd rfds)
-                                      (sb-unix:fd-isset fd efds))
-                              (io-channel-handle ch :read)))
-                  (loop :for (ch . fd) :in write-channels
-                        :do (when (sb-unix:fd-isset fd wfds)
-                              (io-channel-handle ch :write)))))))
-
+                  (unless (eql errno sb-unix:eintr)
+                    (dformat 1
+                             "Unexpected ~S error: ~A~%"
+                             'sb-unix:unix-fast-select
+                             (sb-int:strerror errno)))
+                  (progn
+                    (loop :for (ch . fd) :in read-channels
+                          :do (when (or (sb-unix:fd-isset fd rfds)
+                                        (sb-unix:fd-isset fd efds))
+                                (io-channel-handle ch :read)))
+                    (loop :for (ch . fd) :in write-channels
+                          :do (when (sb-unix:fd-isset fd wfds)
+                                (io-channel-handle ch :write)))))))
           ;; Notify all channels with now expired timeouts.
           (loop :with now = (get-internal-real-time)
                 :for (ch . timeout) :in timeout-channels

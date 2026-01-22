@@ -5,7 +5,6 @@
  :components 
  ((:file "pkg")
   (:file "prim")
-  (:file "wrappers")
   (:file "font-rendering")
   (:file "keysyms")
   (:file "keytrans")
@@ -28,7 +27,6 @@
   (:file "message-window")
   (:file "selection")
   (:file "ioloop")
-  (:file "timers")
   (:file "wm")
   (:file "user")
   (:file "interactive-keymap")

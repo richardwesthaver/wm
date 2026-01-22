@@ -991,7 +991,7 @@ selected."
                             filter-pred)))
 
 ;;; Window commands
-(defcommand delete-window (&optional (window (current-window))) ()
+(defcommand (:wm delete-window delete) (&optional (window (current-window))) ()
   "Delete a window. By default delete the current window. This is a
 request sent to the window. The window's client may decide not to
 grant the request or may not be able to if it is unresponsive."
@@ -1000,9 +1000,7 @@ grant the request or may not be able to if it is unresponsive."
   (when window
     (send-client-message window :WM_PROTOCOLS (xlib:intern-atom *display* :WM_DELETE_WINDOW))))
 
-(defcommand-alias delete delete-window)
-
-(defcommand kill-window (&optional (window (current-window))) ()
+(defcommand (:wm kill-window kill) (&optional (window (current-window))) ()
   "Tell X to disconnect the client that owns the specified
 window. Default to the current window. if
 @command{delete-window} didn't work, try this."
@@ -1028,15 +1026,13 @@ window. Default to the current window. if
                                 (group-windows (current-group)))))
     (kill-windows target-windows)))
 
-(defcommand-alias kill kill-window)
-
 (defcommand title (title) ((:rest "Set window's title to: "))
   "Override the current window's title."
   (if (current-window)
       (setf (window-user-title (current-window)) title)
       (wm-message "No Focused Window.")))
 
-(defcommand select-window (query) ((:window-name "Select: "))
+(defcommand (:wm select-window select) (query) ((:window-name "Select: "))
   "Switch to the first window that starts with @var{query}."
   (let (match)
     (labels ((match (win)
@@ -1047,8 +1043,6 @@ window. Default to the current window. if
         (setf match (find-if #'match (group-windows (current-group)))))
       (when match
         (group-focus-window (current-group) match)))))
-
-(defcommand-alias select select-window)
 
 (defcommand select-window-by-name (name) ((:window-name "Select: "))
   "Switch to the first window whose name is exactly @var{name}."
@@ -1112,11 +1106,9 @@ window. Default to the current window. if
         (group-focus-window group nw)
         (wm-message "No other window."))))
 
-(defcommand other-window (&optional (group (current-group))) ()
+(defcommand (:wm other-window other) (&optional (group (current-group))) ()
   "Switch to the window last focused."
   (focus-other-window group))
-
-(defcommand-alias other other-window)
 
 (defcommand next-window () ()
   "Go to the next window in the window list."
@@ -1132,7 +1124,7 @@ window. Default to the current window. if
         (focus-prev-window group)
         (other-window group))))
 
-(defcommand renumber (nt &optional (group (current-group))) ((:number "Number: "))
+(defcommand (:wm renumber number) (nt &optional (group (current-group))) ((:number "Number: "))
   "Change the current window's number to the specified number. If another window
 is using the number, then the windows swap numbers. Defaults to current group."
   (let ((nf (window-number (group-current-window group)))
@@ -1147,8 +1139,6 @@ is using the number, then the windows swap numbers. Defaults to current group."
           (setf (window-number (group-current-window group)) nt))
         ;; Just give the window the number
         (setf (window-number (group-current-window group)) nt))))
-
-(defcommand-alias number renumber)
 
 (defcommand repack-window-numbers (&optional preserved) ()
   "Ensure that used window numbers do not have gaps; ignore PRESERVED window numbers."
@@ -1166,7 +1156,6 @@ is using the number, then the windows swap numbers. Defaults to current group."
 
 (defcommand windowlist (&optional window-list
                                   (fmt *window-format*))
-    (:rest)
   "Allow the user to select a window from the list of windows and focus the
 selected window. For information of menu bindings see MENUS. The optional
 argument FMT can be specified to override the default window formatting. The
@@ -1174,24 +1163,28 @@ optional argument WINDOW-LIST can be provided to show a custom window
 list (see WINDOWLIST-BY-CLASS). The default window list is the list of all
 window in the current group. Also note that the default window list is sorted
 by number and if the WINDOW-LIST is provided, it is shown unsorted (as-is)."
+  ;; TODO 2026-01-21: should pass itype
+  (declare (interactive rest))
   ;; Shadowing the window-list argument.
   (if-let ((window-list (or window-list
                             (sort-windows-by-number
                              (group-windows (current-group))))))
     (if-let ((window (select-window-from-menu window-list fmt)))
       (group-focus-window (current-group) window)
-      (throw 'error :abort))
+      (throw 'cmd :abort))
     (wm-message "No Managed Windows")))
 
-(defcommand windowlist-by-class (&optional (fmt *window-format-by-class*)) (:rest)
+(defcommand windowlist-by-class (&optional (fmt *window-format-by-class*))
   "Allow the user to select a window from the list of windows (sorted by class)
 and focus the selected window. For information of menu bindings see MENUS.
 The optional argument FMT can be specified to override the default window
 formatting. This is a simple wrapper around the command WINDOWLIST."
+  (declare (interactive rest))
   (windowlist (sort-windows-by-class (group-windows (current-group))) fmt))
 
-(defcommand window-send-string (string &optional (window (current-window))) ((:rest "Insert: "))
+(defcommand (:wm window-send-string insert) (string &optional (window (current-window)))
   "Send the string of characters to the current window as if they'd been typed."
+  (declare (interactive (rest "Insert: ")))
   (when window
     (map nil (lambda (ch)
                ;; exploit the fact that keysyms for ascii characters
@@ -1208,9 +1201,7 @@ formatting. This is a simple wrapper around the command WINDOWLIST."
                                   (make-key :keysym sym)))))
          string)))
 
-(defcommand-alias insert window-send-string)
-
-(defcommand mark (&optional (win (current-window)) (message t)) ()
+(defcommand mark (&optional (win (current-window)) (message t))
   "Toggle a window's mark. The optional argument WIN controls which window is
 marked and defaults to the current window. The optional argument MESSAGE
 controls whether or not to display a message to the user indicating that WIN has
@@ -1223,33 +1214,32 @@ been marked, and defaults to T."
                       "^3~A^n Unmarked!")
                   (format-expand *window-formatters* *window-format* win)))))
 
-(defcommand clear-window-marks (&optional (group (current-group)) (windows (group-windows group))) ()
+(defcommand (:wm clear-window-marks clear-marks) (&optional (group (current-group)) (windows (group-windows group)))
   "Clear all marks in the current group."
   (dolist (w windows)
     (setf (window-marked w) nil)))
 
-(defcommand-alias clear-marks clear-window-marks)
-
-(defcommand echo-windows (&optional (fmt *window-format*) (group (current-group)) (windows (group-windows group))) (:rest)
+(defcommand (:wm echo-windows windows) (&optional (fmt *window-format*) (group (current-group)) (windows (group-windows group)))
   "Display a list of managed windows. The optional argument @var{fmt} can
 be used to override the default window formatting."
+  (declare (interactive rest))
   (let* ((wins (sort1 windows '< :key 'window-number))
          (highlight (position (group-current-window group) wins))
          (names (mapcar (lambda (w)
-                          (format-expand *window-formatters* fmt w)) wins)))
+                          (format-expand *window-formatters* fmt w)) 
+                        wins)))
     (if (null wins)
         (echo-string (group-screen group) "No Managed Windows")
         (echo-string-list (group-screen group) names highlight))))
 
-(defcommand-alias windows echo-windows)
-
-(defcommand window-info (&optional (fmt *window-info-format*)) (:rest)
+(defcommand window-info (&optional (fmt *window-info-format*))
   "Display information about the current window."
+  (declare (interactive rest))
   (if (current-window)
       (wm-message "~a" (format-expand *window-formatters* fmt (current-window)))
       (wm-message "No Current Window.")))
 
-(defcommand refresh () ()
+(defcommand refresh ()
   "Refresh current window without changing its size."
   (when-let* ((window (current-window))
               (w (window-width window))
@@ -1263,7 +1253,7 @@ be used to override the default window formatting."
                          :width w
                          :height h)))
 
-(defcommand toggle-always-on-top () ()
+(defcommand toggle-always-on-top ()
   "Toggle whether the current window always appears over other windows.
 The order windows are added to this list determines priority."
   (let ((w (current-window))
@@ -1273,7 +1263,7 @@ The order windows are added to this list determines priority."
           (setf (group-on-top-windows (current-group)) (remove w windows))
           (push (current-window) (group-on-top-windows (current-group)))))))
 
-(defcommand fullscreen () ()
+(defcommand fullscreen ()
   "Toggle the fullscreen mode of the current widnow. Use this for clients
 with broken (non-NETWM) fullscreen implementations, such as any program
 using SDL."

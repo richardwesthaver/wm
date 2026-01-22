@@ -30,7 +30,7 @@
   (labels ((as-list (x) (if (consp x) x (list x)))
            (validated-kbd (key)
              (or (kbd key)
-                 (throw 'error
+                 (throw 'cmd
                    (format nil "Invalid keyspec: ~S" key)))))
     (mapcar (lambda (kspec)
               (let ((src-key (car kspec))

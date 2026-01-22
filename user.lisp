@@ -62,24 +62,28 @@ menu, the error is re-signalled."
                  y (1- (+ (xlib:drawable-y win) (xlib:drawable-height win))))))))
     (warp-pointer (group-screen group) x y)))
 
-(defcommand banish (&optional where) (:rest)
+(defcommand banish (&optional where)
   "Warp the mouse the lower right corner of the current head."
+  (declare (interactive rest))
   (if where
       (banish-pointer (keywordicate (string-upcase where)))
       (banish-pointer)))
 
-(defcommand ratwarp (x y) ((:number "X: ") (:number "Y: "))
+(defcommand ratwarp (x y)
   "Warp the mouse to the specified location."
+  (declare (interactive (number "X: ") (number "Y: ")))
   (warp-pointer (current-screen) x y))
 
-(defcommand ratrelwarp (dx dy) ((:number "Delta X: ") (:number "Delta Y: "))
+(defcommand ratrelwarp (dx dy) 
   "Warp the mouse by the specified amount from its current position."
+  (declare (interactive (number "Delta X: ") (number "Delta Y: ")))
   (warp-pointer-relative dx dy))
 
-(defcommand ratclick (&optional (button 1)) (:number)
+(defcommand ratclick (&optional (button 1))
   "Simulate a pointer button event at the current pointer
 location. Note: this function is unlikely to work unless
 your X server and XLIB implementation support XTEST."
+  (declare (interactive number))
   (when (current-window)
     (send-fake-click (current-window) button)))
 
@@ -135,32 +139,32 @@ with base. Automagically update the cache."
                                 :end2 (length base)))) 
                  (path-cache-programs *path-cache*)))
 
-(defcommand run-shell-command (cmd &optional collect-output-p) ((:shell "/bin/sh -c "))
+(defcommand (:wm run-shell-command exec) (cmd &optional collect-output-p)
   "Run the specified shell command. If @var{collect-output-p} is @code{T}
 then run the command synchonously and collect the output. Be
 careful. If the shell command doesn't return, it will hang WM. In
 such a case, kill the shell command to resume WM."
+  (declare (interactive (shell "/bin/sh -c ")))
   (if collect-output-p
-      (run-prog-collect-output *shell-program* "-c" cmd)
-      (run-prog *shell-program* :args (list "-c" cmd) :wait nil)))
+      (with-output-to-string (s)
+        (run-program *shell-program* (list "-c" cmd) :output s))
+      (run-program *shell-program* (list "-c" cmd) :wait nil)))
 
-(defcommand-alias exec run-shell-command)
-
-(defcommand eval-line (cmd) ((:rest "Eval: "))
+(defcommand (:wm eval-line eval) (cmd)
   "Evaluate the s-expression and display the result(s)."
+  (declare (interactive (rest "Eval: ")))
   (handler-case
       (if cmd
           (wm-message "^20~{~a~^~%~}"
                    (mapcar 'prin1-to-string
                            (multiple-value-list (eval (read-from-string cmd)))))
-          (throw 'error :abort))
+          (throw 'cmd :abort))
     (error (c)
       (wm-err "^B^1*~A" c))))
 
-(defcommand-alias eval eval-line)
-
-(defcommand echo (string) ((:rest "Echo: "))
+(defcommand echo (string)
   "Display STRING in the message bar."
+  (declare (interactive (rest "Echo: ")))
   ;; The purpose of echo is always to pop up a message window.
   (let ((*executing-wm-command* nil))
     (wm-message "~a" string)))
@@ -170,11 +174,12 @@ such a case, kill the shell command to resume WM."
   (when (screen-current-window screen)
     (send-fake-key (screen-current-window screen) key)))
 
-(defcommand meta (key) ((:key "Key: "))
+(defcommand meta (key)
   "Send a fake key to the current window. KEY is a typical WM key, like 'C-M-o'."
+  (declare (interactive (key "Key: ")))
   (send-meta-key (current-screen) key))
 
-(defcommand loadrc () ()
+(defcommand loadrc ()
   "Reload the wmrc and init files."
   (handler-case 
       (with-restarts-menu (load-init-file nil))
@@ -184,7 +189,7 @@ such a case, kill the shell command to resume WM."
       (declare (ignore args))
       (wm-message "init file loaded successfully."))))
 
-(defcommand keyboard-quit () ()
+(defcommand (:wm keyboard-quit abort) ()
   "This way you can exit from command mode. Also aliased as abort."
   (let ((in-command-mode (eq *top-map* *root-map*)))
     (when (pop-top-map)
@@ -192,13 +197,11 @@ such a case, kill the shell command to resume WM."
           (run-hook *command-mode-end-hook*)
           (wm-message "Exited.")))))
 
-(defcommand-alias abort keyboard-quit)
-
-(defcommand quit-wm () ()
+(defcommand quit-wm ()
   "Quit WM."
   (throw :top-level :quit))
 
-(defcommand quit-confirm () ()
+(defcommand quit-confirm ()
   "Prompt the user to confirm quitting WM."
   (if (y-or-n-p (format nil "~@{~a~^~%~}"
                         "You are about to quit the window manager to TTY."
@@ -207,7 +210,7 @@ such a case, kill the shell command to resume WM."
       (quit-wm)
       (xlib:unmap-window (screen-message-window (current-screen)))))
 
-(defcommand restart-soft () ()
+(defcommand restart-soft ()
   "Soft restart WM. The lisp process isn't restarted. Instead,
 control jumps to the very beginning of the WM program. This
 differs from RESTART, which restarts the unix process.
@@ -217,7 +220,7 @@ after the restart."
   (destroy-all-mode-lines)
   (throw :top-level :restart))
 
-(defcommand restart-hard () ()
+(defcommand restart-hard ()
   "Restart WM. This is handy if a new WM executable has been
 made and you wish to replace the existing process with it.
 
@@ -285,7 +288,7 @@ current frame instead of switching to the window."
         (run-shell-command cmd))))
 
 ;; TODO 2026-01-07: Use SYS
-(defcommand reload () ()
+(defcommand reload ()
   "Reload WM using ASDF."
   (wm-message "Reloading WM...")
   #+asdf (with-restarts-menu
@@ -293,11 +296,11 @@ current frame instead of switching to the window."
   #-asdf (wm-message "^B^1*Sorry, WM can only be reloaded with asdf (for now).")
   #+asdf (wm-message "Reloading WM...^B^2*Done^n."))
 
-(defcommand emacs () ()
+(defcommand emacs ()
   "Start emacs unless it is already running, in which case focus it."
   (run-or-raise "emacs" '(:class "Emacs")))
 
-(defcommand copy-unhandled-error () ()
+(defcommand copy-unhandled-error ()
   "When an unhandled error occurs, WM restarts and attempts to
 continue. Unhandled errors should be reported to the mailing list so
 they can be fixed. Use this command to copy the unhandled error and
@@ -320,16 +323,16 @@ submitting the bug report."
 @var{pullp} is set, also define a command and key binding to run or
 pull the program."
   `(progn
-     (defcommand ,name () ()
+     (defcommand ,name ()
        (run-or-raise ,command ,props))
      (define-key ,map ,key ,(string-downcase (string name)))
      ,(when pullp
         `(progn
-           (defcommand (,pull-name tile-group) () ()
+           (defcommand (,pull-name tile-group) ()
              (run-or-pull ,command ,props))
            (define-key ,map ,pull-key ,(string-downcase (string pull-name)))))))
 
-(defcommand show-window-properties () ()
+(defcommand show-window-properties ()
   "Shows the properties of the current window. These properties can be
 used for matching windows with run-or-raise or window placement
 rules."
@@ -343,7 +346,7 @@ rules."
                             (window-role w)
                             (window-title w)))))
 
-(defcommand list-window-properties () ()
+(defcommand list-window-properties ()
   "List all the properties of the current window and their values,
 like xprop."
   (message-no-timeout

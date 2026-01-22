@@ -207,7 +207,7 @@ at 0. Return a netwm compliant group id."
                           (list (netwm-group-id g))
                           :cardinal 32)))
 
-(defcommand toggle-always-show () ()
+(defcommand toggle-always-show ()
   "Toggle whether the current window is shown in all groups."
   (let ((w (current-window))
         (screen (current-screen)))
@@ -392,45 +392,47 @@ current window of the current group to the new one."
     (move-window-to-group win next)
     (focus-all win)))
 
-(defcommand gnew (name) ((:string "Group name: "))
+(defcommand gnew (name)
   "Create a new group with the specified name. The new group becomes the
 current group. If @var{name} begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
 numbers less than one and are invisible to from gprev, gnext, and, optionally,
 groups and vgroups commands."
+  (declare (interactive (string "Group name: ")))
   (unless name 
-    (throw 'error :abort))
+    (throw 'cmd :abort))
   (add-group (current-screen) name))
 
-(defcommand gnewbg (name) ((:string "Group name: "))
+(defcommand gnewbg (name)
   "Create a new group but do not switch to it."
+  (declare (interactive (string "Group name: ")))
   (unless name
-    (throw 'error :abort))
+    (throw 'cmd :abort))
   (add-group (current-screen) name :background t))
 
-(defcommand gnext () ()
+(defcommand gnext ()
 "Cycle to the next group in the group list."
   (group-forward (current-group)
                  (sort-groups (current-screen))))
 
-(defcommand gprev () ()
+(defcommand gprev ()
 "Cycle to the previous group in the group list."
   (group-forward (current-group)
                  (reverse (sort-groups (current-screen)))))
 
-(defcommand gnext-with-window () ()
+(defcommand gnext-with-window ()
   "Cycle to the next group in the group list, taking the current
 window along."
   (group-forward-with-window (current-group)
                              (sort-groups (current-screen))))
 
-(defcommand gprev-with-window () ()
+(defcommand gprev-with-window ()
   "Cycle to the previous group in the group list, taking the current
 window along."
   (group-forward-with-window (current-group)
                              (reverse (sort-groups (current-screen)))))
 
-(defcommand gother () ()
+(defcommand gother ()
   "Go back to the last group."
   (let ((groups (screen-groups (current-screen))))
     (if (> (length groups) 1)
@@ -449,8 +451,9 @@ window along."
                  (find-free-group-number (current-screen))))))
        (setf (group-name group) name))
 
-(defcommand grename (name) ((:string "New name for group: "))
+(defcommand grename (name)
   "Rename the current group."
+  (declare (interactive(string "New name for group: ")))
   (cond ((find-group (current-screen) name)
          (wm-message "^1*^BError: Name already exists."))
         ((or (zerop (length name))
@@ -473,30 +476,34 @@ window along."
                         (if *list-hidden-groups* groups (non-hidden-groups groups)))))
     (echo-string-list screen names)))
 
-(defcommand groups (&optional (fmt *group-format*)) (:rest)
+(defcommand groups (&optional (fmt *group-format*))
 "Display the list of groups with their number and
 name. @var{*group-format*} controls the formatting. The optional
 argument @var{fmt} can be used to override the default group
 formatting."
+  (declare (interactive rest))
   (echo-groups (current-screen) fmt))
 
-(defcommand vgroups (&optional gfmt wfmt) (:string :rest)
+(defcommand vgroups (&optional gfmt wfmt)
 "Like @command{groups} but also display the windows in each group. The
 optional arguments @var{gfmt} and @var{wfmt} can be used to override
 the default group formatting and window formatting, respectively."
+  (declare (interactive string rest))
   (echo-groups (current-screen)
                (or gfmt *group-format*)
                t (or wfmt *window-format*)))
 
-(defcommand gselect (&optional to-group) (:rest)
+(defcommand gselect (&optional to-group)
   "Accepts numbers to select a group, otherwise grouplist selects."
+  (declare (interactive rest))
   (if-let ((to-group (when to-group
                        (select-group (current-screen) to-group))))
     (switch-to-group to-group)
     (grouplist)))
 
-(defcommand grouplist (&optional (fmt *group-format*)) (:rest)
+(defcommand grouplist (&optional (fmt *group-format*))
   "Allow the user to select a group from a list, like windowlist for groups."
+  (declare (interactive rest))
   (when-let ((group (second (select-from-menu
                              (current-screen)
                              (mapcar (lambda (g)
@@ -504,28 +511,31 @@ the default group formatting and window formatting, respectively."
                                      (screen-groups (current-screen)))))))
     (switch-to-group group)))
 
-(defcommand gmove (to-group) ((:group "To group: "))
+(defcommand gmove (to-group)
 "Move the current window to the specified group."
+  (declare (interactive (group "To group: ")))
   (when (and to-group
              (current-window))
     (move-window-to-group (current-window) to-group)))
 
-(defcommand gmove-and-follow (to-group) ((:group "To group: "))
+(defcommand gmove-and-follow (to-group)
   "Move the current window to the specified group, and switch to it."
+  (declare (interactive (group "To group: ")))
   (let ((window (current-window)))
     (gmove to-group)
     (switch-to-group to-group)
     (when window (really-raise-window window))))
 
-(defcommand gmove-marked (to-group) ((:group "To group: "))
+(defcommand gmove-marked (to-group)
   "move the marked windows to the specified group."
+  (declare (interactive (group "To group: ")))
   (when to-group
     (let ((group (current-group)))
       (dolist (i (marked-windows group))
         (setf (window-marked i) nil)
         (move-window-to-group i to-group)))))
 
-(defcommand gkill () ()
+(defcommand gkill ()
 "Kill the current group. All windows in the current group are migrated
 to the next group."
   (let* ((dead-group (current-group))
@@ -534,10 +544,10 @@ to the next group."
          (to-group (or (next-group dead-group (non-hidden-groups groups))
                        (next-group dead-group groups))))
     (if to-group
-        (if (or (not %interactivep%)
-            (not (group-windows dead-group))
-            (y-or-n-p
-             (format nil "You are about to kill non-empty group \"^B^3*~a^n\"
+        (if (or (not *interactive*)
+                (not (group-windows dead-group))
+                (y-or-n-p
+                 (format nil "You are about to kill non-empty group \"^B^3*~a^n\"
 The windows will be moved to group \"^B^2*~a^n\"
 ^B^6*Confirm?^n " (group-name dead-group) (group-name to-group))))
             (let ((dead-group-name (group-name dead-group)))
@@ -547,7 +557,7 @@ The windows will be moved to group \"^B^2*~a^n\"
             (wm-message "Canceled."))
         (wm-message "There's only one group left."))))
 
-(defcommand gkill-other () ()
+(defcommand gkill-other ()
 "Kill other groups. All windows in other groups are migrated
 to the current group."
   (let* ((current-group (current-group))
@@ -559,8 +569,9 @@ to the current group."
                  (kill-group dead-group current-group))
                (wm-message "Killed other groups.")))))
 
-(defcommand gmerge (from) ((:group "From group: "))
+(defcommand gmerge (from)
 "Merge @var{from} into the current group. @var{from} is not deleted."
+  (declare (interactive (group "From group: ")))
   (if (eq from (current-group))
       (wm-message "^B^3*Cannot merge group with itself!")
       (merge-groups from (current-group))))

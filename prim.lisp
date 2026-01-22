@@ -1318,9 +1318,6 @@ of :error."
   on-click-bounds
   new-bounds)
 
-(defstruct timer
-  time repeat function args)
-
 (defvar *minor-mode-maps* ()
   "A list of minor mode keymaps. An element of the list may be a single keymap or
 a function. If an element is a function it must take a group instance and return

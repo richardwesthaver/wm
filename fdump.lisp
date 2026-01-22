@@ -73,34 +73,27 @@ location."
             (*print-pretty* t))
         (prin1 foo fp)))))
 
-(defcommand dump-group-to-file (file) ((:rest "Dump to file: "))
+(defcommand (:wm dump-group-to-file dump-group) (file) ((:rest "Dump to file: "))
   "Dumps the frames of the current group of the current screen to the named file.
 If FILE is an absolute path, then the dump will be read written there.
 Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME location."
   (dump-to-file (dump-group (current-group)) file)
   (wm-message "Group dumped."))
 
-(defcommand-alias dump-group dump-group-to-file)
-
-(defcommand dump-screen-to-file (file) ((:rest "Dump to file: "))
+(defcommand (:wm dump-screen-to-file dump-screen) (file) ((:rest "Dump to file: "))
   "Dumps the frames of all groups of the current screen to the named file.
 If FILE is an absolute path, then the dump will be read written there.
 Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME location."
   (dump-to-file (dump-screen (current-screen)) file)
   (wm-message "Screen dumped."))
 
-(defcommand-alias dump-screen dump-screen-to-file)
-
-(defcommand dump-desktop-to-file (file) ((:rest "Dump to file: "))
+(defcommand (:wm dump-desktop-to-file dump-desktop) (file) ((:rest "Dump to file: "))
   "Dumps the frames of all groups of all screens to the named file.
 If FILE is an absolute path, then the dump will be read written there.
 Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME location."
   (dump-to-file (dump-desktop) file)
   (wm-message "Desktop dumped."))
 
-(defcommand-alias dump-desktop dump-desktop-to-file)
-
-;;;
 (defun read-dump-from-file (file)
   (with-open-file (fp file :direction :input)
     (with-standard-io-syntax
@@ -175,7 +168,7 @@ Otherwise, defaults to writing to \"FILE.dump\" in the XDG_DATA_HOME location."
       (when screen
         (restore-screen screen sdump)))))
 
-(defcommand restore-from-file (file) ((:rest "Restore from file: "))
+(defcommand (:wm restore-from-file restore) (file) ((:rest "Restore from file: "))
   "Restores screen, groups, or frames from named file, depending on file's
 contents. If FILE is an absolute path, then the dump will be read from there.
 Otherwise, defaults to reading from \"FILE.dump\" in the XDG_DATA_HOME location."
@@ -193,8 +186,6 @@ Otherwise, defaults to reading from \"FILE.dump\" in the XDG_DATA_HOME location.
        (wm-message "Desktop restored."))
       (t
        (wm-message "Don't know how to restore ~a." dump)))))
-
-(defcommand-alias restore restore-from-file)
 
 (defcommand place-existing-windows () ()
   "Re-arrange existing windows according to placement rules."

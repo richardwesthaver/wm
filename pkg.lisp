@@ -2,7 +2,7 @@
 
 ;;; Code:
 (defpackage :wm
-  (:use #:cl #:std #:obj/meta/mix #:time #:log)
+  (:use #:cl #:std #:obj/meta/mix #:time #:log #:obj #:sb-ext)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)
@@ -157,8 +157,6 @@
    *maximum-completions*
    ;; Minor mode keymaps
    *minor-mode-maps*
-   ;; wrappers.lisp
-   read-line-from-sysfs
    ;; kmap.lisp
    *top-map*
    *root-map*
@@ -197,11 +195,6 @@
    argument-pop
    argument-pop-or-read
    argument-pop-rest
-   defcommand
-   defcommand-alias
-   define-wm-type
-   run-commands
-   %interactivep%
    ;; menu-declarations.lisp
    *menu-map*
    *single-menu-map*
@@ -325,8 +318,6 @@
    *resize-increment*
    iresize
    setup-iresize
-   *help-max-height*
-   *message-max-width*
    *which-key-format*
    ;; fdump.lisp
    ddump

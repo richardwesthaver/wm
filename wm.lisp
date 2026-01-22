@@ -156,7 +156,7 @@ further up."
   (loop
     (with-simple-restart (:new-io-loop "Recreate I/O loop")
       (let ((io (make-instance *default-io-loop*)))
-        (io-loop-add io (make-instance 'wm-timer-channel))
+        ;; (io-loop-add io (make-instance 'wm-timer-channel))
         (io-loop-add io (make-instance 'display-channel :display *display*))
         ;; If we have no implementation for the current CL, then
         ;; don't register the channel.

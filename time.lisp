@@ -71,13 +71,13 @@
     ;; %Z   alphabetic time zone abbreviation (e.g., EDT)
     ))
 
-(defcommand echo-date () ()
+(defcommand echo-date ()
   "Display the date and time."
   (wm-message "~a" (time-format *time-format-string-default*)))
 
-(defcommand-alias time echo-date)
+(command-alias :time :echo-date)
 
-(defcommand refresh-time-zone () ()
+(defcommand refresh-time-zone ()
   "Refresh the time zone information from the system.
 If you change the system time zone while WM is running you can
 run this command to make WM notice the change."

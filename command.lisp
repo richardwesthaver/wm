@@ -9,182 +9,51 @@
 ;;; Code:
 (in-package #:wm)
 
-(defstruct command-alias
-  from to)
+(defkernel wm-command (command) ())
+;; instead of requiring a :class slot, we just subclass wm-command for our groups (tiling, floating, and dynamic)
+(defkernel wm-tiling-command (wm-command) ())
+(defkernel wm-floating-command (wm-command) ())
+(defkernel wm-dynamic-command (wm-tiling-command) ())
+(init :commands :name :wm :class 'wm-command)
 
-(defstruct command
-  name class args)
-
-(defvar *command-hash* (make-hash-table :test 'eq)
-  "A list of interactive WM commands.")
-
-(defvar *max-command-alias-depth* 10
-  "The maximum number of times an command alias is expanded before an Error is raised.")
-
-(define-condition command-docstring-warning (style-warning)
-  ;; Don't define an accessor to prevent collision with the generic command
-  ((command :initarg :command))
-  (:report
-   (lambda (condition stream)
-     (format stream "The command ~A doesn't have a docstring" (slot-value condition 'command)))))
-
-(defmacro defcommand (name (&rest args) (&rest interactive-args) &body body)
-  "Create a command function and store its interactive hints in
-*command-hash*. The local variable %interactivep% can be used to check
-if the command was called interactively. If it is non-NIL then it was
-called from a keybinding or from the colon command.
-
-The NAME argument can be a string, or a list of two symbols. If the
-latter, the first symbol names the command, and the second indicates
-the type of group under which this command will be usable. Currently,
-tile-group, floating-group and dynamic-group are the possible values.
-
-INTERACTIVE-ARGS is a list of the following form: ((TYPE PROMPT) (TYPE PROMPT) ...)
-
-each element in INTERACTIVE-ARGS declares the type and prompt for the
-command's arguments.
-
-TYPE can be one of the following:
-
-:y-or-n
-A yes or no question returning T or NIL.
-:variable
-A lisp variable
-:function
-A lisp function
-:command
-A WM command as a string.
-:key-seq
-A key sequence starting from *TOP-MAP*
-:window-number
-An existing window number
-:number
-An integer number
-:string
-A string
-:key
-A single key chord
-:window-name
-An existing window's name
-:direction
-A direction symbol. One of :UP :DOWN :LEFT :RIGHT
-:gravity
-A gravity symbol. One of :center :top :right :bottom :left :top-right :top-left :bottom-right :bottom-left
-:group
-An existing group
-:frame
-A frame
-:shell
-A shell command
-:rest
-The rest of the input yet to be parsed.
-:rotation
-A rotation symbol. One of :CL, :CLOCKWISE, :CCL, OR :COUNTERCLOCKWISE
-
-Note that new argument types can be created with DEFINE-WM-TYPE.
-
-PROMPT can be string. In this case, if the corresponding argument is
-missing from an interactive call, WM will use prompt for its
-value using PROMPT. If PROMPT is missing or nil, then the argument is
-considered an optional interactive argument and is not prompted for
-when missing.
-
-Alternatively, instead of specifying nil for PROMPT or leaving it
-out, an element can just be the argument type."
-  (check-type name (or symbol list))
-  (multiple-value-bind (body decls docstring) (parse-body body :documentation t)
-    (let ((name (if (atom name)
-                    name
-                    (first name)))
-          (group (if (atom name)
-                     t
-                     (second name))))
-      (unless docstring
-        (make-condition 'command-docstring-warning :command name))
-      `(progn
-         (defun ,name ,args
-           ,@(when docstring
-               (list docstring))
-           ,@decls
-           (let ((%interactivep% *interactive*)
-                 (*interactive* nil))
-             (declare (ignorable %interactivep%))
-             (run-hook-with-args *pre-command-hook* ',name)
-             (multiple-value-prog1
-                 (progn ,@body)
-               (run-hook-with-args *post-command-hook* ',name))))
-         (export ',name)
-         (setf (gethash ',name *command-hash*)
-               (make-command :name ',name
-                             :class ',group
-                             :args ',interactive-args))))))
-
-(defmacro defcommand-alias (alias original)
-  "Since interactive commands are functions and can conflict with
-package symbols. But for backwards compatibility this macro creates an
-alias name for the command that is only accessible interactively."
-  `(setf (gethash ',alias *command-hash*)
-         (make-command-alias :from ',alias
-                             :to ',original)))
-
-(defun dereference-command-symbol (command)
-  "Given a string or symbol look it up in the command database and return
-whatever it finds: a command, an alias, or nil."
-  (maphash (lambda (k v)
-             (when (string-equal k command)
-               (return-from dereference-command-symbol v)))
-           *command-hash*))
+(defvar *dynamic-command-blacklist* nil
+  "A blacklist of commands for dynamic groups specifically.")
 
 (defun command-active-p (command)
-  (declare (special *dynamic-group-blacklisted-commands*))
+  (declare (special *dynamic-command-blacklist*))
   (let* ((group (current-group))
          (active (or (typep group (command-class command))
                      (some (lambda (f) (funcall f group command))
                            *custom-command-filters*))))
     (if (typep (current-group) 'dynamic-group)
-        (unless (member command *dynamic-group-blacklisted-commands*)
+        (unless (member command *dynamic-command-blacklist*)
           active)
         active)))
 
-(defun get-command-structure (command &optional (only-active t))
+(defun get-command (command &optional (only-active t))
   "Return the command structure for COMMAND. COMMAND can be a string,
 symbol, command, or command-alias. By default only search active
 commands."
   (declare (type (or string symbol command command-alias) command))
   (when (or (stringp command) (symbolp command))
-    (setf command (dereference-command-symbol command)))
-  (when (command-alias-p command)
-    (setf command (loop for c = (gethash (command-alias-to command) *command-hash*)
-                     then (gethash (command-alias-to c) *command-hash*)
-                     for depth from 1
-                     until (or (null c)
-                               (command-p c))
-                     when (> depth *max-command-alias-depth*)
-                     do (error "Maximum command alias depth exceeded.")
-                     finally (return c))))
+    (setf command (command command)))
   (when (and command
              (or (not only-active)
                  (command-active-p command)))
     command))
 
-(defun all-commands (&optional (only-active t))
+(defun list-all-commands (&optional (only-active t))
   "Return a list of all interactive commands as strings. By default
 only return active commands."
   (let (acc)
     (maphash (lambda (k v)
                ;; make sure its an active command
-               (when (get-command-structure v only-active)
+               (when (get-command v only-active)
                  (push (string-downcase k) acc)))
              *command-hash*)
     (sort acc 'string<)))
 
 ;;; command arguments
-(defstruct argument-line
-  string start)
-
-(defvar *command-type-hash* (make-hash-table)
-  "A hash table of types and functions to deal with these types.")
-
 (defun argument-line-end-p (input)
   "Return T if we're outta arguments from the input line."
   (>= (argument-line-start input)
@@ -242,7 +111,7 @@ only return active commands."
       (if completions
           (completing-read (current-screen) prompt completions)
           (read-one-line (current-screen) prompt))
-      (throw 'error :abort)))
+      (throw 'cmd :abort)))
 
 (defun argument-pop-rest (input)
   "Return the remainder of the argument text."
@@ -256,45 +125,9 @@ only return active commands."
       (if completions
           (completing-read (current-screen) prompt completions)
           (read-one-line (current-screen) prompt))
-      (throw 'error :abort)))
+      (throw 'cmd :abort)))
 
-(defmacro define-wm-type (type (input prompt) &body body)
-  "Create a new type that can be used for command arguments. TYPE can be any
-symbol.
-
-When BODY is evaluated INPUT is bound to the argument-line. It is passed to
-ARGUMENT-POP, ARGUMENT-POP-REST, etc. PROMPT is the prompt that should be used
-when prompting the user for the argument.
-
-(define-wm-type :symbol (input prompt)
- (or (find-symbol
-       (string-upcase
-         (or (argument-pop input)
-             ;; Whitespace messes up find-symbol.
-             (string-trim \" \"
-                          (completing-read (current-screen)
-                                           prompt
-                                           ;; find all symbols in the
-                                           ;;  wm package.
-                                           (let (acc)
-                                             (do-symbols (s (find-package \"WM\"))
-                                               (push (string-downcase (symbol-name s)) acc))
-                                             acc)))
-             (throw 'error \"Abort.\")))
-       \"WM\")
-     (throw 'error \"Symbol not in WM package\")))
-
-(defcommand \"symbol\" (sym) ((:symbol \"Pick a symbol: \"))
-  (wm-message \"~a\" (with-output-to-string (s)
-                    (describe sym s))))
-
-This code creates a new type called :SYMBOL which finds the symbol in the wm
-package. The command SYMBOL uses it and then describes the symbol."
-  `(setf (gethash ,type *command-type-hash*)
-    (lambda (,input ,prompt)
-      ,@body)))
-
-(define-wm-type :y-or-n (input prompt)
+(define-command-type :y-or-n (input prompt)
   (let* ((positive-responses '("y" t))
          (s (or (argument-pop input)
                 (read-one-line (current-screen) (concat prompt "(y/n): ")))))
@@ -308,31 +141,30 @@ package. The command SYMBOL uses it and then describes the symbol."
          (var (string-upcase (pop ofs)))
          (ret (find-symbol var pkg)))
     (when (plusp (length ofs))
-      (throw 'error "Too many :'s"))
+      (throw 'cmd "Too many :'s"))
     (if ret
         (values ret pkg var)
-        (throw 'error (format nil "No such symbol: ~a::~a."
+        (throw 'cmd (format nil "No such symbol: ~a::~a."
                               (package-name pkg) var)))))
 
-(define-wm-type :variable (input prompt)
+(define-command-type :variable (input prompt)
   (lookup-symbol (argument-pop-or-read input prompt)))
 
-(define-wm-type :function (input prompt)
+(define-command-type :function (input prompt)
   (multiple-value-bind (sym pkg var)
       (lookup-symbol (argument-pop-or-read input prompt))
     (if (fboundp sym)
         sym
-        (throw 'error (format nil "The symbol ~A::~A is not bound to any function."
+        (throw 'cmd (format nil "The symbol ~A::~A is not bound to any function."
                               (package-name pkg) var)))))
 
-(define-wm-type :command (input prompt)
-
+(define-command-type :command (input prompt)
   (or (argument-pop input)
       (completing-read (current-screen)
                        prompt
-                       (all-commands))))
+                       (list-all-commands))))
 
-(define-wm-type :key-seq (input prompt)
+(define-command-type :key-seq (input prompt)
   (labels ((update (seq)
              (wm-message "~a ~{~a ~}"
                       prompt
@@ -344,7 +176,7 @@ package. The command SYMBOL uses it and then describes the symbol."
             (wm-message "~a" prompt)
             (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))))))))
 
-(define-wm-type :window-number (input prompt)
+(define-command-type :window-number (input prompt)
   (when-let ((n (or (argument-pop input)
                (completing-read (current-screen)
                                 prompt
@@ -354,36 +186,36 @@ package. The command SYMBOL uses it and then describes the symbol."
                      :test #'string=
                      :key #'window-map-number)))
       (window-number win)
-      (throw 'error "No such window."))))
+      (throw 'cmd "No such window."))))
 
-(define-wm-type :number (input prompt)
+(define-command-type :number (input prompt)
   (when-let ((n (or (argument-pop input)
                     (read-one-line (current-screen) prompt))))
     (handler-case (parse-number n)
       (invalid-number (c)
         (declare (ignore c))
-        (throw 'error "Number required.")))))
+        (throw 'cmd "Number required.")))))
 
-(define-wm-type :string (input prompt)
+(define-command-type :string (input prompt)
   (or (argument-pop input)
       (read-one-line (current-screen) prompt)))
 
-(define-wm-type :password (input prompt)
+(define-command-type :password (input prompt)
   (or (argument-pop input)
       (read-one-line (current-screen) prompt :password t)))
 
-(define-wm-type :key (input prompt)
+(define-command-type :key (input prompt)
   (when-let ((s (or (argument-pop input)
                (read-one-line (current-screen) prompt))))
     (kbd s)))
 
-(define-wm-type :window-name (input prompt)
+(define-command-type :window-name (input prompt)
   (or (argument-pop input)
       (completing-read (current-screen) prompt
                        (mapcar 'window-name
                                (group-windows (current-group))))))
 
-(define-wm-type :direction (input prompt)
+(define-command-type :direction (input prompt)
   (let* ((values '(("up" :up)
                    ("down" :down)
                    ("left" :left)
@@ -391,9 +223,9 @@ package. The command SYMBOL uses it and then describes the symbol."
          (string (argument-pop-or-read input prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
-        (throw 'error "No matching direction."))))
+        (throw 'cmd "No matching direction."))))
 
-(define-wm-type :gravity (input prompt)
+(define-command-type :gravity (input prompt)
 "Set the current window's gravity."
   (let* ((values '(("center" :center)
                    ("top" :top)
@@ -407,7 +239,7 @@ package. The command SYMBOL uses it and then describes the symbol."
          (string (argument-pop-or-read input prompt (mapcar 'first values)))
          (gravity (second (assoc string values :test 'string-equal))))
     (or gravity
-        (throw 'error "No matching gravity."))))
+        (throw 'cmd "No matching gravity."))))
 
 (defun select-group (screen query)
   "Attempt to match string QUERY against group number or partial name."
@@ -423,27 +255,27 @@ package. The command SYMBOL uses it and then describes the symbol."
           (find-if #'match-whole (screen-groups screen))
           (find-if #'match-partial (screen-groups screen))))))
 
-(define-wm-type :group (input prompt)
+(define-command-type :group (input prompt)
   (let ((match (select-group (current-screen)
                              (or (argument-pop input)
                                  (completing-read (current-screen) prompt
                                                   (mapcar 'group-name
                                                           (screen-groups (current-screen))))))))
     (or match
-        (throw 'error "No such group."))))
+        (throw 'cmd "No such group."))))
 
-(define-wm-type :frame (input prompt)
+(define-command-type :frame (input prompt)
   (declare (ignore prompt))
   (if-let ((arg (argument-pop input)))
     (or (find arg (group-frames (current-group))
               :key (lambda (f)
                      (string (get-frame-number-translation f)))
               :test 'string=)
-        (throw 'error "Frame not found."))
+        (throw 'cmd "Frame not found."))
     (or (choose-frame-by-number (current-group))
-        (throw 'error :abort))))
+        (throw 'cmd :abort))))
 
-(define-wm-type :shell (input prompt)
+(define-command-type :shell (input prompt)
   (declare (ignore prompt))
   (let ((prompt (format nil "~A -c " *shell-program*))
         (*input-history* *input-shell-history*))
@@ -452,7 +284,7 @@ package. The command SYMBOL uses it and then describes the symbol."
              (completing-read (current-screen) prompt 'complete-program))
       (setf *input-shell-history* *input-history*))))
 
-(define-wm-type :rest (input prompt)
+(define-command-type :rest (input prompt)
   (or (argument-pop-rest input)
       (read-one-line (current-screen) prompt)))
 
@@ -468,8 +300,8 @@ aborted."
                          (make-argument-line :string input
                                              :start 0)
                          input))
-           (cmd-data (or (get-command-structure command)
-                         (throw 'error (format nil "Command '~a' not found." command))))
+           (cmd-data (or (get-command command)
+                         (throw 'cmd (format nil "Command '~a' not found." command))))
            (arg-specs (command-args cmd-data))
            (args (loop for spec in arg-specs
                     collect (let* ((type (if (listp spec)
@@ -479,7 +311,7 @@ aborted."
                                              (second spec)))
                                    (fn (gethash type *command-type-hash*)))
                               (unless fn
-                                (throw 'error (format nil "Bad argument type: ~s" type)))
+                                (throw 'cmd (format nil "Bad argument type: ~s" type)))
                               ;; If the prompt is NIL then it's
                               ;; considered an optional argument and
                               ;; we shouldn't prompt for it if the
@@ -491,7 +323,7 @@ aborted."
       ;; Did the whole string get parsed?
       (unless (or (argument-line-end-p arg-line)
                   (position-if 'alphanumericp (argument-line-string arg-line) :start (argument-line-start arg-line)))
-        (throw 'error (format nil "Trailing garbage: ~{~A~^ ~}" (subseq (argument-line-string arg-line)
+        (throw 'cmd (format nil "Trailing garbage: ~{~A~^ ~}" (subseq (argument-line-string arg-line)
                                                                         (argument-line-start arg-line)))))
       ;; Success
       (prog1
@@ -534,18 +366,6 @@ aborted."
              (unless *suppress-abort-messages*
                (wm-message "Abort.")))))))
 
-(defun run-commands (&rest commands)
-  "Run each WM command in sequence. This could be used if you're
-used to ratpoison's rc file and you just want to run commands or don't
-know lisp very well. One might put the following in one's rc file:
-
-(wm:run-commands
-  \"escape C-z\"
-  \"exec firefox\"
-  \"split\")"
-  (loop for i in commands do
-        (eval-command i)))
-
 (defcommand colon (&optional initial-input) (:rest)
   "Read a command from the user with optional INITIAL-TEXT. When
 supplied, the text will appear in the prompt.
@@ -554,8 +374,8 @@ String arguments with spaces may be passed to the command by delimiting them
 with double quotes. A backslash can be used to escape double quotes or
 backslashes inside the string. This does not apply to commands taking :REST or
 :SHELL type arguments."
-  (let ((cmd (completing-read (current-screen) ": " (all-commands) :initial-input (or initial-input ""))))
+  (let ((cmd (completing-read (current-screen) ": " (list-all-commands) :initial-input (or initial-input ""))))
     (unless cmd
-      (throw 'error :abort))
+      (throw 'cmd :abort))
     (when (plusp (length cmd))
       (eval-command cmd t))))

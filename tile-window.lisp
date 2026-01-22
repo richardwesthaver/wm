@@ -288,7 +288,7 @@ frame."
     (when win
       (pull-window win))))
 
-(defcommand-alias pull pull-window-by-number)
+(command-alias :pull :pull-window-by-number)
 
 (defun other-hidden-window (group)
   "Return the last window that was accessed and that is hidden."
@@ -377,7 +377,7 @@ when selecting another window."
   (echo-windows fmt (current-group) (frame-windows (current-group)
                                                    (tile-group-current-frame (current-group)))))
 
-(defcommand-alias frame-windows echo-frame-windows)
+(command-alias :frame-windows :echo-frame-windows)
 
 (defcommand (gravity tile-group) (gravity) ((:gravity "Gravity: "))
   "Set a window's gravity within its frame. Gravity controls where the
@@ -443,13 +443,13 @@ frame. Possible values are:
   "Dump *window-placement-rules* to FILE."
   (dump-to-file *window-placement-rules* file))
 
-(defcommand-alias dump-rules dump-window-placement-rules)
+(command-alias :dump-rules :dump-window-placement-rules)
 
 (defcommand (restore-window-placement-rules tile-group) (file) ((:rest "Filename: "))
   "Restore *window-placement-rules* from FILE."
   (setf *window-placement-rules* (read-dump-from-file file)))
 
-(defcommand-alias restore-rules restore-window-placement-rules)
+(command-alias :restore-rules :restore-window-placement-rules)
 
 (defcommand (redisplay tile-group) () ()
   "Refresh current window by a pair of resizes, also make it occupy entire frame."
@@ -495,4 +495,4 @@ specified to override the default window formatting."
         (let ((window (select-window-from-menu (frame-sort-windows group frame) fmt)))
           (if window
               (group-focus-window group window)
-              (throw 'error :abort))))))
+              (throw 'cmd :abort))))))
