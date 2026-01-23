@@ -77,7 +77,7 @@ EXAMPLE:
        (\"C-k\"   . (\"C-S-End\" \"C-x\")))))
 
   The above form remaps Ctrl-n to Down arrow, and Ctrl-p to Up arrow
-  keys.  The Ctrl-k key is remapped to the sequence of keys
+  keys. The Ctrl-k key is remapped to the sequence of keys
   Ctrl-Shift-End followed by Ctrl-x."
   (setq *custom-key-event-handler* nil
         *remap-keys-window-match-list*

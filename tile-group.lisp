@@ -1126,7 +1126,7 @@ windows used to draw the numbers in. The caller must destroy them."
           (show-frame-indicator group))
         (wm-message "Cannot split smaller than minimum size."))))
 
-(setq *default-command-class* 'wm-tiling-command)
+(setq *command-class* 'wm-tiling-command)
 
 (defcommand hsplit (&optional (ratio "1/2"))
 "Split the current frame into 2 side-by-side frames."
@@ -1163,23 +1163,23 @@ windows used to draw the numbers in. The caller must destroy them."
           (wm-message "Cannot split. Maybe current frame is too small.")))))
 
 (defcommand hsplit-equally (amt)
-    ((:number "Enter the number of frames: "))
 "Deprecated. Use `vsplit-uniformly' instead."
+  (declare (interactive (number "Enter the number of frames: ")))
   (split-frame-eql-parts (current-group) :row amt))
 
 (defcommand vsplit-uniformly (amt)
-    ((:number "Enter the number of frames: "))
 "Split current frame in n rows of equal size."
+  (declare (interactive (number "Enter the number of frames: ")))
   (split-frame-eql-parts (current-group) :row amt))
 
 (defcommand vsplit-equally (amt)
-    ((:number "Enter the number of frames: "))
 "Deprecated. Use `hsplit-uniformly' instead."
+  (declare (interactive (number "Enter the number of frames: ")))
   (split-frame-eql-parts (current-group) :column amt))
 
 (defcommand hsplit-uniformly (amt)
-    ((:number "Enter the number of frames: "))
 "Split current frame in n columns of equal size."
+  (declare (interactive (number "Enter the number of frames: ")))
   (split-frame-eql-parts (current-group) :column amt))
 
 (defcommand remove-split (&optional (group (current-group))
@@ -1355,7 +1355,7 @@ select one. Returns the selected frame or nil if aborted."
 
 (defcommand fselect (frame-number)
 "Display a number in the corner of each frame and let the user to
-select a frame by number or click. If @var{frame-number} is specified,
+select a frame by number or click. If FRAME-NUMBER is specified,
 just jump to that frame."
   (declare (interactive (frame t)))
   (let ((group (current-group)))
@@ -1363,9 +1363,9 @@ just jump to that frame."
 
 (defcommand resize (width height)
   "Move the frame split directly to the right of the current frame as much as
-possible up to @var{width} pixels, or if impossible try the split directly to
+possible up to WIDTH pixels, or if impossible try the split directly to
 the left instead. Similarly, also move the frame split directly below the
-current frame as much as possible up to @var{height} pixels, or if impossible
+current frame as much as possible up to HEIGHT pixels, or if impossible
 try the split directly above instead."
   (declare (interactive (number "+ Width: ") (number "+ Height: ")))
   (let* ((group (current-group))
@@ -1387,9 +1387,9 @@ try the split directly above instead."
   (clear-frame (tile-group-current-frame (current-group)) (current-group)))
 
 (defun get-edge (frame edge)
-  "Returns the specified edge of FRAME.  Valid values for EDGE are :TOP, :BOTTOM, :LEFT, and :RIGHT.
+  "Returns the specified edge of FRAME. Valid values for EDGE are :TOP, :BOTTOM, :LEFT, and :RIGHT.
   An edge is a START, END, and OFFSET. For horizontal edges, START is the left coordinate, END is
-  the right coordinate, and OFFSET is the Y coordinate.  Similarly, for vertical lines, START is
+  the right coordinate, and OFFSET is the Y coordinate. Similarly, for vertical lines, START is
   top, END is bottom, and OFFSET is X coordinate."
   (let* ((x1 (frame-x frame))
          (y1 (frame-y frame))
@@ -1430,7 +1430,7 @@ try the split directly above instead."
           (let ((overlap (- (min src-e e)
                             (max src-s s))))
             ;; Two edges are neighbours if they have the same offset and their starts and ends
-            ;; overlap.  We want to find the neighbour that overlaps the most.
+            ;; overlap. We want to find the neighbour that overlaps the most.
             (when (and (= src-offset offset)
                        (> overlap best-overlap))
               (setf best-frame f)
@@ -1560,7 +1560,7 @@ direction. The following are valid directions:
   "Transforms a float-window into a tile-window"
   (unfloat-window (current-window) (current-group)))
 
-(setq *default-command-class* 'wm-command)
+(setq *command-class* 'wm-command)
 
 (defcommand flatten-floats ()
   "Transform all floating windows in this group to tiled windows.

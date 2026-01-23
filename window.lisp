@@ -100,7 +100,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
     (or (and flags (logtest 256 flags))
         (find-wm-state (window-xwin window) :_NET_WM_STATE_DEMANDS_ATTENTION))))
 
-(defcommand next-urgent () ()
+(defcommand next-urgent ()
   "Jump to the next urgent window"
   (and (screen-urgent-windows (current-screen))
        (focus-all (first (screen-urgent-windows (current-screen))))))
@@ -507,7 +507,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
 
 (defun xwin-type (win)
   "Return one of :desktop, :dock, :toolbar, :utility, :splash,
-:dialog, :transient, and :normal.  Right now
+:dialog, :transient, and :normal. Right now
 only :dock, :dialog, :normal, and :transient are
 actually returned; see +NETWM-WINDOW-TYPES+."
   (or (let ((net-wm-window-type (xlib:get-property win :_NET_WM_WINDOW_TYPE)))
@@ -978,8 +978,8 @@ needed."
 
 (defun select-window-from-menu (windows fmt &optional prompt
                                                       (filter-pred *window-menu-filter*))
-  "Allow the user to select a window from the list passed in @var{windows}.  The
-@var{fmt} argument specifies the window formatting used.  Returns the window
+  "Allow the user to select a window from the list passed in WINDOWS. The
+FMT argument specifies the window formatting used. Returns the window
 selected."
   (second (select-from-menu (current-screen)
                             (mapcar (lambda (w)
@@ -991,7 +991,7 @@ selected."
                             filter-pred)))
 
 ;;; Window commands
-(defcommand (:wm delete-window delete) (&optional (window (current-window))) ()
+(defcommand (:wm delete-window delete) (&optional (window (current-window)))
   "Delete a window. By default delete the current window. This is a
 request sent to the window. The window's client may decide not to
 grant the request or may not be able to if it is unresponsive."
@@ -1000,7 +1000,7 @@ grant the request or may not be able to if it is unresponsive."
   (when window
     (send-client-message window :WM_PROTOCOLS (xlib:intern-atom *display* :WM_DELETE_WINDOW))))
 
-(defcommand (:wm kill-window kill) (&optional (window (current-window))) ()
+(defcommand (:wm kill-window kill) (&optional (window (current-window)))
   "Tell X to disconnect the client that owns the specified
 window. Default to the current window. if
 @command{delete-window} didn't work, try this."
@@ -1008,32 +1008,34 @@ window. Default to the current window. if
     (xwin-kill (window-xwin window))))
 
 (defun kill-windows (windows)
-  "Kill all windows @var{windows}"
+  "Kill all windows WINDOWS"
   (dolist (window windows)
     (xwin-kill (window-xwin window))))
 
 (defun kill-windows-in-group (group)
-  "Kill all windows in group @var{group}"
+  "Kill all windows in group GROUP"
   (kill-windows (group-windows group)))
 
-(defcommand kill-windows-current-group () ()
+(defcommand kill-windows-current-group ()
   "Kill all windows in the current group."
   (kill-windows-in-group (current-group)))
 
-(defcommand kill-windows-other () ()
+(defcommand kill-windows-other ()
   "Kill all windows in current group except the current-window"
   (let ((target-windows (remove (current-window)
                                 (group-windows (current-group)))))
     (kill-windows target-windows)))
 
-(defcommand title (title) ((:rest "Set window's title to: "))
+(defcommand title (title)
   "Override the current window's title."
+  (declare (interactive (rest "Set window's title to: ")))
   (if (current-window)
       (setf (window-user-title (current-window)) title)
       (wm-message "No Focused Window.")))
 
-(defcommand (:wm select-window select) (query) ((:window-name "Select: "))
-  "Switch to the first window that starts with @var{query}."
+(defcommand (:wm select-window select) (query)
+  "Switch to the first window that starts with QUERY."
+  (declare (interactive (window-name "Select: ")))
   (let (match)
     (labels ((match (win)
                (let* ((wname (window-name win))
@@ -1044,16 +1046,17 @@ window. Default to the current window. if
       (when match
         (group-focus-window (current-group) match)))))
 
-(defcommand select-window-by-name (name) ((:window-name "Select: "))
-  "Switch to the first window whose name is exactly @var{name}."
+(defcommand select-window-by-name (name)
+  "Switch to the first window whose name is exactly NAME."
+  (declare (interactive (window-name "Select: ")))
   (let ((win (find name (group-windows (current-group))
                    :test #'string= :key #'window-name)))
     (when win
       (group-focus-window (current-group) win))))
 
 (defcommand select-window-by-number (num &optional (group (current-group)))
-    ((:window-number "Select: "))
   "Find the window with the given number and focus it in its frame."
+  (declare (interactive (window-number "Select: ")))
   (labels ((match (win)
              (= (window-number win) num)))
     (let ((win (find-if #'match (group-windows group))))
@@ -1106,27 +1109,28 @@ window. Default to the current window. if
         (group-focus-window group nw)
         (wm-message "No other window."))))
 
-(defcommand (:wm other-window other) (&optional (group (current-group))) ()
+(defcommand (:wm other-window other) (&optional (group (current-group)))
   "Switch to the window last focused."
   (focus-other-window group))
 
-(defcommand next-window () ()
+(defcommand next-window ()
   "Go to the next window in the window list."
   (let ((group (current-group)))
     (if (group-current-window group)
         (focus-next-window group)
         (other-window group))))
 
-(defcommand prev-window () ()
+(defcommand prev-window ()
   "Go to the previous window in the window list."
   (let ((group (current-group)))
     (if (group-current-window group)
         (focus-prev-window group)
         (other-window group))))
 
-(defcommand (:wm renumber number) (nt &optional (group (current-group))) ((:number "Number: "))
+(defcommand (:wm renumber number) (nt &optional (group (current-group)))
   "Change the current window's number to the specified number. If another window
 is using the number, then the windows swap numbers. Defaults to current group."
+  (declare (interactive (number "Number: ")))
   (let ((nf (window-number (group-current-window group)))
         (win (find-if #'(lambda (win)
                           (= (window-number win) nt))
@@ -1140,7 +1144,7 @@ is using the number, then the windows swap numbers. Defaults to current group."
         ;; Just give the window the number
         (setf (window-number (group-current-window group)) nt))))
 
-(defcommand repack-window-numbers (&optional preserved) ()
+(defcommand repack-window-numbers (&optional preserved)
   "Ensure that used window numbers do not have gaps; ignore PRESERVED window numbers."
   (let* ((group (current-group))
          (windows (sort-windows group)))
@@ -1220,7 +1224,7 @@ been marked, and defaults to T."
     (setf (window-marked w) nil)))
 
 (defcommand (:wm echo-windows windows) (&optional (fmt *window-format*) (group (current-group)) (windows (group-windows group)))
-  "Display a list of managed windows. The optional argument @var{fmt} can
+  "Display a list of managed windows. The optional argument FMT can
 be used to override the default window formatting."
   (declare (interactive rest))
   (let* ((wins (sort1 windows '< :key 'window-number))

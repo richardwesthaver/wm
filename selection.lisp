@@ -45,7 +45,7 @@
     (mapc fn selection)))
 
 (defun set-x-selection (text &optional (selection *default-selections*))
-  "Set the X11 selection string to @var{string}."
+  "Set the X11 selection string to STRING."
   (multiselect selection
     (setf (getf *x-selection* selection) text)
     (export-selection selection)))
@@ -107,16 +107,7 @@
                     return (or ret ""))))))))
 
 ;;; Commands
-;;; FIXME: These two commands are basically useless. See issue #673 for details.
-(defcommand putsel (string) ((:rest "text: "))
-  "Stuff the string @var{string} into the x selection."
-  (set-x-selection string))
-
-(defcommand getsel () ()
-  "Echo the X selection."
-  (wm-message "~a" (get-x-selection)))
-
-(defcommand copy-last-message () ()
+(defcommand copy-last-message ()
   "Copy the last message displayed into the X selection"
   (when (screen-last-msg (current-screen))
     (set-x-selection (uncolorify (format nil "~{~a~^~%~}" (car (screen-last-msg (current-screen))))))))

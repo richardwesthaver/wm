@@ -88,9 +88,9 @@ your X server and XLIB implementation support XTEST."
     (send-fake-click (current-window) button)))
 
 (defun programs-in-path (&optional full-path (path (split-string (sb-posix:getenv "PATH") ":")))
-  "Return a list of programs in the path. If @var{full-path} is
-@var{t} then return the full path, otherwise just return the
-filename. @var{path} is by default the @env{PATH} evironment variable
+  "Return a list of programs in the path. If FULL-PATH is
+T then return the full path, otherwise just return the
+filename. PATH is by default the PATH evironment variable
 but can be specified. It should be a string containing each directory
 seperated by a colon."
   (loop for p in path
@@ -114,7 +114,7 @@ seperated by a colon."
   "A cache containing the programs in the path, used for completion.")
 
 (defun rehash (&optional (paths (mapcar 'parse-namestring (split-string (sb-posix:getenv "PATH") ":"))))
-  "Update the cache of programs in the path stored in @var{*programs-list*} when needed."
+  "Update the cache of programs in the path stored in *PROGRAMS-LIST* when needed."
   (let ((dates (mapcar (lambda (p)
                          (when (probe-file p)
                            (file-write-date p)))
@@ -129,7 +129,7 @@ seperated by a colon."
                                             :paths paths))))))
 
 (defun complete-program (base)
-  "return the list of programs in @var{*path-cache*} whose names begin
+  "return the list of programs in *PATH-CACHE* whose names begin
 with base. Automagically update the cache."
   (rehash)
   (remove-if-not #'(lambda (p)
@@ -140,7 +140,7 @@ with base. Automagically update the cache."
                  (path-cache-programs *path-cache*)))
 
 (defcommand (:wm run-shell-command exec) (cmd &optional collect-output-p)
-  "Run the specified shell command. If @var{collect-output-p} is @code{T}
+  "Run the specified shell command. If COLLECT-OUTPUT-P is T
 then run the command synchonously and collect the output. Be
 careful. If the shell command doesn't return, it will hang WM. In
 such a case, kill the shell command to resume WM."
@@ -229,9 +229,9 @@ Any run-time customizations will be lost after the restart."
   (throw :top-level :hup-process))
 
 (defun find-matching-windows (props all-groups all-screens)
-  "Returns list of windows matching @var{props} (see run-or-raise
-documentation for details). @var{all-groups} will find windows on all
-groups. Same for @{all-screens}. Result is sorted by group and window
+  "Returns list of windows matching PROPS (see run-or-raise
+documentation for details). ALL-GROUPS will find windows on all
+groups. Same for ALL-SCREENS. Result is sorted by group and window
 number, with group being more significant (think radix sort)."
   (let* ((screens (if all-screens
                       *screen-list*
@@ -252,7 +252,7 @@ matches PROPS. PROPS is a property list with the following keys:
 
 - :class :: Match the window's class.
 - :instance :: Match the window's instance or resource-name.
-- :role :: Match the window's @code{WM_WINDOW_ROLE}.
+- :role :: Match the window's WM_WINDOW_ROLE.
 - :title :: Match the window's title.
 
 By default, the global *RUN-OR-RAISE-ALL-GROUPS* decides whether
@@ -320,7 +320,7 @@ submitting the bug report."
                                          (pull-name (intern (concatenate 'string (string-upcase name) "-PULL") :wm))
                                          (pull-key `(kbd ,(concatenate 'string "H-M-" (subseq command 0 1)))))
   "Define a command and key binding to run or raise a program. If
-@var{pullp} is set, also define a command and key binding to run or
+PULLP is set, also define a command and key binding to run or
 pull the program."
   `(progn
      (defcommand ,name ()

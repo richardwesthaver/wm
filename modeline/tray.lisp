@@ -693,7 +693,7 @@ passed to `xlib:process-event'."
 (wm:add-screen-mode-line-formatter #\T 'mode-line-tray-placeholder)
 
 ;;; Commands
-(wm:defcommand stumptray () ()
+(defcommand stumptray ()
   "Enable tray for current screen"
   (if (current-tray)
       (destroy-tray (current-tray))
@@ -711,9 +711,9 @@ passed to `xlib:process-event'."
                             event-handler)))))
 
 (defmethod std:init ((self (eql :wm/tray)) &key)
-  (stumptray))
+  (exec (command :stumptray)))
 
-(wm:defcommand stumptray-toggle-hidden-icons-visibility () ()
+(defcommand stumptray-toggle-hidden-icons-visibility ()
   "Toggle icon visibility"
   (cond ((tray-show-hiwin-p (current-tray))
          (hide-hiwin (current-tray)))
@@ -721,7 +721,7 @@ passed to `xlib:process-event'."
 	 (show-hiwin (current-tray))))
   (tray-update (current-tray)))
 
-(wm:defcommand systray-selection-right () ()
+(defcommand systray-selection-right ()
   "Selection right"
   (let* ((tray (current-tray))
 	 (pos (tray-curpos tray)))
@@ -729,7 +729,7 @@ passed to `xlib:process-event'."
     (setf (tray-curpos tray) (1+ (or pos -1)))
     (tray-update tray)))
 
-(wm:defcommand systray-selection-left () ()
+(defcommand systray-selection-left ()
   "Selection left"
   (let* ((tray (current-tray))
 	 (pos (tray-curpos tray)))
@@ -737,20 +737,20 @@ passed to `xlib:process-event'."
     (setf (tray-curpos tray) (1- (or pos 0)))
     (tray-update tray)))
 
-(wm:defcommand systray-toggle-icon-hiding () ()
+(defcommand systray-toggle-icon-hiding ()
   "Toggle icon hiding"
   (let ((tray (current-tray)))
     (toggle-icon-hiding tray (icon-at-cursor tray))
     (tray-update tray)))
 
-(wm:defcommand systray-move-icon-left () ()
+(defcommand systray-move-icon-left ()
   "Move icon left"
   (let ((tray (current-tray)))
     (show-hiwin tray)
     (move-icon-left tray)
     (tray-update tray)))
 
-(wm:defcommand systray-move-icon-right () ()
+(defcommand systray-move-icon-right ()
   "Move icon right"
   (let ((tray (current-tray)))
     (show-hiwin tray)

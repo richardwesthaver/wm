@@ -204,8 +204,8 @@ housekeeping."
       ;; If we already have a frame use it.
       ((frame-p preferred-frame)
        preferred-frame)
-      ;; If `preferred-frame' is a list of keyword use it to determine the
-      ;; frame.  The sanity check doesn't cover not recognized keywords.  We
+      ;; If PREFERRED-FRAME is a list of keyword use it to determine the
+      ;; frame. The sanity check doesn't cover not recognized keywords. We
       ;; simply fall back to the default then.
       ((and (listp preferred-frame)
             (every #'keywordp preferred-frame))
@@ -233,7 +233,7 @@ housekeeping."
                           (when (and hints (xlib:wm-size-hints-user-specified-position-p hints))
                             (find-frame group (window-x window) (window-y window))))))))
         default))
-      ;; Not well formed `*new-window-preferred-frame*'.  Message an error and
+      ;; Not well formed `*new-window-preferred-frame*'. Message an error and
       ;; return the default.
       (t (wm-message "^1*^BInvalid ^b^3**new-window-preferred-frame*^1*^B: ^n~a"
                   preferred-frame)

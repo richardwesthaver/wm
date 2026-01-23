@@ -4,15 +4,14 @@
 
 ;;; Code:
 (defpackage #:wm/golden-ratio
-  (:use #:std-lisp #:wm)
-  (:export :*golden-ratio* :*golden-ratio-on* :toggle-golden-ratio))
+  (:use #:std-lisp #:wm #:cmd)
+  (:export :*golden-ratio* :*golden-ratio-on*))
 
 (defpackage #:wm/clipboard
-  (:use #:std-lisp #:wm)
+  (:use #:std-lisp #:wm #:cmd)
   (:export 
    #:start-clipboard-manager
    #:stop-clipboard-manager
-   #:show-clipboard-history
    #:*clipboard-history-max-length*))
 
 (defpackage #:wm/history
@@ -21,11 +20,11 @@
    :*command-history-file*))
 
 (defpackage #:wm/windows
-  (:use #:std-lisp :wm)
+  (:use #:std-lisp :wm #:cmd)
   (:import-from 
    :wm
    :*window-format*
-   :completing-read
+   :completing-read-screen
    :current-group
    :current-screen
    :current-window
@@ -65,14 +64,13 @@
   (:export #:beckon #:*window-height-fraction* #:*window-width-fraction*))
 
 (defpackage #:wm/screenshot
-  (:use #:std-lisp :wm :dat/png))
+  (:use #:std-lisp :wm :dat/png #:cmd))
 
 (defpackage #:wm/gaps
-  (:use #:std-lisp :wm)
+  (:use #:std-lisp :wm #:cmd)
   (:export 
    :*inner-gaps-size* :*outer-gaps-size* 
-   :*head-gaps-size* :*gaps-on* 
-   :toggle-gaps :toggle-gaps-on :toggle-gaps-off))
+   :*head-gaps-size* :*gaps-on*))
 
 (defpackage #:wm/ttf-fonts
   (:shadowing-import-from :wm :version :message)

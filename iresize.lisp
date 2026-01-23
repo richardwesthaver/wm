@@ -37,8 +37,8 @@
   (draw-frame-outlines (current-group) (current-head)))
 
 (defcommand resize-direction (d)
-    ((:direction "Direction: "))
-  "Resize frame to direction @var{d}"
+  "Resize frame to direction D"
+  (declare (interactive (direction "Direction: ")))
   (case (princ d)
     ((:up) (resize 0 (- *resize-increment*)))
     ((:down) (resize 0 *resize-increment*))

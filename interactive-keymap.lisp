@@ -19,18 +19,19 @@
   (wm-message "~S finished." name)
   (pop-top-map))
 
-(defcommand call-and-exit-kmap (command exit-command) ((:command "command to run: ")
-                                                       (:command "exit command: "))
+(defcommand call-and-exit-kmap (command exit-command)
   "This command effectively calls two other commands in succession, via run-commands.
 it is designed for use in the define-interactive-keymap macro, to implement exiting
 the keymap on keypress. "
+  (declare (interactive (command "command to run: ") (command "exit command: ")))
   (run-commands command exit-command))
 
-(defmacro define-interactive-keymap
-    (name (&key on-enter on-exit abort-if (exit-on '((kbd "RET")
-                                                     (kbd "ESC")
-                                                     (kbd "C-g"))))
-     &body key-bindings)
+(defmacro define-interactive-keymap (name (&key on-enter on-exit 
+                                                abort-if 
+                                                (exit-on '((kbd "RET")
+                                                           (kbd "ESC")
+                                                           (kbd "C-g"))))
+                                     &body key-bindings)
   "Declare an interactive keymap mode. This can be used for developing
 interactive modes or command trees, such as IRESIZE.
 
@@ -60,17 +61,16 @@ Be aware that these commands won't require a prefix to run."
                                  (second keyb))))
          ,@(loop for keyb in exit-on
                  collect `(define-key ,keymap ,keyb ,exit-command))
-
-         (defcommand ,name () ()
+         (defcommand ,name ()
            ,@decls
-           ,(or docstring
-                (format nil "Starts interactive command \"~A\"" command))
-           ,@(when abort-if `((when (funcall ,abort-if)
-                                (return-from ,command))))
+           (block ,command
+             ,(or docstring
+                  (format nil "Starts interactive command \"~A\"" command))
+             ,@(when abort-if `((when (funcall ,abort-if)
+                                  (return-from ,command))))
 
-           ,@(when on-enter `((funcall ,on-enter)))
-           (enter-interactive-keymap ,keymap (quote ,command)))
-
-         (defcommand ,(intern exit-command) () ()
+             ,@(when on-enter `((funcall ,on-enter)))
+             (enter-interactive-keymap ,keymap (quote ,command))))
+         (defcommand ,(intern exit-command) ()
            ,@(when on-exit `((funcall ,on-exit)))
            (exit-interactive-keymap (quote ,command)))))))

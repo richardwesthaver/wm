@@ -1,7 +1,5 @@
 (in-package #:wm/screenshot)
 
-(export '(screenshot screenshot-window screenshot-area))
-
 (defun colorname-to-color (colorname)
   (let* ((screen (wm:current-screen))
          (colormap (xlib:screen-default-colormap (wm:screen-number screen)))
@@ -53,10 +51,9 @@
           (max (+ 2 x1) x2)
           (max (+ 2 y1) y2)))
 
-(wm:defcommand screenshot-area
-    (filename)
-    ((:rest "Filename: "))
+(defcommand screenshot-area (filename)
   "Make screenshot of selected area of display."
+  (declare (interactive (rest "Filename: ")))
   (let ((display wm:*display*)
         (x1 0)
         (y1 0)
@@ -83,7 +80,7 @@
            (progn
              (xlib:map-window window)
              (xlib:grab-pointer window '(:button-press :button-release :button-motion) :owner-p t)
-             (wm:echo "Click and drag the area to screenshot.")
+             (call (command :echo) (list "Click and drag the area to screenshot."))
              (xlib:event-case (display :discard-p t)
                (exposure
                 ()
@@ -103,7 +100,7 @@
                (button-press
                 ()
                 (multiple-value-bind (root-x root-y) (xlib:global-pointer-position display)
-                  (wm:echo (format nil "Screenshotting from ~A, ~A to ..." root-x root-y))
+                  (call (command :echo) (list (format nil "Screenshotting from ~A, ~A to ..." root-x root-y)))
                   (setf x1 root-x)
                   (setf y1 root-y)
                   (setf x2 (+ 1 x1))
@@ -118,7 +115,8 @@
                     ;; drawing over the old rectangle reverts the pixels back to their original values.
                     (when x2
                       (xlib:draw-rectangle window gc x1 y1 (- x2 x1) (- y2 y1)))
-                    (wm:echo (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename))
+                    (call (command :echo) 
+                          (list (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename)))
                     (%screenshot-window (xlib:screen-root (wm:screen-number (wm:current-screen))) filename
                                         :x (- x1 1)
                                         :y (- y1 1)
@@ -129,14 +127,12 @@
                   t))))
         (xlib:destroy-window window)))))
 
-(wm:defcommand screenshot
-    (filename)
-  ((:rest "Filename: "))
+(defcommand screenshot (filename)
   "Make screenshot of root window"
+  (declare (interactive (rest "Filename: ")))
   (%screenshot-window (xlib:screen-root (wm:screen-number (wm:current-screen))) filename))
 
-(wm:defcommand screenshot-window
-    (filename)
-  ((:rest "Filename: "))
+(defcommand screenshot-window (filename)
   "Make screenshot of focus window"
+  (declare (interactive (rest "Filename: ")))
   (%screenshot-window (wm:window-xwin (wm:current-window)) filename))

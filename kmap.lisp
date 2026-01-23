@@ -188,13 +188,13 @@ kbd-parse if the key failed to parse."
           (mapcar 'print-key seq)))
 
 (defun define-key (map key command)
-  "Add a keybinding mapping for the key, @var{key}, to the command,
-@var{command}, in the specified keymap. If @var{command} is nil, remove an
-existing binding.  For example,
+  "Add a keybinding mapping for the key, KEY to the command,
+COMMAND, in the specified keymap. If COMMAND is nil, remove an
+existing binding. For example,
 
-@example
-\(wm:define-key wm:*root-map* (wm:kbd \"C-z\") \"echo Zzzzz...\")
-@end example
+Example:
+
+(wm:define-key wm:*root-map* (wm:kbd \"C-z\") \"echo Zzzzz...\")
 
 Now when you type C-t C-z, you'll see the text ``Zzzzz...'' pop up."
   (declare (type kmap map) (type (or key (eql t)) key))

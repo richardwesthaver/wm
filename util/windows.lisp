@@ -16,7 +16,7 @@
     windows))
 
 (defun goto-window (window)
-  "Raise the window win and select its frame.  For now, it does not
+  "Raise the window win and select its frame. For now, it does not
 select the screen."
   (let* ((group (window-group window))
          (frame (window-frame window))
@@ -30,11 +30,12 @@ select the screen."
   (labels
       ((global-window-names ()
          (mapcar (lambda (window) (window-name window)) (global-windows))))
-    (or (argument-pop input)
-        (completing-read (current-screen) prompt (global-window-names)))))
+    (or (read-arg input)
+        (completing-read-screen (current-screen) prompt (global-window-names)))))
 
 (defmacro with-global-windowlist (name docstring &rest args)
- `(defcommand ,name (&optional (fmt *window-format*)) (:rest)
+ `(defcommand ,name (&optional (fmt *window-format*))
+    (declare (interactive rest))
    ,docstring
    (let ((global-windows-list (global-windows)))
      (labels
@@ -76,7 +77,7 @@ select the screen."
       (gselect (group-name (window-group last-urgent)))
       (really-raise-window last-urgent))))
 
-(defcommand raise-urgent () ()
+(defcommand raise-urgent ()
   "Raise urgent window"
   (raise-urgent-window))
 
@@ -91,7 +92,7 @@ select the screen."
           (ppcre:split " " (string-upcase x)))))
 
 ;; Basic operations
-(defcommand window-tags (&optional (argwin nil)) ()
+(defcommand window-tags (&optional (argwin nil))
   "Show window tags"
   (let* ((win (or argwin (current-window)))
          (tags (xlib:get-property (window-xwin win) :WM_TAGS))
@@ -120,8 +121,9 @@ select the screen."
     (setf (window-tags win) new-tags)))
 
 ;; Commands for basic operations
-(defcommand clear-tags (&optional (argtags nil) (argwin nil)) (:rest :rest)
+(defcommand clear-tags (&optional (argtags nil) (argwin nil))
   "Remove specified or all tags"
+  (declare (interactive rest rest))
   (let*
       ((tags (string-split-by-spaces argtags))
        (condition (if tags 
@@ -129,18 +131,19 @@ select the screen."
                       (constantly t))))
     (clear-tags-if condition argwin)))
 
-(defcommand clear-all-tags () ()
+(defcommand clear-all-tags ()
   "Remove all tags and start afresh"
   (mapcar (lambda (x) (clear-tags nil x)) (screen-windows (current-screen))))
 
-(defcommand tag-window (argtag &optional (argwin nil)) ((:rest "Tag to set: ") :rest)
+(defcommand tag-window (argtag &optional (argwin nil))
   "Add a tag to current window"
+  (declare (interactive (rest "Tag to set: ") rest))
   (let*
       ((win (or argwin (current-window)))
        (tag (string-split-by-spaces argtag)))
     (setf (window-tags win) (union tag (window-tags win) :test 'equalp))))
 
-(defcommand all-tags () ()
+(defcommand all-tags ()
   "List all windows with their tags"
   (let ((*suppress-echo-timeout* t))
     (wm-message 
@@ -180,24 +183,28 @@ select the screen."
 ;; Window manipulations using tags
 
 ;; And convenient instances
-(defcommand pull-tag (argtag) ((:rest "Tag(s) to pull: "))
+(defcommand pull-tag (argtag)
   "Pull all windows with the tag (any of the tags) to current group"
+  (declare (interactive (rest "Tag(s) to pull: ")))
   (move-windows-to-group (select-by-tags (string-split-by-spaces argtag))))
 
-(defcommand push-without-tag (argtag) ((:rest "Tag(s) needed to stay in the group: "))
+(defcommand push-without-tag (argtag)
   "Push windows not having the tag (any of the tags) to *TAG-GROUP-NAME*"
+  (declare (interactive (rest "Tag(s) needed to stay in the group: ")))
   (move-windows-to-group (select-by-tags (string-split-by-spaces argtag) T) *tag-group-name*))
 
-(defcommand push-tag (argtag) ((:rest "Tag(s) to push: "))
+(defcommand push-tag (argtag)
   "Push windows having the tag (any of the tags) to *TAG-GROUP-NAME*"
+  (declare (interactive (rest "Tag(s) to push: ")))
   (move-windows-to-group (select-by-tags (string-split-by-spaces argtag)) *tag-group-name*))
 
-(defcommand pull+push (argtag) ((:rest "Tag(s) to select: "))
+(defcommand pull+push (argtag)
   "Pull all windows with the tag, push all without"
-  (pull-tag argtag)
-  (push-without-tag argtag))
+  (declare (interactive (rest "Tag(s) to select: ")))
+  (call (command :pull-tag) (list argtag))
+  (call (command :push-without-tag) (list argtag)))
 
-(defcommand push-window () ()
+(defcommand push-window ()
   "Push window to tag store"
   (move-windows-to-group (list (current-window)) *tag-group-name*))
 
@@ -210,7 +217,7 @@ select the screen."
        (num (and numtag (parse-integer numtag))))
     num))
 
-(defcommand number-by-tags () ()
+(defcommand number-by-tags ()
   "Every window tagged <number> will have a chance to have that number. The
 remaining windows will have packed numbers"
   ;; First, assign impossible numbers.
@@ -228,26 +235,29 @@ remaining windows will have packed numbers"
            (setf (window-number x) num))))
    (group-windows (current-group)))
   ;; Give up and give smallest numbers possible
-  (repack-window-numbers 
-   (mapcar 'window-number
-           (remove-if-not 
-            (lambda (x) (equalp (window-number x) (window-number-from-tag x)))
-            (group-windows (current-group))))))
+  (call (command :repack-window-numbers)
+        (list 
+         (mapcar 'window-number
+                 (remove-if-not 
+                  (lambda (x) (equalp (window-number x) (window-number-from-tag x)))
+                  (group-windows (current-group)))))))
 
-(defcommand tag-visible (&optional (argtags nil)) (:rest)
+(defcommand tag-visible (&optional (argtags nil))
   "IN-CURRENT-GROUP or another specified tag will be assigned to all windows
 in current group and only to them"
+  (declare (interactive rest))
   (let ((tags (if (or (equalp argtags "") (not argtags)) "IN-CURRENT-GROUP" argtags)))
-    (mapcar (lambda (x) (clear-tags tags x)) (screen-windows (current-screen)))
-    (mapcar (lambda (x) (tag-window tags x)) (group-windows (current-group)))))
+    (mapcar (lambda (x) (call (command :clear-tags) (list tags x))) (screen-windows (current-screen)))
+    (mapcar (lambda (x) (call (command :tag-window) (list tags x))) (group-windows (current-group)))))
 
-(defcommand raise-tag (tag) ((:rest "Tag to pull: "))
+(defcommand raise-tag (tag)
   "Make window current by tag"
+  (declare (interactive (rest "Tag to pull: ")))
   (let*
       ((window (car (select-by-tags tag))))
     (if window
         (progn
-          (if (groups)
+          (if (exec (command :groups))
               (progn
                 (move-windows-to-group (list window))
                 (really-raise-window window))
@@ -255,9 +265,10 @@ in current group and only to them"
           window)
         nil)))
 
-(defcommand search-tag (tag-regex) ((:rest "Tag regex to select: "))
-  (only)
-  (fclear)
+(defcommand search-tag (tag-regex)
+  (declare (interactive (rest "Tag regex to select: ")))
+  (exec (command :only))
+  (exec (command :fclear))
   (let* ((current (current-group (current-screen)))
          (tag-store (find-group (current-screen) *tag-group-name*)))
     (loop for w in (screen-windows (current-screen)) 
@@ -265,17 +276,19 @@ in current group and only to them"
                  (move-window-to-group w current)
                  (move-window-to-group w tag-store)))))
 
-(defcommand search-tag-pull (tag-regex) ((:rest "Tag regex to pull: "))
-  (only)
-  (fclear)
+(defcommand search-tag-pull (tag-regex)
+  (declare (interactive (rest "Tag regex to pull: ")))
+  (exec (command :only))
+  (exec (command :fclear))
   (let ((current (current-group (current-screen))))
     (loop for w in (screen-windows (current-screen)) 
           do (if (find-if (lambda (s) (ppcre:scan (concatenate 'string "(?i)" tag-regex) s)) (window-tags w))
                  (move-window-to-group w current)))))
 
-(defcommand select-by-title-regexp (regex) ((:rest "Title regex to select: "))
-  (only)
-  (fclear)
+(defcommand select-by-title-regexp (regex)
+  (declare (interactive (rest "Title regex to select: ")))
+  (exec (command :only))
+  (exec (command :fclear))
   (let* ((current (current-group (current-screen)))
          (tag-store (find-group (current-screen) *tag-group-name*)))
     (loop for w in (screen-windows (current-screen)) 
@@ -283,9 +296,10 @@ in current group and only to them"
                  (move-window-to-group w current)
                  (move-window-to-group w tag-store)))))
 
-(defcommand pull-by-title-regexp (regex) ((:rest "Title regex to select: "))
-  (only)
-  (fclear)
+(defcommand pull-by-title-regexp (regex)
+  (declare (interactive (rest "Title regex to select: ")))
+  (exec (command :only))
+  (exec (command :fclear))
   (let ((current (current-group (current-screen))))
     (loop for w in (screen-windows (current-screen)) 
           do (when (ppcre:scan regex (window-title w))
@@ -298,15 +312,16 @@ in current group and only to them"
 (defvar *window-width-fraction* 0.5
   "width from the top of the frame")
 
-(defcommand beckon () ()
+(defcommand beckon ()
   "Beckon the mouse to the current window"
   (with-accessors ((x frame-x)
                    (y frame-y)
                    (height frame-height)
                    (width frame-width))
       (window-frame (current-window))
-    (ratwarp
-     (round
-      (+ x (* width *window-height-fraction*)))
-     (round
-      (+ y (* height *window-width-fraction*))))))
+    (call (command :ratwarp)
+          (list
+           (round
+            (+ x (* width *window-height-fraction*)))
+           (round
+            (+ y (* height *window-width-fraction*)))))))

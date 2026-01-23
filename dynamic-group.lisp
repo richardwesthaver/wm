@@ -139,7 +139,7 @@ and the window stack. Valid values are any number between zero and one exclusive
    (head-info-alist
     :accessor dynamic-group-head-info-alist
     :documentation "Alist with heads as keys containing information for each
-head.  Calling ASSOC on this alist returns a list whose FIRST element is the
+head. Calling ASSOC on this alist returns a list whose FIRST element is the
 head, SECOND is the layout of the frames, THIRD is the master frame, FOURTH is the
 the master window, FIFTH is the window stack frames, SIXTH is the window
 stack windows, and SEVENTH is the major split ratio."))
@@ -517,7 +517,7 @@ back to the behavior defined for tile groups."
               ((member window stack-windows)
                ;; Because theres a stack window, we are assured that we have at
                ;; least two frames, and FINAL-FRAME will always return the stack
-               ;; frame.  
+               ;; frame. 
                (let ((fnum (frame-number (window-frame window))))
                  (setf stack-windows (remove window stack-windows))
                  (dyn-remove-split final-frame)
@@ -1045,8 +1045,8 @@ between groups."
               (synchronize-frames-and-windows g2 h2)))))))
 
 (defun dynamic-group-float-window (window group)
-  "Make WINDOW into a floating window.  Stop managing it as a dynamic tiling 
-window. "
+  "Make WINDOW into a floating window. Stop managing it as a dynamic tiling 
+window."
   (if (typep window 'float-window)
       (wm-message "Window ~A is already a floating window." window)
       (progn
@@ -1128,12 +1128,12 @@ window. "
 (define-command-type :rotation-direction (input prompt)
   (let* ((values '(("Forward" :f)
                    ("Backward" :b)))
-         (string (argument-pop-or-read input prompt (mapcar 'first values)))
+         (string (read-wm-arg input prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
         (throw 'cmd (format nil "no direction matching ~A" string)))))
 
-(setq *default-command-class* 'wm-dynamic-command)
+(setq *command-class* 'wm-dynamic-command)
 
 (defcommand rotate-windows (direction)
   "Rotate all windows in the current group and head forward (clockwise) or
@@ -1155,7 +1155,7 @@ backward (counterclockwise)"
       ((:f) (rotate-stack-forward g h))
       ((:b) (rotate-stack-backward g h)))))
 
-(setq *default-command-class* 'wm-tiling-command)
+(setq *command-class* 'wm-tiling-command)
 
 (defcommand swap-windows ()
   "Exchange two windows"
@@ -1176,12 +1176,12 @@ backward (counterclockwise)"
                    ("Left" :left)
                    ("Right" :right)
                    ("Bottom" :bottom)))
-         (string (argument-pop-or-read input prompt (mapcar #'first values)))
+         (string (read-wm-arg input prompt (mapcar #'first values)))
          (layout (second (assoc string values :test 'string-equal))))
     (or layout
         (throw 'cmd (format nil "No layout matching ~A" string)))))
 
-(setq *default-command-class* 'wm-dynamic-command)
+(setq *command-class* 'wm-dynamic-command)
 
 (defcommand change-layout (layout)
   "Change the layout of the current head and group."
@@ -1208,7 +1208,7 @@ backward (counterclockwise)"
   (declare (interactive (y-or-n "Retile floating windows? ")))
   (dynamic-group-retile-head (current-group) (current-head) retile-floats))
 
-(setq *default-command-class* 'wm-command)
+(setq *command-class* 'wm-command)
 
 (defcommand select-floating-window (&optional (fmt *window-format*) window-list)
   "Select a floating window from a menu."
@@ -1222,7 +1222,7 @@ backward (counterclockwise)"
       (throw 'cmd :abort))
     (wm-message "No Managed Floating Windows")))
 
-(setq *default-command-class* 'wm-dynamic-command)
+(setq *command-class* 'wm-dynamic-command)
 
 (defcommand exchange-with-master ()
   (swap-window-with-master (current-group) (current-head) (current-window)))
@@ -1296,4 +1296,4 @@ is a dynamic group.")
 
 (pushnew '(dynamic-group *dynamic-group-top-map*) *group-top-maps*)
 
-(setq *default-command-class* 'wm-command)
+(setq *command-class* 'wm-command)

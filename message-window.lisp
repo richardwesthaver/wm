@@ -95,7 +95,7 @@ function expects to be wrapped in a with-state for win."
 (defun unmap-all-message-windows ()
   (mapc #'unmap-message-window *screen-list*)
   (when (timer-p *message-window-timer*)
-    (cancel-timer *message-window-timer*)
+    (unschedule-timer *message-window-timer*)
     (setf *message-window-timer* nil)))
 
 (defun unmap-frame-indicator-window (screen)
@@ -106,21 +106,21 @@ function expects to be wrapped in a with-state for win."
 (defun unmap-all-frame-indicator-windows ()
   (mapc #'unmap-frame-indicator-window *screen-list*)
   (when (timer-p *frame-indicator-timer*)
-    (cancel-timer *frame-indicator-timer*)
+    (unschedule-timer *frame-indicator-timer*)
     (setf *frame-indicator-timer* nil)))
 
 (defun reset-message-window-timer (timeout-wait)
   "Set the message window timer to timeout in timeout-wait seconds."
   (unless *ignore-echo-timeout*
     (when (timer-p *message-window-timer*)
-      (cancel-timer *message-window-timer*))
+      (unschedule-timer *message-window-timer*))
     (setf *message-window-timer* (run-with-timer timeout-wait nil
                                                  'unmap-all-message-windows))))
 
 (defun reset-frame-indicator-timer ()
   "Set the message window timer to timeout in *timeout-frame-indicator-wait* seconds."
   (when (timer-p *frame-indicator-timer*)
-    (cancel-timer *frame-indicator-timer*))
+    (unschedule-timer *frame-indicator-timer*))
   (setf *frame-indicator-timer* (run-with-timer *timeout-frame-indicator-wait* nil
                                                 'unmap-all-frame-indicator-windows)))
 
@@ -290,7 +290,7 @@ When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
       (if *suppress-echo-timeout*
           ;; any left over timers need to be canceled.
           (when (timer-p *message-window-timer*)
-            (cancel-timer *message-window-timer*)
+            (unschedule-timer *message-window-timer*)
             (setf *message-window-timer* nil))
           (reset-message-window-timer
            (if (> (length strings) 1)
@@ -302,7 +302,7 @@ When NEW-ON-BOTTOM-P is non-nil, new messages are queued at the bottom."
     (apply 'run-hook-with-args *message-hook* strings)))
 
 (defun echo-string (screen msg)
-  "Display @var{string} in the message bar on @var{screen}. You almost always want to use @command{message}."
+  "Display STRING in the message bar on SCREEN. You almost always want to use MESSAGE."
   (echo-string-list screen (split-string msg (string #\Newline))))
 
 (defun wm-message (fmt &rest args)

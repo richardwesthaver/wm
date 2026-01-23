@@ -45,7 +45,7 @@ options:
 - %h :: List the number of the head the mode-line belongs to
 
 - %w :: List all windows in the current group windows using
-@var{*window-format*}
+*WINDOW-FORMAT*
 
 - %W :: List all windows on the current head of the current group using
 *WINDOW-FORMAT*
@@ -108,7 +108,7 @@ timer.")
 
 (defun turn-on-mode-line-timer ()
   (when (timer-p *mode-line-timer*)
-    (cancel-timer *mode-line-timer*))
+    (unschedule-timer *mode-line-timer*))
   (setf *mode-line-timer* 
         (run-with-timer 
          *mode-line-timeout*
@@ -118,7 +118,7 @@ timer.")
 (defun maybe-cancel-mode-line-timer ()
   (unless *mode-lines*
     (when (timer-p *mode-line-timer*)
-      (cancel-timer *mode-line-timer*)
+      (unschedule-timer *mode-line-timer*)
       (setf *mode-line-timer* nil))))
 
 ;;; Creation

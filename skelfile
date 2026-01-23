@@ -2,7 +2,7 @@
 :name "wm"
 :author ("Richard Westhaver" . "ellis@rwest.io")
 :description "A fork of StumpWM by Shawn Betts <sabetts@vcn.bc.ca>"
-:version "1.0.0"
+:version "1.0.1"
 :license "GPL"
 :tags ("gui" "wm" "linux" "x")
 :bind

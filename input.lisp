@@ -167,10 +167,8 @@ return a list of completions, possibly filtered and/or sorted.")
 A completion style has to implement input-completion-reset
 and input-completion-complete.
 Available completion styles include
-@table @asis
-@item make-input-completion-style-cyclic
-@item make-input-completion-style-unambiguous
-@end table")
+- make-input-completion-style-cyclic
+- make-input-completion-style-unambiguous")
 
 (defvar *input-completion-show-empty* nil
   "If t, show completion candidates even if the input is empty.")
@@ -304,7 +302,7 @@ Available completion styles include
   (make-array (length initial-input) :element-type 'character :initial-contents initial-input
               :adjustable t :fill-pointer t))
 
-(defun completing-read (screen prompt completions &key (initial-input "") require-match)
+(defun completing-read-screen (screen prompt completions &key (initial-input "") require-match)
   "Read a line of input through WM and return it with TAB
 completion. Completions can be a list, an fbound symbol, or a
 function. If its an fbound symbol or a function then that function is
@@ -327,7 +325,7 @@ match with an element of the completions."
                                           (fboundp completions)))
                                  (funcall completions initial-input)
                                  completions))
-        (input (make-input-line :string (make-input-string initial-input)
+        (input (make-finput-line :string (make-input-string initial-input)
                                 :position (length initial-input)
                                 :history -1
                                 :password password)))
@@ -537,8 +535,8 @@ match with an element of the completions."
                                          (length (input-line-string input)))))
 
 (defun input-insert-string (input string)
-  "Insert @var{string} into the input at the current
-position. @var{input} must be of type @var{input-line}. Input
+  "Insert STRING into the input at the current
+position. INPUT must be of type INPUT-LINE Input
 functions are passed this structure as their first argument."
   (check-type string string)
   (loop for c across string
@@ -573,8 +571,8 @@ second and neither excedes the bounds of the input string."
      (decf (input-line-position input) (- end start)))))
 
 (defun input-insert-char (input char)
-  "Insert @var{char} into the input at the current
-position. @var{input} must be of type @var{input-line}. Input
+  "Insert CHAR into the input at the current
+position. INPUT must be of type INPUT-LINE. Input
 functions are passed this structure as their first argument."
   (vector-push-extend #\_ (input-line-string input))
   (replace (input-line-string input) (input-line-string input)

@@ -10,14 +10,14 @@ This is a fork of StumpWM built for the Cursed Linux environment.
 #+RESULTS:
 |-------------+------------------------------------------------------|
 | name        | wm                                                   |
-| version     | 1.0.0                                                |
+| version     | 1.0.1                                                |
 | description | A fork of StumpWM by Shawn Betts <sabetts@vcn.bc.ca> |
-| skel-id     | 1445975379916487783                                  |
+| id          | 1445975379900235397                                  |
 | root        | ~/comp/shed/wm/                                      |
 | tags        | gui wm linux x                                       |
-| updated     | Sat Jan 10 19:46:03 2026 -0500                       |
+| updated     | Wed Jan 21 22:44:52 2026 -0500                       |
 | langs       | lisp org                                             |
-| lines       | 22890 :code 18941 :comment 1491 :blank 2458          |
+| lines       | 22017 :code 18274 :comment 1405 :blank 2338          |
 |-------------+------------------------------------------------------|
 
 #+END:

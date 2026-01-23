@@ -17,7 +17,7 @@
   (:export #:*net-device*))
 
 (defpackage #:wm/tray
-  (:use #:std-lisp)
+  (:use #:std-lisp #:cmd)
   (:export 
    :*tray-viwin-background*
    :*tray-hiwin-background*

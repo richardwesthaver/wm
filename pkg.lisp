@@ -175,7 +175,7 @@
    *input-map*
    *numpad-map*
    register-altgr-as-modifier
-   completing-read
+   completing-read-screen
    input-delete-region
    input-goto-char
    input-insert-char
@@ -191,10 +191,8 @@
    ;; core.lisp
    grab-pointer ungrab-pointer
    ;; command.lisp
-   argument-line-end-p
-   argument-pop
-   argument-pop-or-read
-   argument-pop-rest
+   read-wm-arg
+   read-wm-args
    ;; menu-declarations.lisp
    *menu-map*
    *single-menu-map*
@@ -298,8 +296,6 @@
    io-channel-ioport io-channel-events io-channel-handle
    io-loop io-loop-add io-loop-remove io-loop-update
    *default-io-loop* *current-io-loop*
-   cancel-timer
-   timer-p
    idle-time
    run-with-timer
    *toplevel-io*
@@ -426,7 +422,6 @@
    quit-wm))
 
 (std:defpkg :wm-user
-  (:shadowing-import-from :wm :completing-read)
   (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
 
 (eval-when (:load-toplevel)

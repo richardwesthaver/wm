@@ -14,7 +14,7 @@
 (defkernel wm-tiling-command (wm-command) ())
 (defkernel wm-floating-command (wm-command) ())
 (defkernel wm-dynamic-command (wm-tiling-command) ())
-(init :commands :name :wm :class 'wm-command)
+(init :commands :name :wm :class 'wm-command :names t)
 
 (defvar *dynamic-command-blacklist* nil
   "A blacklist of commands for dynamic groups specifically.")
@@ -34,7 +34,7 @@
   "Return the command structure for COMMAND. COMMAND can be a string,
 symbol, command, or command-alias. By default only search active
 commands."
-  (declare (type (or string symbol command command-alias) command))
+  (declare (type (or string symbol command) command))
   (when (or (stringp command) (symbolp command))
     (setf command (command command)))
   (when (and command
@@ -42,7 +42,7 @@ commands."
                  (command-active-p command)))
     command))
 
-(defun list-all-commands (&optional (only-active t))
+(defun wm-commands (&optional (only-active t))
   "Return a list of all interactive commands as strings. By default
 only return active commands."
   (let (acc)
@@ -50,86 +50,37 @@ only return active commands."
                ;; make sure its an active command
                (when (get-command v only-active)
                  (push (string-downcase k) acc)))
-             *command-hash*)
+             *commands*)
     (sort acc 'string<)))
 
-;;; command arguments
-(defun argument-line-end-p (input)
-  "Return T if we're outta arguments from the input line."
-  (>= (argument-line-start input)
-      (length (argument-line-string input))))
+;;; Hooks
+(defun wm-command-eval-result (result)
+  ;; interactive commands update the modeline
+  (update-all-mode-lines)
+  (cond ((stringp result) (wm-message "~a" result))
+        ((eq result :abort) (unless *suppress-abort-messages*
+                              (wm-message "Abort.")))))
 
-(defun argument-pop (input)
-  "Pop the next argument off."
-  (unless (argument-line-end-p input)
-    (flet ((pop-word (input start)
-             ;; Return the first word of INPUT starting from START and
-             ;; its end position.
-             (let* ((p1 (position #\space input :start start :test #'char/=))
-                    (p2 (or (and p1 (position #\Space input :start p1))
-                            (length input))))
-               ;; we wanna return nil if they're the same
-               (unless (= p1 p2)
-                 (values (subseq input p1 p2)
-                         (1+ p2)))))
-           (pop-string (input start)
-             ;; Return a delimited string from INPUT starting from
-             ;; START (if there is one) and the end position of the
-             ;; string.
-             (let ((start
-                     (loop for i from start below (length input)
-                           for char = (char input i)
-                           do (case char
-                                (#\space)             ;Skip spaces
-                                (#\" (return (1+ i))) ;Start position found
-                                (otherwise (return-from pop-string nil))))))
-               (let ((str (make-string-output-stream)))
-                 (loop for i from start below (length input)
-                       for char = (char input i)
-                       do (case char
-                            (#\\        ;Escape next char
-                             (incf i)
-                             (if (< i (length input))
-                                 (write-char (char input i) str)
-                                 (return nil)))
-                            (#\"        ;End delimiter
-                             (return (values (get-output-stream-string str)
-                                             (1+ i))))
-                            (otherwise
-                             (write-char char str))))))))
-      (multiple-value-bind (arg end)
-          (nth-value-or 0
-            (pop-string (argument-line-string input)
-                        (argument-line-start input))
-            (pop-word (argument-line-string input)
-                      (argument-line-start input)))
-        (setf (argument-line-start input) end)
-        arg))))
+(add-hook cmd:*command-hook* #'wm-command-eval-result :name :eval)
 
-(defun argument-pop-or-read (input prompt &optional completions)
-  (or (argument-pop input)
+;;; command args
+(defun read-wm-arg (input prompt &optional completions)
+  (or (read-arg input)
       (if completions
-          (completing-read (current-screen) prompt completions)
+          (completing-read-screen (current-screen) prompt completions)
           (read-one-line (current-screen) prompt))
       (throw 'cmd :abort)))
 
-(defun argument-pop-rest (input)
-  "Return the remainder of the argument text."
-  (unless (argument-line-end-p input)
-    (prog1
-        (subseq (argument-line-string input) (argument-line-start input))
-      (setf (argument-line-start input) (length (argument-line-string input))))))
-
-(defun argument-pop-rest-or-read (input prompt &optional completions)
-  (or (argument-pop-rest input)
+(defun read-wm-args (input prompt &optional completions)
+  (or (read-args input)
       (if completions
-          (completing-read (current-screen) prompt completions)
+          (completing-read-screen (current-screen) prompt completions)
           (read-one-line (current-screen) prompt))
       (throw 'cmd :abort)))
 
 (define-command-type :y-or-n (input prompt)
   (let* ((positive-responses '("y" t))
-         (s (or (argument-pop input)
+         (s (or (read-arg input)
                 (read-one-line (current-screen) (concat prompt "(y/n): ")))))
     (member s positive-responses :test #'equalp)))
 
@@ -148,28 +99,28 @@ only return active commands."
                               (package-name pkg) var)))))
 
 (define-command-type :variable (input prompt)
-  (lookup-symbol (argument-pop-or-read input prompt)))
+  (lookup-symbol (read-wm-arg input prompt)))
 
 (define-command-type :function (input prompt)
   (multiple-value-bind (sym pkg var)
-      (lookup-symbol (argument-pop-or-read input prompt))
+      (lookup-symbol (read-wm-arg input prompt))
     (if (fboundp sym)
         sym
         (throw 'cmd (format nil "The symbol ~A::~A is not bound to any function."
                               (package-name pkg) var)))))
 
 (define-command-type :command (input prompt)
-  (or (argument-pop input)
-      (completing-read (current-screen)
+  (or (read-arg input)
+      (completing-read-screen (current-screen)
                        prompt
-                       (list-all-commands))))
+                       (wm-commands))))
 
 (define-command-type :key-seq (input prompt)
   (labels ((update (seq)
              (wm-message "~a ~{~a ~}"
                       prompt
                       (mapcar 'print-key (reverse seq)))))
-    (let ((rest (argument-pop-rest input)))
+    (let ((rest (read-args input)))
       (or (and rest (parse-key-seq rest))
           ;; read a key sequence from the user
           (with-focus (screen-key-window (current-screen))
@@ -177,8 +128,8 @@ only return active commands."
             (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))))))))
 
 (define-command-type :window-number (input prompt)
-  (when-let ((n (or (argument-pop input)
-               (completing-read (current-screen)
+  (when-let ((n (or (read-arg input)
+               (completing-read-screen (current-screen)
                                 prompt
                                 (mapcar 'window-map-number
                                         (group-windows (current-group)))))))
@@ -189,7 +140,7 @@ only return active commands."
       (throw 'cmd "No such window."))))
 
 (define-command-type :number (input prompt)
-  (when-let ((n (or (argument-pop input)
+  (when-let ((n (or (read-arg input)
                     (read-one-line (current-screen) prompt))))
     (handler-case (parse-number n)
       (invalid-number (c)
@@ -197,21 +148,21 @@ only return active commands."
         (throw 'cmd "Number required.")))))
 
 (define-command-type :string (input prompt)
-  (or (argument-pop input)
+  (or (read-arg input)
       (read-one-line (current-screen) prompt)))
 
 (define-command-type :password (input prompt)
-  (or (argument-pop input)
+  (or (read-arg input)
       (read-one-line (current-screen) prompt :password t)))
 
 (define-command-type :key (input prompt)
-  (when-let ((s (or (argument-pop input)
+  (when-let ((s (or (read-arg input)
                (read-one-line (current-screen) prompt))))
     (kbd s)))
 
 (define-command-type :window-name (input prompt)
-  (or (argument-pop input)
-      (completing-read (current-screen) prompt
+  (or (read-arg input)
+      (completing-read-screen (current-screen) prompt
                        (mapcar 'window-name
                                (group-windows (current-group))))))
 
@@ -220,7 +171,7 @@ only return active commands."
                    ("down" :down)
                    ("left" :left)
                    ("right" :right)))
-         (string (argument-pop-or-read input prompt (mapcar 'first values)))
+         (string (read-wm-arg input prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
         (throw 'cmd "No matching direction."))))
@@ -236,7 +187,7 @@ only return active commands."
                    ("top-left" :top-left)
                    ("bottom-right" :bottom-right)
                    ("bottom-left" :bottom-left)))
-         (string (argument-pop-or-read input prompt (mapcar 'first values)))
+         (string (read-wm-arg input prompt (mapcar 'first values)))
          (gravity (second (assoc string values :test 'string-equal))))
     (or gravity
         (throw 'cmd "No matching gravity."))))
@@ -257,8 +208,8 @@ only return active commands."
 
 (define-command-type :group (input prompt)
   (let ((match (select-group (current-screen)
-                             (or (argument-pop input)
-                                 (completing-read (current-screen) prompt
+                             (or (read-arg input)
+                                 (completing-read-screen (current-screen) prompt
                                                   (mapcar 'group-name
                                                           (screen-groups (current-screen))))))))
     (or match
@@ -266,7 +217,7 @@ only return active commands."
 
 (define-command-type :frame (input prompt)
   (declare (ignore prompt))
-  (if-let ((arg (argument-pop input)))
+  (if-let ((arg (read-arg input)))
     (or (find arg (group-frames (current-group))
               :key (lambda (f)
                      (string (get-frame-number-translation f)))
@@ -280,12 +231,12 @@ only return active commands."
   (let ((prompt (format nil "~A -c " *shell-program*))
         (*input-history* *input-shell-history*))
     (unwind-protect
-         (or (argument-pop-rest input)
-             (completing-read (current-screen) prompt 'complete-program))
+         (or (read-args input)
+             (completing-read-screen (current-screen) prompt 'complete-program))
       (setf *input-shell-history* *input-history*))))
 
 (define-command-type :rest (input prompt)
-  (or (argument-pop-rest input)
+  (or (read-args input)
       (read-one-line (current-screen) prompt)))
 
 (defun call-interactively (command &optional (input ""))
@@ -309,7 +260,7 @@ aborted."
                                              spec))
                                    (prompt (when (listp spec)
                                              (second spec)))
-                                   (fn (gethash type *command-type-hash*)))
+                                   (fn (gethash type *command-types*)))
                               (unless fn
                                 (throw 'cmd (format nil "Bad argument type: ~s" type)))
                               ;; If the prompt is NIL then it's
@@ -330,43 +281,7 @@ aborted."
           (apply (command-name cmd-data) args)
         (setf *last-command* command)))))
 
-(defun eval-command (cmd &optional interactive)
-  "exec cmd and echo the result."
-  (labels ((parse-and-run-command (input)
-             (let* ((arg-line (make-argument-line :string input
-                                                  :start 0))
-                    (cmd (argument-pop arg-line)))
-               (let ((*interactive* interactive))
-                 (call-interactively cmd arg-line)))))
-    (multiple-value-bind (result error-p)
-        ;; this fancy footwork lets us grab the backtrace from where the
-        ;; error actually happened.
-        (restart-case
-            (handler-bind
-                ((error (lambda (c)
-                          (invoke-restart 'eval-command-error
-                                          (format nil "^B^1*Error In Command '^b~a^B': ^n~A~a"
-                                                  cmd c (if *show-command-backtrace*
-                                                            (get-backtrace) ""))))))
-              (parse-and-run-command cmd))
-          (eval-command-error (err-text)
-            :interactive (lambda ()
-                           (list (format nil "^B^1*Error In Command '^b~a^B'"
-                                         cmd)))
-            :report (lambda (s)
-                      (format s "Exit command ~S" cmd))
-            (values err-text t)))
-      ;; interactive commands update the modeline
-      (update-all-mode-lines)
-      (cond ((stringp result)
-             (if error-p
-                 (message-no-timeout "~a" result)
-                 (wm-message "~a" result)))
-            ((eq result :abort)
-             (unless *suppress-abort-messages*
-               (wm-message "Abort.")))))))
-
-(defcommand colon (&optional initial-input) (:rest)
+(defcommand colon (&optional initial-input)
   "Read a command from the user with optional INITIAL-TEXT. When
 supplied, the text will appear in the prompt.
 
@@ -374,7 +289,8 @@ String arguments with spaces may be passed to the command by delimiting them
 with double quotes. A backslash can be used to escape double quotes or
 backslashes inside the string. This does not apply to commands taking :REST or
 :SHELL type arguments."
-  (let ((cmd (completing-read (current-screen) ": " (list-all-commands) :initial-input (or initial-input ""))))
+  (declare (interactive rest))
+  (let ((cmd (completing-read-screen (current-screen) ": " (wm-commands) :initial-input (or initial-input ""))))
     (unless cmd
       (throw 'cmd :abort))
     (when (plusp (length cmd))

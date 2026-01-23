@@ -42,7 +42,7 @@
 
 (wm:add-wm-hook wm:*selection-notify-hook* 'wm/clipboard::save-clipboard-history)
 
-(wm:defcommand show-clipboard-history () ()
+(defcommand show-clipboard-history ()
   "Select from previously saved selections"
   (if (null *clipboard-history*)
       (wm-message "No selection history")
@@ -59,8 +59,8 @@
 (defvar *clipboard-timer* nil)
 
 (defun stop-clipboard-manager ()
-  (when (wm:timer-p *clipboard-timer*)
-    (wm:cancel-timer *clipboard-timer*)
+  (when (timer-p *clipboard-timer*)
+    (unschedule-timer *clipboard-timer*)
     (setq *clipboard-timer* nil)))
 
 (defvar *clipboard-poll-timeout* 5)
@@ -76,6 +76,6 @@
 (defmethod std:init ((self (eql :wm/clipboard)) &key)
   (start-clipboard-manager))
 
-(wm:defcommand clear-clipboard-history () ()
+(defcommand clear-clipboard-history ()
   "Clear saved selections"
   (setf *clipboard-history* nil))

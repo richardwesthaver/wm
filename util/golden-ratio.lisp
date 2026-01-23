@@ -22,7 +22,7 @@
                          (wm::frame-height to-frame)))
       (setq *golden-ratio-on* t))))
 
-(defcommand toggle-golden-ratio () ()
+(defcommand toggle-golden-ratio ()
   "Toggle golden ratio"
   (setf *golden-ratio-on* (null *golden-ratio-on*)))
 

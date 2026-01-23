@@ -124,7 +124,7 @@ run whenever the minor mode is enabled via autoenable."))
 
 (defgeneric minor-mode-disable-hook (minor-mode-symbol)
   (:documentation
-   "Returns the minor mode disable hook for a given minor mode symbol.  This hook
+   "Returns the minor mode disable hook for a given minor mode symbol. This hook
 is run whenever the minor mode is disabled via autodisable."))
 
 (defgeneric minor-mode-hook (minor-mode-symbol)
@@ -762,7 +762,7 @@ where the car is the scope designator and the cdr is the class with that scope."
 
 (defmacro define-minor-mode-scope
     ((designator class &optional filter-type) &body retrieve-current-object)
-  "Define a minor mode scope for use with DEFINE-MINOR-MODE.  This generates a
+  "Define a minor mode scope for use with DEFINE-MINOR-MODE. This generates a
 call to ADD-MINOR-MODE-SCOPE which is evaluated when compiled, loaded, or
 executed. DESIGNATOR should be a keyword and TYPE should denote a class, while
 FILTER-TYPE should denote a general type. RETRIEVE-CURRENT-OBJECT should be a
@@ -839,45 +839,38 @@ provided."
 activated. Minor modes are dynamically mixed in to and out of the appropriate
 object when they are enabled or disabled.
 
-If @var{SUPERCLASSES} is not provided a default superclass of MINOR-MODE will be
-provided. @var{OPTIONS} may include all normal options when defining a class,
+If SUPERCLASSES is not provided a default superclass of MINOR-MODE will be
+provided. OPTIONS may include all normal options when defining a class,
 with the addition of the following options:
 
-@itemize
-@item
-(:SCOPE SCOPE-DESIGNATOR)@*
+(:SCOPE SCOPE-DESIGNATOR)
 The :SCOPE option determines what object(s) the minor mode can be mixed in
 with. New scopes can be defined with the macro DEFINE-MINOR-MODE-SCOPE.
 
-@item
-(:GLOBAL (OR T NIL))@*
+(:GLOBAL (OR T NIL))
 When true the :GLOBAL option changes the way enable methods are defined to track
 the minor mode and autoenable it in all existing scope objects, as well as
 autoenabled when new scope objects are instantiated. If the :SCOPE option is
 :UNSCOPED then this option does not need to be provided.
 
-@item
-(:TOP-MAP spec)@*
+(:TOP-MAP spec)
 The minor modes top map is created based upon the provided spec, which must be a
 list of cons cells whose car is a key sequence and whose cdr is a binding. For
-example: @code{(list (cons \"C-m x\" \"echo\"))}. This would bind the key
-sequence @kbd{C-m x} to the echo command. A reference to this keymap is stored
+example: (list (cons \"C-m x\" \"echo\")). This would bind the key
+sequence 'C-m x' to the echo command. A reference to this keymap is stored
 as a slot in the minor mode object and can be accessed via the reader
-@code{MODE-KEYMAP} where @code{MODE} is the minor mode name.
+MODE-KEYMAP where MODE is the minor mode name.
 
-@item
-(:ROOT-MAP spec)@*
+(:ROOT-MAP spec)
 The minor modes root map is created based upon the provided spec. The spec is as
 described in the :TOP-MAP option.
 
-@item
-(:EXPOSE-KEYMAPS (OR T NIL))@*
+(:EXPOSE-KEYMAPS (OR T NIL))
 This value is used at macroexpansion time to determine whether or not to
 generate keymap variables or store the keymap within the object. When T the
 variables *MODE-TOP-MAP* and *MODE-ROOT-MAP* will be generated.
 
-@item
-(:REBIND (MEMBER :TOP-MAP :ROOT-MAP :ALL-MAPS))@*
+(:REBIND (MEMBER :TOP-MAP :ROOT-MAP :ALL-MAPS))
 
 This option controls rebinding of the top and root maps. When it is :TOP-MAP the
 top map is rebound, when it is :ROOT-MAP the root map is rebound, and when it is
@@ -885,8 +878,7 @@ top map is rebound, when it is :ROOT-MAP the root map is rebound, and when it is
 to the provided keymap specification. This only has an effect if the minor mode
 has previously been defined.
 
-@item
-(:LIGHTER T)@*
+(:LIGHTER T)
 The :LIGHTER option will be used to generate a function returning a string to
 display in the mode line. When :LIGHTER is NULL a string is generated based upon
 the mode name. When it is a string that string is used as is. Otherwise :LIGHTER
@@ -895,28 +887,24 @@ that doesn't begin with LAMBDA or FUNCTION a warning is issued that
 DEFINE-MINOR-MODE is assuming it is funcallable. When assumed to be funcallable,
 it is called with the mode object as its only argument.
 
-@item
-(:LIGHTER-MAKE-CLICKABLE (OR T NIL))@*
+(:LIGHTER-MAKE-CLICKABLE (OR T NIL))
 When :LIGHTER-MAKE-CLICKABLE is T then the :LIGHTER is wrapped in a call to
 FORMAT-WITH-ON-CLICK-ID, called with the id :ML-ON-CLICK-MINOR-MODE and the mode
 as a quoted symbol.
 
-@item
-(:LIGHTER-ON-CLICK FUNCTION)@*
+(:LIGHTER-ON-CLICK FUNCTION)
 When :LIGHTER-ON-CLICK is provided it must be a function of arity one, which
 will be called whenever the minor modes lighter is clicked, with the button code
 of the click as its only argument. If this is provided then
 :LIGHTER-MAKE-CLICKABLE is implied to be T.
 
-@item
-(:INTERACTIVE (OR SYMBOL T NIL))@*
+(:INTERACTIVE (OR SYMBOL T NIL))
 The :INTERACTIVE option determines whether a command to toggle the minor mode on
 and off is generated. If it is T then a command with the same name as the minor
 mode is generated. If it is a symbol then that symbol will be used when defining
 the command.
 
-@item
-(:ENABLE-WHEN (MODE OBJECT) &BODY BODY)@*
+(:ENABLE-WHEN (MODE OBJECT) &BODY BODY)
 When provided, the :ENABLE-WHEN option generates a method for the enable-when
 generic function. MODE is bound to the mode symbol, and OBJECT is bound to the
 scope object. If this is not provided, a method is generated which returns T for
@@ -924,8 +912,7 @@ the minor mode and its scope. If it is provided and is nil, then no method is
 generated and a method for ENABLE-WHEN which dispatches upon the mode as a
 symbol and the scope type for the minor mode must be manually defined.
 
-@item
-(:MAKE-HOOKS (OR T NIL))@*
+(:MAKE-HOOKS (OR T NIL))
 When :MAKE-HOOKS is T a set of hook variables are generated. These variables are
 fourfold: *MODE-HOOK* is run after explicitly enabling the minor
 mode. *MODE-ENABLE-HOOK* is run when the minor mode is
@@ -933,16 +920,14 @@ autoenabled. *MODE-DISABLE-HOOK* is run when the minor mode is
 autodisabled. Finally *MODE-DESTROY-HOOK* is run when the minor mode is
 explicitly disabled. 
 
-@item
-(:DEFINE-COMMAND-DEFINER (OR T NIL))@*
+(:DEFINE-COMMAND-DEFINER (OR T NIL))
 When :DEFINE-COMMAND-DEFINER is T a macro is defined for defining commands that
 are active only when the minor mode is active. Commands defined with this macro
 have the special variable *MINOR-MODE* bound to the minor mode object in their
 body. The generated macro is called DEFINE-MODE-COMMAND. This option defaults to
 T.
 
-@item
-(:MIX-BEFORE &REST RULES)@*
+(:MIX-BEFORE &REST RULES)
 The :MIX-BEFORE option defines rules on the order this class should be mixed in
 relative to other minor modes. This allows the implementer of a minor mode to
 make the mixing process aware of dependencies that dont otherwise make sense as
@@ -954,14 +939,11 @@ must be a valid argument to #'STRING, and PACKAGE-DESIGNATOR must be a valid
 argument to #'FIND-PACKAGE. Together these shall form a single symbol which
 should be the class name of the minor mode being referred to by the rule.
 
-@item
-(:MIX-AFTER &REST RULES)@*
+(:MIX-AFTER &REST RULES)
 The :MIX-AFTER option is similar to the :MIX-BEFORE option, except it specifies
 classes that this minor mode should occur after in the mixin list.
-@end itemize
 
 Example:
-@verbatim
 (define-minor-mode evil-mode () ()
   (:scope :unscoped)
   (:top-map '((\"j\" . \"move-focus down\")
@@ -974,9 +956,7 @@ Example:
   (:lighter-make-clickable nil))
 
 (define-evil-mode-command evil-echo () ()
-  (run-commands \"echo\"))
-@end verbatim
-"
+  (run-commands \"echo\"))"
   (when (null superclasses)
     (setq superclasses '(minor-mode)))
   (multiple-value-bind (mm-opts other-opts)

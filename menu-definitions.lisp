@@ -195,9 +195,9 @@ unmark the entry at the selected point."
   (declare (ignore key-seq)))
 
 (defmethod typing-action ((menu single-menu) key-seq)
-  "If the user entered a key not mapped in @var{*menu-map}, check it.
+  "If the user entered a key not mapped in *MENU-MAP*, check it.
 If he's trying to type an entry's name, either complete or not based
-on COMPLETE-PARTIAL. Match is case insensitive. If @var{key-seq} is nil,
+on COMPLETE-PARTIAL. Match is case insensitive. If KEY-SEQ is nil,
 some other function has manipulated the current-input and is requesting
 a re-computation of the match."
   (let ((input-char (and key-seq (get-input-char key-seq))))
@@ -249,7 +249,7 @@ is not allowed, as specified by allowed-markers, item is not marked"
   "The default filter predicate for SELECT-FROM-MENU. When using this
 predicate, an item is visible when it matches all of the regular
 expressions in USER-INPUT (multiple regexps are separated by one or
-more spaces; ARGUMENT-POP is used to split the string)."
+more spaces; READ-ARG is used to split the string)."
   (declare (ignore item-object))
   (match-all-regexps user-input item-string))
 
@@ -314,7 +314,7 @@ EXTRA-KEYMAP can be a keymap whose bindings will take precedence
 over the default bindings.
 
 FILTER-PRED should be a a function returning T when a certain menu
-item should be visible to the user.  It should accept arguments
+item should be visible to the user. It should accept arguments
 
 ITEM-STRING (the string shown to the user), ITEM-OBJECT (the object
 corresponding to the menu item), and USER-INPUT (the current user
@@ -375,7 +375,7 @@ EXTRA-KEYMAP can be a keymap whose bindings will take precedence
 
 SCREEN: The screen to display the menu on.
 
-ITEMS: The items to be shown in the list. This is expected to be a list of @code{menu-item}s.
+ITEMS: The items to be shown in the list. This is expected to be a list of MENU-ITEMs.
 
 COMMAND-LIST: A list of entries defining the commands associated with each mark.
               Only marks that are defined are allowed in the menu. The format

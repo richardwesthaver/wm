@@ -282,8 +282,8 @@ frame."
         (wm-message "No other window."))))
 
 (defcommand (pull-window-by-number tile-group) (n &optional (group (current-group)))
-                                               ((:window-number "Pull: "))
   "Pull window N from another frame into the current frame and focus it."
+  (declare (interactive (window-number "Pull: ")))
   (let ((win (find n (group-windows group) :key 'window-number :test '=)))
     (when win
       (pull-window win))))
@@ -314,28 +314,28 @@ current frame and raise it."
         (frame-raise-window group (window-frame win) win)
         (echo-string (group-screen group) "No other window."))))
 
-(defcommand (pull-hidden-next tile-group) () ()
+(defcommand (pull-hidden-next tile-group) ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
     (focus-forward group (only-tile-windows (sort-windows group)) t
                    (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
-(defcommand (pull-hidden-previous tile-group) () ()
+(defcommand (pull-hidden-previous tile-group) ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
     (focus-forward group (nreverse (only-tile-windows (sort-windows group))) t
                    (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
-(defcommand (pull-hidden-other tile-group) () ()
+(defcommand (pull-hidden-other tile-group) ()
 "Pull the last focused, hidden window into the current frame."
   (let ((group (current-group)))
     (pull-other-hidden-window group)))
 
-(defcommand (pull-from-windowlist tile-group)
-    (&optional (fmt *window-format*)) (:rest)
+(defcommand (pull-from-windowlist tile-group) (&optional (fmt *window-format*))
   "Pulls a window selected from the list of windows.
 This allows a behavior similar to Emacs' switch-to-buffer
 when selecting another window."
+  (declare (interactive (rest)))
   (let ((pulled-window (select-window-from-menu
                         (group-windows (current-group))
                         fmt)))
@@ -355,14 +355,12 @@ when selecting another window."
       (focus-frame (window-group win1) f2))))
 
 (defcommand (exchange-direction tile-group) (dir &optional (win (current-window)))
-    ((:direction "Direction: "))
-  "Exchange the current window (by default) with the top window of the frame in specified direction. (bound to @kbd{C-t x} by default)
-@table @asis
-@item up
-@item down
-@item left
-@item right
-@end table"
+  "Exchange the current window (by default) with the top window of the frame in specified direction. (bound to 'C-t x' by default)
+- up
+- down
+- left
+- right"
+  (declare (interactive (direction "Direction: ")))
   (if win
       (let* ((frame-set (group-frames (window-group win)))
              (neighbour (neighbour dir (window-frame win) frame-set)))
@@ -372,34 +370,34 @@ when selecting another window."
       (wm-message "No window in current frame!")))
 
 
-(defcommand (echo-frame-windows tile-group) (&optional (fmt *window-format*)) (:rest)
+(defcommand (echo-frame-windows tile-group) (&optional (fmt *window-format*))
   "Display a list of all the windows in the current frame."
+  (declare (interactive rest))
   (echo-windows fmt (current-group) (frame-windows (current-group)
                                                    (tile-group-current-frame (current-group)))))
 
 (command-alias :frame-windows :echo-frame-windows)
 
-(defcommand (gravity tile-group) (gravity) ((:gravity "Gravity: "))
+(defcommand (gravity tile-group) (gravity)
   "Set a window's gravity within its frame. Gravity controls where the
 window will appear in a frame if it is smaller that the
 frame. Possible values are:
 
-@table @var
-@item center
-@item top
-@item right
-@item bottom
-@item left
-@item top-right
-@item top-left
-@item bottom-right
-@item bottom-left
-@end table"
+- center
+- top
+- right
+- bottom
+- left
+- top-right
+- top-left
+- bottom-right
+- bottom-left"
+  (declare (interactive (gravity "Gravity: ")))
   (when (current-window)
     (setf (window-gravity (current-window)) gravity)
     (maximize-window (current-window))))
 
-(defcommand (pull-marked tile-group) () ()
+(defcommand (pull-marked tile-group) ()
 "Pull all marked windows into the current frame and clear the marks."
   (let ((group (current-group)))
     (dolist (i (marked-windows group))
@@ -424,12 +422,11 @@ frame. Possible values are:
           *window-placement-rules*)))
 
 (defcommand (remember tile-group) (lock title)
-                                  ((:y-or-n "Lock to group? ")
-                                   (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
+  (declare (interactive (y-or-n "Lock to group? ") (y-or-n "Use title? ")))
   (make-rule-for-window (current-window) lock title))
 
-(defcommand (forget tile-group) () ()
+(defcommand (forget tile-group) ()
   "Forget the window placement rule that matches the current window."
   (let* ((window (current-window))
          (match (rule-matching-window window)))
@@ -439,19 +436,21 @@ frame. Possible values are:
           (wm-message "Rule forgotten."))
         (wm-message "No matching rule."))))
 
-(defcommand (dump-window-placement-rules tile-group) (file) ((:rest "Filename: "))
+(defcommand (dump-window-placement-rules tile-group) (file)
   "Dump *window-placement-rules* to FILE."
+  (declare (interactive (rest "Filename: ")))
   (dump-to-file *window-placement-rules* file))
 
 (command-alias :dump-rules :dump-window-placement-rules)
 
-(defcommand (restore-window-placement-rules tile-group) (file) ((:rest "Filename: "))
+(defcommand (restore-window-placement-rules tile-group) (file)
   "Restore *window-placement-rules* from FILE."
+  (declare (interactive (rest "Filename: ")))
   (setf *window-placement-rules* (read-dump-from-file file)))
 
 (command-alias :restore-rules :restore-window-placement-rules)
 
-(defcommand (redisplay tile-group) () ()
+(defcommand (redisplay tile-group) ()
   "Refresh current window by a pair of resizes, also make it occupy entire frame."
   (let ((window (current-window)))
     (when window
@@ -472,8 +471,9 @@ frame. Possible values are:
                                                 (window-height-inc window)))))
       (maximize-window window)))))
 
-(defcommand (unmaximize tile-group) (&optional (window (current-window))) (:rest)
+(defcommand (unmaximize tile-group) (&optional (window (current-window)))
   "Use the size the program requested for current window (if any) instead of maximizing it."
+  (declare (interactive rest))
   (let ((status (not (window-normal-size window)))
         (hints (window-normal-hints window)))
     (if (and (xlib:wm-size-hints-width hints)
@@ -484,10 +484,11 @@ frame. Possible values are:
           (maximize-window window))
         (wm-message "Window has no normal size."))))
 
-(defcommand frame-windowlist (&optional (fmt *window-format*)) (:rest)
+(defcommand frame-windowlist (&optional (fmt *window-format*))
   "Allow the user to select a window from the list of windows in the current
-frame and focus the selected window.  The optional argument @var{fmt} can be
+frame and focus the selected window. The optional argument FMT can be
 specified to override the default window formatting."
+  (declare (interactive rest))
   (let* ((group (current-group))
          (frame (tile-group-current-frame group)))
     (if (null (frame-windows group frame))

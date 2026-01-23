@@ -21,7 +21,7 @@
 (defgeneric group-add-window (group window &key &allow-other-keys)
   (:documentation "Called when a window is added to the group. All
 house keeping is already taken care of. Only the group's specific
-window managing housekeeping need be done.  This function accepts keys
+window managing housekeeping need be done. This function accepts keys
 to inform the group on how to place the window."))
 (defgeneric group-delete-window (group window)
   (:documentation "Called when a window is removed from thegroup. All
@@ -251,8 +251,8 @@ at 0. Return a netwm compliant group id."
 (defun next-group (current &optional
                    (groups (non-hidden-groups (screen-groups
                                                (group-screen current)))))
-  "Return the group following @var{current} in @var{groups}. If none
-are found return @code{NIL}."
+  "Return the group following CURRENT in GROUPS. If none
+are found return NIL."
   (let* ((matches (member current groups))
          (next-group (if (null (cdr matches))
                          ;; If the last one in the list is current, then
@@ -394,7 +394,7 @@ current window of the current group to the new one."
 
 (defcommand gnew (name)
   "Create a new group with the specified name. The new group becomes the
-current group. If @var{name} begins with a dot (``.'') the group new
+current group. If NAME begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
 numbers less than one and are invisible to from gprev, gnext, and, optionally,
 groups and vgroups commands."
@@ -478,15 +478,15 @@ window along."
 
 (defcommand groups (&optional (fmt *group-format*))
 "Display the list of groups with their number and
-name. @var{*group-format*} controls the formatting. The optional
-argument @var{fmt} can be used to override the default group
+name. *GROUP-FORMAT* controls the formatting. The optional
+argument FMT can be used to override the default group
 formatting."
   (declare (interactive rest))
   (echo-groups (current-screen) fmt))
 
 (defcommand vgroups (&optional gfmt wfmt)
-"Like @command{groups} but also display the windows in each group. The
-optional arguments @var{gfmt} and @var{wfmt} can be used to override
+"Like GROUPS but also display the windows in each group. The
+optional arguments GFMT and WFMT can be used to override
 the default group formatting and window formatting, respectively."
   (declare (interactive string rest))
   (echo-groups (current-screen)
@@ -570,7 +570,7 @@ to the current group."
                (wm-message "Killed other groups.")))))
 
 (defcommand gmerge (from)
-"Merge @var{from} into the current group. @var{from} is not deleted."
+"Merge FROM into the current group. FROM is not deleted."
   (declare (interactive (group "From group: ")))
   (if (eq from (current-group))
       (wm-message "^B^3*Cannot merge group with itself!")

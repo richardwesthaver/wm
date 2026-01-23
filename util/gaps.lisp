@@ -169,20 +169,20 @@ HEIGHT are subtracted."
                new-width new-height)))
           (screen-heads (current-screen))))
 
-(defcommand toggle-gaps () ()
+(defcommand toggle-gaps ()
   "Toggle gaps"
   (if (null *gaps-on*)
-      (toggle-gaps-on)
-      (toggle-gaps-off)))
+      (exec (command :toggle-gaps-on))
+      (exec (command :toggle-gaps-off))))
 
-(defcommand toggle-gaps-on () ()
+(defcommand toggle-gaps-on ()
   "Turn gaps on"
   (setf *gaps-on* t)
   (progn
     (add-head-gaps)
     (reset-all-windows)))
 
-(defcommand toggle-gaps-off () ()
+(defcommand toggle-gaps-off ()
   "Turn gaps off"
   (setf *gaps-on* nil)
-  (wm:refresh-heads))
+  (exec (command :refresh-heads)))

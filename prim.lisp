@@ -174,7 +174,7 @@ with 1 argument: the menu.")
   "The display for the X server")
 
 (defvar *shell-program* "/bin/sh"
-  "The shell program used by @code{run-shell-command}.")
+  "The shell program used by run-shell-command.")
 
 (defvar *maxsize-border-width* 1
   "The width in pixels given to the borders of windows with maxsize or ratio hints.")
@@ -347,18 +347,11 @@ mapped key the ENTIRE keyboard will be frozen and you will have
 to login remotely to regain control. :abort quits wm.")
 
 (defvar *window-name-source* :title
-  "This variable controls what is used for the window's name. The default is @code{:title}.
+  "This variable controls what is used for the window's name. The default is :title.
 
-@table @code
-@item :title
-Use the window's title given to it by its owner.
-
-@item :class
-Use the window's resource class.
-
-@item :resource-name
-Use the window's resource name.
-@end table")
+:title - Use the window's title given to it by its owner.
+:class - Use the window's resource class.
+:resource-name - Use the window's resource name.")
 
 (defclass wm-class ()
   ((new-objects
@@ -660,7 +653,7 @@ chosen, resignal the error."
   (run-hook-with-args hook))
 
 (defmacro add-wm-hook (hook fn)
-  "Add @var{function} to the @var{hook-variable}. For example, to
+  "Add FUNCTION to the HOOK-VARIABLE. For example, to
 display a message whenever you switch frames:
 
 @example
@@ -732,7 +725,7 @@ which is returned.
 ***If SEPARATORS is absent, it defaults to \"[ \f\t\n\r\v]+\".
 
 If there is match for SEPARATORS at the beginning of STRING, we do not
-include a null substring for that.  Likewise, if there is a match
+include a null substring for that. Likewise, if there is a match
 at the end of STRING, we don't include a null substring for that.
 
 Modifies the match data; use `save-match-data' if necessary."
@@ -761,24 +754,24 @@ string which is split to obtain the individual regexps. "
 ;;; formatting routines
 (declaim (ftype (function (vector list list &key (:element-type (or cons symbol))) vector) replace-ranges))
 (defun replace-ranges (vec ranges replacements &key (element-type (array-element-type vec)))
-  "Return a new vector with all (`START' `END') pairs in @var{`RANGES'} replaced with the corresponding vector in
-the list @var{`REPLACEMENTS'}.
+  "Return a new vector with all (START END) pairs in RANGES replaced with the corresponding vector in
+the list REPLACEMENTS.
 
-If the keyword argument `ELEMENT-TYPE' is provided, the resulting vector is defined to have elements of that type.
+If the keyword argument ELEMENT-TYPE is provided, the resulting vector is defined to have elements of that type.
 Ensure all replacement vectors are of compatible type or it will error, as it trusts this blindly.
-Otherwise, it uses the element type of `VEC' - to use replacements with arbitrary element types,
-set `ELEMENT-TYPE' to T.
+Otherwise, it uses the element type of VEC - to use replacements with arbitrary element types,
+set ELEMENT-TYPE to T.
 
 The lengths of the replacements do not matter, and only a single non-resizeable vector will
 be created for the result.
 
 Example using strings:
-@samp{(replace-ranges \"This is a test string with replacements.\"
+(replace-ranges \"This is a test string with replacements.\"
 '((0 0) (10 14) (27 40))
 '(\"(Hi) \" \"simple\" \"three replaced sections.\"))} =>
 \"(Hi!) This is a simple string with three replaced sections.\"
 
-@samp{(replace-ranges \"A vector of characters, also known as a string.\"
+(replace-ranges \"A vector of characters, also known as a string.\"
 '((12 22) (40 47))
 '(#(\"not\" \"just\" \"one element type\")
 \"simple-vector.\") :element-type T)} =>
@@ -985,25 +978,25 @@ recommended this is assigned using LET.")
   "Assign this T and the message time out won't be touched. It is recommended to assign this using LET.")
 
 (defvar *run-or-raise-all-groups* t
-  "When this is @code{T} the @code{run-or-raise} function searches all groups for a
+  "When this is T the run-or-raise function searches all groups for a
 running instance. Set it to NIL to search only the current group.")
 
 (defvar *run-or-raise-all-screens* nil
-  "When this is @code{T} the @code{run-or-raise} function searches all screens for a
-running instance. Set it to @code{NIL} to search only the current screen. If
-@var{*run-or-raise-all-groups*} is @code{NIL} this variable has no effect.")
+  "When this is T the RUN-OR-RAISE function searches all screens for a
+running instance. Set it to NIL to search only the current screen. If
+*RUN-OR-RAISE-ALL-GROUPS* is NIL this variable has no effect.")
 
 (defvar *deny-map-request* nil
   "A list of window properties that WM should deny matching windows'
 requests to become mapped for the first time.")
 
 (defvar *deny-raise-request* nil
-  "Exactly the same as @var{*deny-map-request*} but for raise requests.
+  "Exactly the same as *DENY-MAP-REQUEST* but for raise requests.
 
 Note that no denial message is displayed if the window is already visible.")
 
 (defvar *suppress-deny-messages* nil
-  "For complete focus on the task at hand, set this to @code{T} and no
+  "For complete focus on the task at hand, set this to T and no
 raise/map denial messages will be seen.")
 
 (defvar *honor-window-moves* t
@@ -1089,7 +1082,7 @@ pop-ups.
 - raise :: When non-nil, raise and focus the window in its frame
 
 - lock :: When this is nil, this rule will only match when TARGET-GROUP
-matches the group designated by FROM-GROUP.  When non-nil, this rule matches
+matches the group designated by FROM-GROUP. When non-nil, this rule matches
 regardless of the group and the window is sent to TARGET-GROUP. If LOCK and
 RAISE are both non-nil, then WM will jump to the specified group and focus the
 matched window.
@@ -1097,9 +1090,9 @@ matched window.
 - from-group :: When LOCK is NIL, and this is non-NIL, this rule will
 only match when TARGET-GROUP matches FROM-GROUP. This should be
 set to either a group name(a string), or an expression that returns a
-group(e.g (current-group)).  When this is NIL, the rule matches if
+group(e.g (current-group)). When this is NIL, the rule matches if
 TARGET-GROUP matches the group the window is in, or the current group if
-the window has no group.  
+the window has no group. 
 
 - create :: When non-NIL the group is created and eventually restored when the
 value of create is a group dump filename in *DATA-DIR*. Defaults to NIL.

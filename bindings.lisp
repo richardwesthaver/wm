@@ -21,10 +21,10 @@ C-t.")
   "The binding that sends the fake escape key to the current window.")
 
 (defvar *groups-map* nil
-  "The keymap that group related key bindings sit on. It is bound to @kbd{C-t g} by default.")
+  "The keymap that group related key bindings sit on. It is bound to 'C-t g' by default.")
 
 (defvar *exchange-window-map* nil
-  "The keymap that exchange-window key bindings sit on. It is bound to @kbd{C-t x} by default.")
+  "The keymap that exchange-window key bindings sit on. It is bound to 'C-t x' by default.")
 
 (defvar *help-map* nil
   "Help related bindings hang from this keymap")
@@ -229,20 +229,21 @@ is a tile group.")
   (kbd "c") "describe-command"
   (kbd "w") "where-is")
 
-(defcommand command-mode () ()
+(defcommand command-mode ()
 "Command mode allows you to type WM commands without needing the
-@key{C-t} prefix. Keys not bound in WM will still get sent to the
-current window. To exit command mode, type @key{C-g}."
+'C-t' prefix. Keys not bound in WM will still get sent to the
+current window. To exit command mode, type 'C-g'."
   (run-hook *command-mode-start-hook*)
   (push-top-map *root-map*))
 
-(defcommand set-prefix-key (key) ((:key "Key: "))
+(defcommand set-prefix-key (key)
   "Change the WM prefix key to KEY.
 
 (wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
 
 This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
 most standards, a terrible prefix key but it makes a great example."
+  (declare (interactive (key "Key: ")))
   (check-type key key)
   (copy-key-into key *escape-key*)
   ;; if the escape key has no modifiers then disable the fake key by
@@ -256,12 +257,11 @@ most standards, a terrible prefix key but it makes a great example."
 
 (command-alias :escape :set-prefix-key)
 
-(defcommand bind-key (key command)
-                 ((:string "Key chord: ")
-                  (:rest "Command: "))
+(defcommand bind-key (key command)                
   "Hang a key binding off the escape key."
+  (declare (interactive (string "Key chord: ") (rest "Command: ")))
   (define-key *root-map* (kbd key) command))
 
-(defcommand send-escape () ()
+(defcommand send-escape ()
   "Send the escape key to the current window."
   (send-meta-key (current-screen) *escape-key*))

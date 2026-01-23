@@ -14,7 +14,7 @@
 
 ;; Screen helper functions
 (defun translate-id (src src-start src-end font dst dst-start)
-  "A simple replacement for xlib:translate-default.  just the
+  "A simple replacement for xlib:translate-default. just the
 identity with a range check."
   (let ((min (xlib:font-min-char font))
         (max (xlib:font-max-char font)))
@@ -209,24 +209,24 @@ identity with a range check."
             (setf (,val s) (alloc-color s ,color)))
     (update-colors-all-screens)))
 
-;; FIXME: I don't like any of this.  Isn't there a way to define
+;; FIXME: I don't like any of this. Isn't there a way to define
 ;; a setf method to call (update-colors-all-screens) when the user
 ;; does eg. (setf *foreground-color* "green") instead of having
 ;; these redundant set-foo functions?
 (defun set-fg-color (color)
   "Set the foreground color for the message bar and input
-bar. @var{color} can be any color recognized by X."
+bar. COLOR can be any color recognized by X."
   (setf *text-color* color)
   (set-any-color screen-fg-color color))
 
 (defun set-bg-color (color)
   "Set the background color for the message bar and input
-bar. @var{color} can be any color recognized by X."
+bar. COLOR can be any color recognized by X."
   (set-any-color screen-bg-color color))
 
 (defun set-border-color (color)
   "Set the border color for the message bar and input
-bar. @var{color} can be any color recognized by X."
+bar. color can be any color recognized by X."
   (set-any-color screen-border-color color))
 
 (defun set-win-bg-color (color)

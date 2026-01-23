@@ -8,15 +8,13 @@
 
 ;;; Code:
 (in-package #:wm)
-
+(setq *command-names-p* nil)
 (defvar *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
   "The format string that decides how keybindings will show up in the
 which-key window. Two arguments will be passed to this formatter:
 
-@table @asis
-@item the keybind itself
-@item the associated command
-@end table")
+- the keybind itself
+- the associated command")
 
 (defun columnize (list columns &key col-aligns (pad 1) (char #\Space) (align :left))
   ;; only somewhat nasty
@@ -67,7 +65,7 @@ which-key window. Two arguments will be passed to this formatter:
 (defcommand commands ()
   "List all available commands."
   (let* ((screen (current-screen))
-         (data (list-all-commands))
+         (data (wm-commands))
          (cols (ceiling (length data)
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
                                   (font-height (screen-font screen))))))
@@ -94,11 +92,10 @@ which-key window. Two arguments will be passed to this formatter:
     (if-let ((cmd (loop for map in (top-maps)
                         for cmd = (lookup-key-sequence map keys)
                         when cmd return cmd)))
-            (let ((cmd-without-args (argument-pop
-                                     (make-argument-line :string cmd :start 0))))
+            (let ((cmd-without-args (read-arg cmd)))
               (message-no-timeout "~{~A~^ ~} is bound to \"~A\".~%~A"
                                   printed-key cmd
-                                  (describe-command-to-stream cmd-without-args nil)))
+                                  (describe-object cmd-without-args nil)))
             (cond ((and (help-key-p keys)
                         (cdr printed-key))
                    (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
@@ -225,63 +222,10 @@ FIND-BINDING-IN-KMAP."
                                      :match-partial-string match-partial-string
                                      :match-with-arguments match-with-arguments)))
 
-(labels ((make-even-lengths (list)
-           (let ((longest1 0)
-                 (longest2 0))
-             (mapc (lambda (el)
-                     (let* ((final (lastcar (ppcre:split " " (cadr el))))
-                            (l1 (length final))
-                            (l2 (length (symbol-name (lastcar el)))))
-                       (when (> l1 longest1) (setf longest1 l1))
-                       (when (> l2 longest2) (setf longest2 l2))))
-                   list)
-             (mapcar (lambda (el)
-                       (let* ((final (lastcar (ppcre:split " " (cadr el))))
-                              (l1 (length final))
-                              (l2 (length (symbol-name (lastcar el)))))
-                         (list (format nil "~S~A" final
-                                       (make-string (- longest1 l1)
-                                                    :initial-element #\space))
-                               (format nil "~A~A" (lastcar el)
-                                       (make-string (- longest2 l2)
-                                                    :initial-element #\space))
-                               (format nil "~S" (car el)))))
-                     list))))
-  (defun describe-command-to-stream (com stream)
-    "Write the help for the command to the stream."
-    (let* ((cmd (command com))
-           (text 
-             (word-wrap (concatenate 'string
-                    (unless (eq deref struct)
-                      (format nil "\"~a\" is an alias for the command \"~a\":~%"
-                              (command-alias-from deref)
-                              name))
-                    (when-let ((message (where-is-to-stream name nil)))
-                              (format nil "~&~A~&" message))
-                    (when-let ((lambda-list (sb-introspect:function-lambda-list
-                                             (kernel cmd))))
-                      (format nil "~%^5~a ^B~{~a~^ ~}^b^n~&~%"
-                              cmd
-                              lambda-list))
-                    (format nil "~&~a" (or (kernel-documentation cmd) "")))
-                   *message-max-width*
-                   nil)))
-      (let ((bindings (when (stringp com)
-                        (find-binding com :top-level-maps (top-maps)))))
-        (if bindings 
-            (format stream
-                    "~A~%~%Bound to:~%~{~{~A~#[~; invoking ~:; in ~]~}~^~%~}"
-                    text
-                    (make-even-lengths bindings))
-            (format stream "~A" text))))))
-
 (defcommand describe-command (com)
   "Print the online help associated with the specified command."
   (declare (interactive (command "Describe command: ")))
-  (if (null (get-command com nil))
-      (message-no-timeout "Error: Command \"~a\" not found."
-                          (command-name com))
-      (message-no-timeout "~a" (describe-command-to-stream com nil))))
+  (message-no-timeout "~a" (describe-object com nil)))
 
 (defun where-is-to-stream (cmd stream)
   (labels ((keys (cmd)
@@ -297,9 +241,9 @@ FIND-BINDING-IN-KMAP."
               (format stream "\"~a\" is on ~{~a~^, ~}." cmd
                       (mapcar 'print-key-seq bindings))
               (format stream "Command \"~a\" is not currently bound." cmd))
-      (let ((reverse-hash (make-hash-table :size (hash-table-size *command-hash*)
+      (let ((reverse-hash (make-hash-table :size (hash-table-size *commands*)
                                            :test 'eq)))
-        (loop for k being each hash-key of *command-hash* using (hash-value v)
+        (loop for k being each hash-key of *commands* using (hash-value v)
               do (setf #1=(gethash (sym v #'command-alias-to) reverse-hash)
                        (let ((sym (sym v #'command-alias-from)))
                          (when (not (eql sym (sym v #'command-alias-to)))
@@ -363,3 +307,5 @@ KMAPS are enabled"
               "Super" (modifiers-super *modifiers*)
               "Hyper" (modifiers-hyper *modifiers*)
               "AltGr" (modifiers-altgr *modifiers*)))
+
+(setq *command-names-p* t)
