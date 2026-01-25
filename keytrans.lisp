@@ -57,9 +57,7 @@ calling KEYSYM->KEYSYM-NAME."
 (define-keysym-name "£" "sterling")
 (define-keysym-name "%" "percent")
 (define-keysym-name "&" "ampersand")
-(define-keysym-name "'" "quoteright")   ;deprecated
 (define-keysym-name "'" "apostrophe")
-(define-keysym-name "`" "quoteleft")    ;deprecated
 (define-keysym-name "`" "grave")
 (define-keysym-name "&" "ampersand")
 (define-keysym-name "(" "parenleft")
