@@ -1196,9 +1196,9 @@ formatting. This is a simple wrapper around the command WINDOWLIST."
                (let ((sym (cond ((<= 32 (char-code ch) 127)
                                  (char-code ch))
                                 ((char= ch #\Tab)
-                                 (wm-name-to-keysym "TAB"))
+                                 (keysym-from-name "TAB"))
                                 ((char= ch #\Newline)
-                                 (wm-name-to-keysym "RET"))
+                                 (keysym-from-name "RET"))
                                 (t (first (xlib:character->keysyms ch *display*))))))
                  (when sym
                    (send-fake-key window

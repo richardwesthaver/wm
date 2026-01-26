@@ -11,7 +11,6 @@
   :components ((:file "pkg")
                (:file "prim")
                (:file "font-rendering")
-               (:file "keytrans")
                (:file "kmap")
                (:file "input")
                (:file "core")

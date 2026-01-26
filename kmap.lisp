@@ -2,9 +2,12 @@
 
 ;; Copyright (C) 2003-2008 Shawn Betts
 
+;; WM-specific keymaps
+
 ;;; Commentary:
 
-;; This file handles keymaps
+;; This file handles keymaps for the WM, which encapsulates all
+;; user-configurable keys.
 
 ;;; Code:
 (in-package :wm)
@@ -14,7 +17,7 @@
 prefix map.")
 
 (defvar *root-map* nil
-  "This is the keymap by default bound to C-t (along with 
+  "This is the keymap by default bound to C-t (along with
  *group-root-map* and either *tile-group-root-map*, *float-group-root-map*,
  or *dynamic-group-map*). It is known as the prefix map.")
 
@@ -140,7 +143,7 @@ kbd-parse if the key failed to parse."
   (let* ((p (when (> (length string) 2)
               (position #\- string :from-end t :end (- (length string) 1))))
          (%mods (parse-mods string (if p (1+ p) 0)))
-         (keysym (wm-name-to-keysym (subseq string (if p (1+ p) 0))))
+         (keysym (keysym-from-name (subseq string (if p (1+ p) 0))))
          (mods (if (keysym-requires-altgr keysym)
                    (append '(:altgr t) %mods)
                    %mods)))
@@ -180,7 +183,7 @@ kbd-parse if the key failed to parse."
 (defun print-key (key)
   (format nil "~a~a"
           (print-mods key)
-          (keysym-to-wm-name (key-keysym key))))
+          (name-from-keysym (key-keysym key))))
 
 (defun print-key-seq (seq)
   (format nil
@@ -206,6 +209,7 @@ Now when you type C-t C-z, you'll see the text ``Zzzzz...'' pop up."
                         (kmap-bindings map))
                     (list (make-binding :key key :command command))))
       (setf (kmap-bindings map) (delete binding (kmap-bindings map))))
+    ;; TODO 2026-01-25: replace with hook
     ;; We need to tell the X server when changing the top-map bindings.
     (when (eq map *top-map*)
       (sync-keys))))

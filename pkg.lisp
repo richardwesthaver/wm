@@ -2,7 +2,7 @@
 
 ;;; Code:
 (defpackage :wm
-  (:use #:cl #:std #:obj/meta/mix #:time #:log #:obj #:sb-ext)
+  (:use #:cl #:std #:obj/meta/mix #:time #:log #:obj #:sb-ext #:io/kbd)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
   (:import-from #:xkb #:load-xkbcommon)

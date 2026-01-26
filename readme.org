@@ -4,7 +4,7 @@
 #+email:richard.westhaver@gmail.com
 This is a fork of StumpWM built for the Cursed Linux environment.
 
-#+BEGIN: project-info :files nil :tasks nil :status nil :churn nil :html nil
+#+BEGIN: project-info :files nil :tasks nil :status nil :churn t :html nil
 #+CALL: project-details(vc='nil) :dir ~/comp/shed/wm/
 
 #+RESULTS:
@@ -15,10 +15,17 @@ This is a fork of StumpWM built for the Cursed Linux environment.
 | id          | 1445975379900235397                                  |
 | root        | ~/comp/shed/wm/                                      |
 | tags        | gui wm linux x                                       |
-| updated     | Wed Jan 21 22:44:52 2026 -0500                       |
+| updated     | Sat Jan 24 20:28:24 2026 -0500                       |
 | langs       | lisp org                                             |
-| lines       | 22017 :code 18274 :comment 1405 :blank 2338          |
+| lines       | 19842 :code 16129 :comment 1395 :blank 2318          |
 |-------------+------------------------------------------------------|
+
+#+CALL: hg-churn() :dir ~/comp/shed/wm/
+
+#+RESULTS:
+: 2025-11  36604 *************************************************************
+: 2025-12    519 
+: 2026-01  16951 ****************************
 
 #+END:
 
