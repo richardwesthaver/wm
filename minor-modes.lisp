@@ -402,7 +402,7 @@ modes."
 ;;; Helper Functions
 
 (defun generate-keymap (keymap-spec &optional
-                                    (top-map (wm:make-sparse-keymap))
+                                    (top-map (sparse-keymap))
                                     (filter-bindings #'identity))
   "Generate a (potentially nested) keymap based on KEYMAP. KEYMAP is a list of
 keymap specs, where each spec is a cons cell containing an input sequence and
@@ -420,16 +420,16 @@ empty keymap."
                  (bind-to (cdr keys)))
              (labels
                  ((bind-it (key &optional to)
-                    (cond (to (wm:define-key curmap (wm:kbd key) to))
-                          (t (wm:define-key curmap (wm:kbd key)
+                    (cond (to (define-key curmap (kbd key) to))
+                          (t (define-key curmap (kbd key)
                                (funcall filter-bindings bind-to)))))
                   (attempt-binding (key rest bind seq)
                     (cond
-                      ((and bind (wm::kmap-p bind))
+                      ((and bind (keymap-p bind))
                        (if (null rest)
                            (restart-case
                                (error "~A in ~A is already bound to a keymap"
-                                      (wm::print-key (wm:kbd key)) seq)
+                                      (print-key (kbd key)) seq)
                              (keep-binding ()
                                :report "Keep the current binding"
                                nil)
@@ -441,7 +441,7 @@ empty keymap."
                            (setf curmap bind)))
                       (bind
                           (restart-case (error "~S in ~S is already bound to ~A"
-                                               (wm::print-key (wm:kbd key))
+                                               (print-key (kbd key))
                                                seq
                                                bind)
                             (replace-binding ()
@@ -455,13 +455,13 @@ empty keymap."
                               (bind-it key))))
                       ((null rest)
                        (bind-it key))
-                      (t (let ((m (wm:make-sparse-keymap)))
+                      (t (let ((m (sparse-keymap)))
                            (bind-it key m)
                            (setf curmap m)))))
                   (traverse-and-bind (seq)
                     (loop for (key . rest) on (ppcre:split " " seq)
-                          do (let ((bind (wm:lookup-key curmap
-                                           (wm:kbd key))))
+                          do (let ((bind (lookup-key curmap
+                                           (kbd key))))
                                (attempt-binding key rest bind seq)))))
                (if (not (or (symbolp bind-to)
                             (stringp bind-to)
@@ -477,7 +477,7 @@ empty keymap."
       (cond ((null keymap)
              topmap)
             ((or (symbolp keymap)
-                 (wm::kmap-p keymap))
+                 (keymap-p keymap))
              keymap)
             ((listp keymap)
              (restart-case (mapc (lambda (keys)
@@ -489,14 +489,14 @@ empty keymap."
                  topmap)
                (abort-bindings* ()
                  :report "Return an empty keymap"
-                 (wm:make-sparse-keymap)))
+                 (sparse-keymap)))
              topmap)
             (t (restart-case
                    (error "Function MAKE-MINOR-MODE-KEYMAP cant understand ~A"
                           keymap)
                  (use-empty-keymap ()
                    :report "Use an empty keymap"
-                   (wm:make-sparse-keymap))))))))
+                   (sparse-keymap))))))))
 
 (defun make-minor-mode-keymap (spec)
   (generate-keymap spec))
@@ -507,7 +507,7 @@ ROOT-MAP-SPEC."
   (let ((top-map nil)
         (root-map (if root-map-spec
                       (make-minor-mode-keymap root-map-spec)
-                      (make-sparse-keymap))))
+                      (sparse-keymap))))
     (fill-keymap top-map *escape-key* root-map)
     (generate-keymap top-map-spec top-map)))
 

@@ -108,7 +108,7 @@ and complete the input by mutating it."))
                  candidates))
 
 (defvar *input-map*
-  (let ((map (make-sparse-keymap)))
+  (let ((map (sparse-keymap)))
     (define-key map (kbd "DEL") 'input-delete-backward-char)
     (define-key map (kbd "S-DEL") 'input-delete-backward-char)
     (define-key map (kbd "M-DEL") 'input-backward-kill-word)

@@ -171,7 +171,7 @@ The Caller is responsible for setting up the input focus."
          (key-seq (cons key key-seq))
          (bindings (mapcar (lambda (m)
                              (lookup-key m key))
-                           (dereference-kmaps kmaps)))
+                           (deref-keymaps kmaps)))
          ;; if the first non-nil thing is another keymap, then grab
          ;; all the keymaps and recurse on them. If the first one is a
          ;; command, then we're done.
@@ -192,7 +192,7 @@ The Caller is responsible for setting up the input focus."
           (match
            (values match key-seq))
           ((and (find key *help-keys* :key #'kbd :test 'equalp))
-           (apply 'display-bindings-for-keymaps (reverse (cdr key-seq)) (dereference-kmaps kmaps))
+           (apply 'display-bindings-for-keymaps (reverse (cdr key-seq)) (deref-keymaps kmaps))
            (values t key-seq))
           (t
            (values nil key-seq)))))

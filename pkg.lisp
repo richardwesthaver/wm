@@ -162,11 +162,6 @@
    *root-map*
    *key-seq-color*
    *altgr-offset*
-   define-key
-   kbd
-   lookup-command
-   lookup-key
-   make-sparse-keymap
    ;; input.lisp
    *input-history-ignore-duplicates*
    *input-candidate-selected-hook*

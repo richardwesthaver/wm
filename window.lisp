@@ -732,7 +732,7 @@ and bottom_end_x."
                                        :sync-keyboard-p nil :sync-keyboard-p nil))))))
 
 (defun xwin-grab-keys (win group)
-  (dolist (map (dereference-kmaps (top-maps group)))
+  (dolist (map (deref-keymaps (top-maps group)))
     (dolist (i (kmap-bindings map))
       (xwin-grab-key win (binding-key i)))))
 

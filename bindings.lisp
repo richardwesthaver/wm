@@ -53,7 +53,7 @@ is a tile group.")
 (defmacro fill-keymap (map &rest bindings)
   `(unless ,map
      (setf ,map
-           (let ((m (make-sparse-keymap)))
+           (let ((m (sparse-keymap)))
              ,@(loop for i = bindings then (cddr i)
                     while i
                     collect `(define-key m ,(first i) ,(second i)))
@@ -245,14 +245,15 @@ This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
 most standards, a terrible prefix key but it makes a great example."
   (declare (interactive (key "Key: ")))
   (check-type key key)
-  (copy-key-into key *escape-key*)
+  (copy key *escape-key*)
   ;; if the escape key has no modifiers then disable the fake key by
   ;; giving it keysym -1, an impossible value. Otherwise you have 2
   ;; identical bindings and the one that appears first in the list
   ;; will be matched.
-  (copy-key-into (make-key :keysym (if (key-mods-p *escape-key*)
-                                       (key-keysym key)
-                                       -1)) *escape-fake-key*)
+  (copy (make-key :keysym (if (key-mods-p *escape-key*)
+                              (key-keysym key)
+                              -1)) 
+        *escape-fake-key*)
   (sync-keys))
 
 (command-alias :escape :set-prefix-key)

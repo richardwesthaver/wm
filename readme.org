@@ -15,9 +15,9 @@ This is a fork of StumpWM built for the Cursed Linux environment.
 | id          | 1445975379900235397                                  |
 | root        | ~/comp/shed/wm/                                      |
 | tags        | gui wm linux x                                       |
-| updated     | Sat Jan 24 20:28:24 2026 -0500                       |
+| updated     | Sun Jan 25 19:29:19 2026 -0500                       |
 | langs       | lisp org                                             |
-| lines       | 19842 :code 16129 :comment 1395 :blank 2318          |
+| lines       | 19664 :code 15974 :comment 1395 :blank 2295          |
 |-------------+------------------------------------------------------|
 
 #+CALL: hg-churn() :dir ~/comp/shed/wm/
@@ -25,7 +25,7 @@ This is a fork of StumpWM built for the Cursed Linux environment.
 #+RESULTS:
 : 2025-11  36604 *************************************************************
 : 2025-12    519 
-: 2026-01  16951 ****************************
+: 2026-01  17083 ****************************
 
 #+END:
 

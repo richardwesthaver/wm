@@ -189,7 +189,7 @@ Example:
                         (and (kmap-p cmd) (kmap-p command)))
                     (eql cmd command))))
            (walk-keymap (keymap &optional binding-acc kmap-acc)
-             (loop for binding in (kmap-bindings (car (dereference-kmaps
+             (loop for binding in (kmap-bindings (car (deref-keymaps
                                                        (list keymap))))
                    if (command-equal (binding-command binding))
                    collect (list* (binding-command binding)
@@ -263,7 +263,7 @@ FIND-BINDING-IN-KMAP."
     (message-no-timeout "~A" (get-output-stream-string stream))))
 
 (defun get-kmaps-at-key (kmaps key)
-  (dereference-kmaps
+  (deref-keymaps
    (reduce
     (lambda (result map)
       (let* ((binding (handler-case (find key (kmap-bindings map)
@@ -289,7 +289,7 @@ KMAPS are enabled"
   (declare (ignore key cmd))
   (when (not (eq *top-map* *resize-map*))
     (let* ((oriented-key-seq (reverse key-seq))
-           (maps (get-kmaps-at-key-seq (dereference-kmaps (top-maps)) oriented-key-seq)))
+           (maps (get-kmaps-at-key-seq (deref-keymaps (top-maps)) oriented-key-seq)))
       (when-let ((only-maps (remove-if-not 'kmap-p maps)))
                 (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
 

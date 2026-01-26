@@ -52,7 +52,7 @@ Be aware that these commands won't require a prefix to run."
          (keymap (gensym "m")))
     (multiple-value-bind (key-bindings decls docstring)
         (parse-body key-bindings :documentation t)
-      `(let ((,keymap (make-sparse-keymap)))
+      `(let ((,keymap (sparse-keymap)))
          ,@(loop for keyb in key-bindings
                  collect `(define-key ,keymap ,(first keyb)
                             ,(if (third keyb)

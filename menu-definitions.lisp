@@ -416,7 +416,7 @@ COMMAND-LIST: A list of entries defining the commands associated with each mark.
 
 (when (null *menu-map*)
   (setf *menu-map*
-        (let ((m (make-sparse-keymap)))
+        (let ((m (sparse-keymap)))
           (define-key m (kbd "C-p") 'menu-up)
           (define-key m (kbd "Up") 'menu-up)
           (define-key m (kbd "S-Up") 'menu-scroll-up)
@@ -434,13 +434,13 @@ COMMAND-LIST: A list of entries defining the commands associated with each mark.
 
 (when (null *single-menu-map*)
   (setf *single-menu-map*
-        (let ((m (make-sparse-keymap)))
+        (let ((m (sparse-keymap)))
           (define-key m (kbd "DEL") 'menu-backspace)
           m)))
 
 (when (null *batch-menu-map*)
   (setf *batch-menu-map*
-        (let ((m (make-sparse-keymap)))
+        (let ((m (sparse-keymap)))
           (define-key m (kbd  "DEL") 'menu-backspace)
           (define-key m (kbd "n") 'menu-down)
           (define-key m (kbd  "p") 'menu-up)
