@@ -733,7 +733,7 @@ and bottom_end_x."
 
 (defun xwin-grab-keys (win group)
   (dolist (map (deref-keymaps (top-maps group)))
-    (dolist (i (kmap-bindings map))
+    (dolist (i map)
       (xwin-grab-key win (binding-key i)))))
 
 (defun grab-keys-on-window (win)

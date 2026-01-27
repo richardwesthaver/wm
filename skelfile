@@ -21,9 +21,11 @@
 :rules
 ((default (build))
  (build ()
-  (with-sbcl (:noinform t :quit t :input t)
-   (ql:quickload '(:core :xlib :xlib/truetype :wm :modeline :util))
-   (in-package :std)
+  (with-core (:quit t :input t)
+   (asdf:load-system :wm)
+   (in-package :wm-user)
+   ;; post-load hooks
+   (funcall (find-symbol "LOAD-XKBCOMMON" :xkb)) ; requires xkbcommon.so
    (sb-ext:save-lisp-and-die 
     ".stash/wm" 
     :toplevel (find-symbol "START-WM" :wm)

@@ -400,7 +400,6 @@ modes."
   (register-ml-on-click-id :ml-on-click-minor-mode #'ml-on-click-minor-mode))
 
 ;;; Helper Functions
-
 (defun generate-keymap (keymap-spec &optional
                                     (top-map (sparse-keymap))
                                     (filter-bindings #'identity))

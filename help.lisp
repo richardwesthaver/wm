@@ -50,10 +50,10 @@ which-key window. Two arguments will be passed to this formatter:
                                              (cond ((or (symbolp bound-to)
                                                         (stringp bound-to))
                                                     bound-to)
-                                                   ((kmap-p bound-to)
+                                                   ((keymap-p bound-to)
                                                     "Anonymous Keymap")
                                                    (t "Unknown")))))
-                                 (kmap-bindings map)))
+                                 (keymap-bindings map)))
                        keymaps))
          (cols (ceiling (1+ (length data))
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
@@ -186,10 +186,10 @@ Example:
                              (member command els :test #'string-equal)))
                           (t (string-equal cmd command))))
                    ((or (and (symbolp cmd) (symbolp command))
-                        (and (kmap-p cmd) (kmap-p command)))
+                        (and (keymap-p cmd) (keymap-p command)))
                     (eql cmd command))))
-           (walk-keymap (keymap &optional binding-acc kmap-acc)
-             (loop for binding in (kmap-bindings (car (deref-keymaps
+           (walk-keymap (keymap &optional binding-acc keymap-acc)
+             (loop for binding in (keymap-bindings (car (deref-keymaps
                                                        (list keymap))))
                    if (command-equal (binding-command binding))
                    collect (list* (binding-command binding)
@@ -197,17 +197,17 @@ Example:
                                           (reverse (cons (key->str
                                                           (binding-key binding))
                                                          binding-acc)))
-                                  (reverse kmap-acc))
+                                  (reverse keymap-acc))
                    else
-                   if (kmap-or-kmap-symbol-p (binding-command binding))
+                   if (keymap-or-keymap-symbol-p (binding-command binding))
                    append (walk-keymap (binding-command binding)
                                        (cons (key->str (binding-key binding))
                                              binding-acc)
                                        (cons
-                                        (if (kmap-p (binding-command binding))
+                                        (if (keymap-p (binding-command binding))
                                             'anonymous-keymap
                                             (binding-command binding))
-                                        kmap-acc)))))
+                                        keymap-acc)))))
     (let ((keys (walk-keymap keymap nil (list keymap))))
       keys)))
 
@@ -266,7 +266,7 @@ FIND-BINDING-IN-KMAP."
   (deref-keymaps
    (reduce
     (lambda (result map)
-      (let* ((binding (handler-case (find key (kmap-bindings map)
+      (let* ((binding (handler-case (find key (keymap-bindings map)
                                           :key 'binding-key :test 'equalp)
                         (type-error () nil)))
              (command (when binding (binding-command binding))))
@@ -290,7 +290,7 @@ KMAPS are enabled"
   (when (not (eq *top-map* *resize-map*))
     (let* ((oriented-key-seq (reverse key-seq))
            (maps (get-kmaps-at-key-seq (deref-keymaps (top-maps)) oriented-key-seq)))
-      (when-let ((only-maps (remove-if-not 'kmap-p maps)))
+      (when-let ((only-maps (remove-if-not 'keymap-p maps)))
                 (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
 
 (defcommand which-key-mode ()
