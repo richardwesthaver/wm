@@ -21,7 +21,7 @@
              :height (xinerama:screen-info-height screen-info)
              :window nil))
 
-(defun output->head (output count)
+(defun head-from-output (output count)
   (multiple-value-bind
         (request-status _0 crtc _1 _2 status _3 _4 _5 _6 _7 name)
       (xlib:rr-get-output-info *display* output (get-universal-time))
@@ -46,7 +46,7 @@
   (loop :with outputs := (nth-value 3 (xlib:rr-get-screen-resources root))
         :for count :from 0
         :for output :in outputs
-        :for head := (output->head output count)
+        :for head := (head-from-output output count)
         :when head
           :collect head))
 

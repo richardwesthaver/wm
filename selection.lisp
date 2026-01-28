@@ -66,7 +66,7 @@
     ;; send them a string
     (:string
      (xlib:change-property requestor property (getf *x-selection* selection)
-                           :string 8 :mode :replace :transform #'xlib:char->card8))
+                           :string 8 :mode :replace :transform #'xlib:card8-from-char))
     (:utf8_string
      (xlib:change-property requestor property (sb-ext:string-to-octets
                                                (getf *x-selection* selection)

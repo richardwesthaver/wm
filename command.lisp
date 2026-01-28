@@ -10,7 +10,13 @@
 (in-package #:wm)
 
 (defkernel wm-command (command) ())
-;; instead of requiring a :class slot, we just subclass wm-command for our groups (tiling, floating, and dynamic)
+(defmethod name ((self wm-command))
+  "The name of a WM command, which is the keyword used to access it in
+*COMMANDS*. NOTE: uses linear search."
+  (maphash (lambda (k v) (when (equiv v self) (return-from name k))) *commands*))
+
+;; instead of requiring a :class slot, we just subclass wm-command for our
+;; groups (tiling, floating, and dynamic)
 (defkernel wm-tile-command (wm-command) ())
 (defmethod command-class ((self wm-tile-command)) 'tile-group)
 (defkernel wm-float-command (wm-command) ())

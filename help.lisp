@@ -8,7 +8,9 @@
 
 ;;; Code:
 (in-package #:wm)
-(setq *command-names-p* nil)
+
+(setq cmd:*command-names-p* nil)
+
 (defvar *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
   "The format string that decides how keybindings will show up in the
 which-key window. Two arguments will be passed to this formatter:
@@ -44,16 +46,16 @@ which-key window. Two arguments will be passed to this formatter:
   (let* ((screen (current-screen))
          (data (mapcan (lambda (map)
                          (mapcar (lambda (b)
-                                   (let ((bound-to (binding-command b)))
+                                   (let ((bound-to (keybind-cmd b)))
                                      (format nil *which-key-format*
-                                             (print-key (binding-key b))
+                                             (print-key (keybind-key b))
                                              (cond ((or (symbolp bound-to)
                                                         (stringp bound-to))
                                                     bound-to)
                                                    ((keymap-p bound-to)
                                                     "Anonymous Keymap")
                                                    (t "Unknown")))))
-                                 (keymap-bindings map)))
+                                 map))
                        keymaps))
          (cols (ceiling (1+ (length data))
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
@@ -159,7 +161,7 @@ KEYMAP must be a symbol or a kmap structure, though it should be a symbol if rea
 MATCH-PARTIAL-STRING is a true/false value. If true, any binding structure whose
 command slot contains the string COMMAND is treated as a match. 
 
-In the list returned, command refers to the value of (binding-command binding)
+In the list returned, command refers to the value of (keybind-cmd binding)
 where binding is the keybinding that matches COMMAND. 
 
 Example: 
@@ -167,7 +169,7 @@ Example:
 ((\"grename\" \"g A\" *ROOT-MAP* *GROUPS-MAP*)
  (\"grename\" \"g r\" *ROOT-MAP* *GROUPS-MAP*))
 "
-  (labels ((key->str (key)
+  (labels ((str-from-key (key)
              ;; Inverse of (kbd ...) 
              (concatenate 'string
                           (when (key-control key) "C-")
@@ -176,7 +178,7 @@ Example:
                           (when (key-hyper key)   "H-")
                           (when (key-alt key)     "A-")
                           (when (key-shift key)   "S-")
-                          (keysym-code-name (key-keysym key))))
+                          (keysym-code-name (key-sym key))))
            (command-equal (cmd)
              (cond ((and (stringp cmd) (stringp command))
                     (cond (match-partial-string
@@ -189,24 +191,24 @@ Example:
                         (and (keymap-p cmd) (keymap-p command)))
                     (eql cmd command))))
            (walk-keymap (keymap &optional binding-acc keymap-acc)
-             (loop for binding in (keymap-bindings (car (deref-keymaps
-                                                       (list keymap))))
-                   if (command-equal (binding-command binding))
-                   collect (list* (binding-command binding)
+             (loop for binding in (car (deref-keymaps
+                                        (list keymap)))
+                   if (command-equal (keybind-cmd binding))
+                   collect (list* (keybind-cmd binding)
                                   (format nil "~{~A~^ ~}"
-                                          (reverse (cons (key->str
-                                                          (binding-key binding))
+                                          (reverse (cons (str-from-key
+                                                          (keybind-key binding))
                                                          binding-acc)))
                                   (reverse keymap-acc))
                    else
-                   if (keymap-or-keymap-symbol-p (binding-command binding))
-                   append (walk-keymap (binding-command binding)
-                                       (cons (key->str (binding-key binding))
+                   if (keymap-or-keymap-symbol-p (keybind-cmd binding))
+                   append (walk-keymap (keybind-cmd binding)
+                                       (cons (str-from-key (keybind-key binding))
                                              binding-acc)
                                        (cons
-                                        (if (keymap-p (binding-command binding))
+                                        (if (keymap-p (keybind-cmd binding))
                                             'anonymous-keymap
-                                            (binding-command binding))
+                                            (keybind-cmd binding))
                                         keymap-acc)))))
     (let ((keys (walk-keymap keymap nil (list keymap))))
       keys)))
@@ -227,13 +229,13 @@ FIND-BINDING-IN-KMAP."
   (declare (interactive (command "Describe command: ")))
   (message-no-timeout "~a" (describe-object com nil)))
 
+;; TODO 2026-01-28: 
 (defun where-is-to-stream (cmd stream)
   (labels ((keys (cmd)
-             (loop for map in (top-maps) append (search-kmap cmd map)))
-           (sym (comm alias-accessor)
+             (loop for map in (top-maps) append (search-keymap cmd map)))
+           (sym (comm)
              (typecase comm
-               (command-alias (sym (funcall alias-accessor comm) alias-accessor))
-               (command (command-name comm))
+               (command (name comm))
                (string (intern (string-upcase comm)))
                (symbol comm))))
     (let ((cmd (string-downcase cmd)))
@@ -244,9 +246,9 @@ FIND-BINDING-IN-KMAP."
       (let ((reverse-hash (make-hash-table :size (hash-table-size *commands*)
                                            :test 'eq)))
         (loop for k being each hash-key of *commands* using (hash-value v)
-              do (setf #1=(gethash (sym v #'command-alias-to) reverse-hash)
-                       (let ((sym (sym v #'command-alias-from)))
-                         (when (not (eql sym (sym v #'command-alias-to)))
+              do (setf #1=(gethash (sym v) reverse-hash)
+                       (let ((sym (sym v)))
+                         (when (not (eql sym (sym v)))
                            (cons sym #1#)))))
         (when-let ((aliases (gethash (intern (string-upcase cmd)) reverse-hash)))
                   (format stream "~%\"~a\" is aliased to ~{\"~a\"~^, ~}."
@@ -266,10 +268,10 @@ FIND-BINDING-IN-KMAP."
   (deref-keymaps
    (reduce
     (lambda (result map)
-      (let* ((binding (handler-case (find key (keymap-bindings map)
-                                          :key 'binding-key :test 'equalp)
+      (let* ((binding (handler-case (find key map
+                                          :key 'keybind-key :test 'equalp)
                         (type-error () nil)))
-             (command (when binding (binding-command binding))))
+             (command (when binding (keybind-cmd binding))))
         (if command
             (setf result (cons command result))
             result)))
@@ -308,4 +310,4 @@ KMAPS are enabled"
               "Hyper" (modifiers-hyper *modifiers*)
               "AltGr" (modifiers-altgr *modifiers*)))
 
-(setq *command-names-p* t)
+(setq cmd:*command-names-p* t)

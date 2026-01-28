@@ -186,19 +186,19 @@ Available completion styles include
   "Return t if keycode is a modifier"
   (or (find keycode *all-modifiers* :test 'eql)
       ;; Treat No Symbol keys as modifiers (and therefore ignorable)
-      (= (xlib:keycode->keysym *display* keycode 0) 0)))
+      (= (xlib:keysym-from-keycode *display* keycode 0) 0)))
 
 (defun register-altgr-as-modifier ()
   "Register the keysym(s) for ISO_Level3 as modifiers."
   (setf *all-modifiers*
         (append (multiple-value-list
-                 (xlib:keysym->keycodes *display*
+                 (xlib:keycodes-from-keysym *display*
                                         (keysym-name-code "ISO_Level3")))
                 *all-modifiers*)))
 
-(defun keycode->character (code mods)
+(defun character-from-keycode (code mods)
   (let ((idx (if (member :shift mods) 1 0)))
-    (xlib:keysym->character *display* (xlib:keycode->keysym *display* code idx) 0)))
+    (xlib:character-from-keysym *display* (xlib:keysym-from-keycode *display* code idx) 0)))
 
 ;;; line and key reading functions
 (defun setup-input-window (screen prompt input)
@@ -231,7 +231,7 @@ Available completion styles include
 (defun input-handle-selection-event (&key window selection property &allow-other-keys)
   (declare (ignore selection))
   (if property
-      (xlib:get-property window property :type :string :result-type 'string :transform #'xlib:card8->char :delete-p t)
+      (xlib:get-property window property :type :string :result-type 'string :transform #'xlib:char-from-card8 :delete-p t)
       ""))
 
 (defun input-handle-click-event (&key root-x root-y &allow-other-keys)
@@ -325,7 +325,7 @@ match with an element of the completions."
                                           (fboundp completions)))
                                  (funcall completions initial-input)
                                  completions))
-        (input (make-finput-line :string (make-input-string initial-input)
+        (input (make-input-line :string (make-input-string initial-input)
                                 :position (length initial-input)
                                 :history -1
                                 :password password)))
@@ -364,7 +364,7 @@ match with an element of the completions."
   "Read a single character from the user."
   (with-focus (screen-key-window screen)
     (let ((k (read-key-no-modifiers)))
-      (keycode->character (car k) (xlib:make-state-keys (cdr k))))))
+      (character-from-keycode (car k) (xlib:make-state-keys (cdr k))))))
 
 (defun read-one-char-or-click (group)
   "Read a single character from the user or a click."
@@ -373,7 +373,7 @@ match with an element of the completions."
         (read-key-no-modifiers-or-click)
       (if has-click
           (values t nil x y)
-          (values nil (keycode->character (car k) (xlib:make-state-keys (cdr k))) nil nil)))))
+          (values nil (character-from-keycode (car k) (xlib:make-state-keys (cdr k))) nil nil)))))
 
 (defun prompt-text-y (index font y-padding)
   "Calculate the y position of text in a prompt."
@@ -500,16 +500,16 @@ match with an element of the completions."
                (xlib:gcontext-foreground gcontext))
       (draw-input-bucket screen prompt input tail))))
 
-(defun code-state->key (code state)
+(defun key-from-code-state (code state)
   (let* ((mods    (xlib:make-state-keys state))
          (shift-p (and (find :shift mods) t))
          (altgr-p (and (intersection (modifiers-altgr *modifiers*) mods) t))
          (base    (if altgr-p *altgr-offset* 0))
-         (sym     (xlib:keycode->keysym *display* code base))
-         (upsym   (xlib:keycode->keysym *display* code (+ base 1))))
+         (sym     (xlib:keysym-from-keycode *display* code base))
+         (upsym   (xlib:keysym-from-keycode *display* code (+ base 1))))
     ;; If a keysym has a shift modifier, then use the uppercase keysym
     ;; and remove remove the shift modifier.
-    (make-key :keysym (if (and shift-p (not (eql sym upsym)))
+    (make-key :sym (if (and shift-p (not (eql sym upsym)))
                           upsym
                           sym)
               :control (and (find :control mods) t)
@@ -727,7 +727,7 @@ functions are passed this structure as their first argument."
            (setf symname "asciitilde"))
           ((string= symname "circumflex")
            (setf symname "asciicircum")))
-    (xlib:keysym->character *display*
+    (xlib:character-from-keysym *display*
                             (gethash symname *name-keysym-table*))))
 
 (defun dead-key-p (keysym)
@@ -744,27 +744,27 @@ to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
   (let ((charname (keysym-code-name keysym))
         (deadstr (ignore-errors
                   (gethash dead-keysym *dead-keysym-name-table*))))
-    (xlib:keysym->character *display*
+    (xlib:character-from-keysym *display*
                             (keysym-name-code
                              (concatenate 'string charname deadstr)))))
 
 (defun find-character-for-keysym (input key)
   "Find a character for the given key with support for dead keys."
-  (cond ((dead-key-p (key-keysym key))
+  (cond ((dead-key-p (key-sym key))
          (if (and (input-line-most-recent-dead-key input)
-                  (= (input-line-most-recent-dead-key input) (key-keysym key)))
+                  (= (input-line-most-recent-dead-key input) (key-sym key)))
              (progn (setf (input-line-most-recent-dead-key input) nil)
-                    (dead-key-character (key-keysym key)))
-             (setf (input-line-most-recent-dead-key input) (key-keysym key))))
+                    (dead-key-character (key-sym key)))
+             (setf (input-line-most-recent-dead-key input) (key-sym key))))
         (t (let ((char (make-combined-character
-                        (key-keysym key)
+                        (key-sym key)
                         (input-line-most-recent-dead-key input))))
              (setf (input-line-most-recent-dead-key input) nil)
              char))))
 
 (defun input-self-insert (input key)
   (let* ((%char (ignore-errors (find-character-for-keysym input key)))
-         (char (or %char (xlib:keysym->character *display* (key-keysym key)))))
+         (char (or %char (xlib:character-from-keysym *display* (key-sym key)))))
     (if (or (key-mods-p key) (null char)
             (not (characterp char)))
         :error
@@ -796,7 +796,7 @@ buffer. Returns a new modified input buffer."
              "Call the appropriate function based on the key
 pressed. Return 'done when the use has signalled the finish of his
 input (pressing Return), nil otherwise."
-             (let* ((key (code-state->key code state))
+             (let* ((key (key-from-code-state code state))
                     (command (and key (lookup-key *input-map* key t))))
                (if command
                    (prog1
@@ -828,7 +828,7 @@ input (pressing Return), nil otherwise."
 (defun get-modifier-map ()
   (labels ((find-mod (mod codes)
              (let* ((keysym (keysym-name-code mod))
-                    (keycodes (multiple-value-list (xlib:keysym->keycodes *display* keysym))))
+                    (keycodes (multiple-value-list (xlib:keycodes-from-keysym *display* keysym))))
                (intersection keycodes codes))))
     (let ((modifiers (make-modifiers)))
       (multiple-value-bind
@@ -865,7 +865,7 @@ input (pressing Return), nil otherwise."
   (setf *modifiers* (get-modifier-map)
         *all-modifiers* (all-modifier-codes)))
 
-;; (defun x11mod->stumpmod (screen state)
+;; (defun wmmod-from-x11mod (screen state)
 ;;   (let ((mod nil))
 ;;     (when (member state (modifiers-alt (screen-modifiers screen)))
 ;;       (push :alt mod))
@@ -879,19 +879,19 @@ input (pressing Return), nil otherwise."
 ;;       (push :control mod))
 ;;     mod))
 
-(defun mod->string (state)
+(defun string-from-mod (state)
   "Convert a stump modifier list to a string."
   (let ((alist '((:alt . "A-") (:meta . "M-") (:hyper . "H-") (:super . "S-"))))
     (apply #'concatenate 'string (mapcar (lambda (x) (cdr (assoc x alist))) state))))
 
-;; (defun keycode->string (code state)
-;;   (concatenate 'string (mod->string state)
-;;             (string (keysym->character *display*
-;;                                        (xlib:keycode->keysym *display* code 0)
+;; (defun string-from-keycode (code state)
+;;   (concatenate 'string (string-from-mod state)
+;;             (string (xlib:character-from-keysym *display*
+;;                                        (xlib:keysym-from-keycode *display* code 0)
 ;;                                        state))))
 
 ;; (defun cook-keycode (code state)
-;;   (values (xlib:keycode->keysym *display* code 0) (x11mod->stumpmod state)))
+;;   (values (xlib:keysym-from-keycode *display* code 0) (wmmod-from-x11mod state)))
 
 (defun y-or-n-p (message)
   "Ask a \"y or n\" question on the current screen and return T if the

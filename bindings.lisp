@@ -250,8 +250,8 @@ most standards, a terrible prefix key but it makes a great example."
   ;; giving it keysym -1, an impossible value. Otherwise you have 2
   ;; identical bindings and the one that appears first in the list
   ;; will be matched.
-  (copy (make-key :keysym (if (key-mods-p *escape-key*)
-                              (key-keysym key)
+  (copy (make-key :sym (if (key-mods-p *escape-key*)
+                              (key-sym key)
                               -1)) 
         *escape-fake-key*)
   (sync-keys))

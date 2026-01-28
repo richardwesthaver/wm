@@ -68,9 +68,9 @@ further up."
                 (invoke-debugger c)
               (:abort-debugging ()
                :report (lambda (stream) (format stream "abort debugging"))
-                (throw :top-level (list c (backtrace-string))))))
+                (throw :top-level (list c (get-backtrace))))))
     (:abort
-     (throw :top-level (list c (backtrace-string))))))
+     (throw :top-level (list c (get-backtrace))))))
 
 (defclass request-channel ()
   ((in    :initarg :in

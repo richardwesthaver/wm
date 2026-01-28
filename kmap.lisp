@@ -46,7 +46,7 @@ in the way."
 
 (defun keysym-requires-altgr (keysym)
   (when *display*
-    (unless (and (xlib:keysym->keycodes *display* keysym) t)
+    (unless (and (xlib:keycodes-from-keysym *display* keysym) t)
       (let* ((min (xlib:display-min-keycode *display*))
              (max (xlib:display-max-keycode *display*))
              (map (xlib::display-keyboard-mapping *display*))

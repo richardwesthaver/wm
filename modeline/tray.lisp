@@ -258,7 +258,7 @@ ending to the last visible icon."
 	   (elt (tray-vicons tray) (- pos hcard)))
 	  (t (elt (tray-hicons tray) pos)))))
 
-(defun icon->pos (tray icon)
+(defun pos-from-icon (tray icon)
   "Returns the position of ICON socket on TRAY, as intended in
 `icon-at-pos'."
   (position icon (append (tray-hicons tray) (tray-vicons tray))
@@ -428,7 +428,7 @@ on the TRAY state - if MAP-P is T."
 		  :test #'xlib:window-equal))
     (tray-update-icon-data tray icon-socket (not visibility))
     (tray-update tray) 
-    (setf (tray-curpos tray) (icon->pos tray icon-socket))))
+    (setf (tray-curpos tray) (pos-from-icon tray icon-socket))))
 
 (defun set-hiwin-visibility (tray visibility)
   "Show or hides the hidden icons embedded in TRAY, if VISIBILITY is
@@ -477,7 +477,7 @@ instead of its current position in the list."
 		     (client-wm-class icon-socket) (client-wm-class neighbor-socket)
 		     :test #'string=)))
   (tray-update tray)
-  (setf (tray-curpos tray) (icon->pos tray icon-socket)))
+  (setf (tray-curpos tray) (pos-from-icon tray icon-socket)))
 
 (defun move-icon-left (tray)
   "Moves the icon embedded in ICON-SOCKET to the left."

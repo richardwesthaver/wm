@@ -21,7 +21,7 @@
     (dolist (mod (cdr desc))
       (push mod args)
       (push t args))
-    (apply 'wm::make-key (nreverse args))))
+    (apply 'kbd:make-key (nreverse args))))
 
 (defmacro expect-key (kbd &key to-be)
   `(isequalp (wm::parse-key ,kbd) (expand-key-description ,@to-be)))
@@ -175,7 +175,7 @@ manager."
              (when map-p
                (sleep 1)))
            (convert (s)
-             (map '(vector xlib:card8) #'xlib:char->card8 s)))
+             (map '(vector xlib:card8) #'xlib:card8-from-char s)))
     (let* ((dpy (xlib:open-default-display))
            (screen (first (xlib:display-roots dpy)))
            (root (xlib:screen-root screen))

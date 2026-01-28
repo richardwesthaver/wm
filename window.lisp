@@ -295,7 +295,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
 
 (defun safely-decode-x11-string (string)
   (handler-case
-      (map 'string 'xlib:card8->char string)
+      (map 'string 'xlib:char-from-card8 string)
     (type-error () nil)))
 
 (defun xwin-wm-name (win)
@@ -706,15 +706,15 @@ and bottom_end_x."
               (or (not (key-alt key)) (modifiers-alt *modifiers*))
               (or (not (key-hyper key)) (modifiers-hyper *modifiers*))
               (or (not (key-super key)) (modifiers-super *modifiers*)))))
-    (loop for code in (multiple-value-list (xlib:keysym->keycodes *display* (key-keysym key)))
+    (loop for code in (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key)))
           ;; some keysyms aren't mapped to keycodes so just ignore them.
           when (and code (key-modifiers-exist-p key))
           do
           ;; Some keysyms, such as upper case letters, need the
           ;; shift modifier to be set in order to grab properly.
              (let ((key
-                     (if (and (not (eql (key-keysym key) (xlib:keycode->keysym *display* code 0)))
-                              (eql (key-keysym key) (xlib:keycode->keysym *display* code 1)))
+                     (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
+                              (eql (key-sym key) (xlib:keysym-from-keycode *display* code 1)))
                          (add-shift-modifier key)
                          key)))
                (xlib:grab-key w code
@@ -734,7 +734,7 @@ and bottom_end_x."
 (defun xwin-grab-keys (win group)
   (dolist (map (deref-keymaps (top-maps group)))
     (dolist (i map)
-      (xwin-grab-key win (binding-key i)))))
+      (xwin-grab-key win (keybind-key i)))))
 
 (defun grab-keys-on-window (win)
   (xwin-grab-keys (window-xwin win) (window-group win)))
@@ -1199,10 +1199,10 @@ formatting. This is a simple wrapper around the command WINDOWLIST."
                                  (keysym-from-name "TAB"))
                                 ((char= ch #\Newline)
                                  (keysym-from-name "RET"))
-                                (t (first (xlib:character->keysyms ch *display*))))))
+                                (t (first (xlib:keysyms-from-character ch *display*))))))
                  (when sym
                    (send-fake-key window
-                                  (make-key :keysym sym)))))
+                                  (make-key :sym sym)))))
          string)))
 
 (defcommand mark (&optional (win (current-window)) (message t))

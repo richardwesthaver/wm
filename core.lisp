@@ -12,10 +12,10 @@
 
 ;;; keyboard helper functions
 (defun key-to-keycode+state (key)
-  (let ((code (xlib:keysym->keycodes *display* (key-keysym key))))
-    (cond ((eq (xlib:keycode->keysym *display* code 0) (key-keysym key))
+  (let ((code (xlib:keycodes-from-keysym *display* (key-sym key))))
+    (cond ((eq (xlib:keysym-from-keycode *display* code 0) (key-sym key))
            (values code (x11-mods key)))
-          ((eq (xlib:keycode->keysym *display* code 1) (key-keysym key))
+          ((eq (xlib:keysym-from-keycode *display* code 1) (key-sym key))
            (values code (apply 'xlib:make-state-mask
                                (cons :shift (xlib:make-state-keys (x11-mods key))))))
           (t

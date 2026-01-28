@@ -51,7 +51,7 @@
     (remap-keys-grab-keys new-focus)))
 
 (defun remap-keys-event-handler (code state)
-  (let* ((raw-key (code-state->key code state))
+  (let* ((raw-key (key-from-code-state code state))
          (window (current-window))
          (keymap (when window
                    (cdr (find-remap-keys-by-window window))))

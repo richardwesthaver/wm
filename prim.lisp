@@ -70,7 +70,7 @@ appear for. This must be an integer. If falsy, default to *timeout-wait*.")
 
 ;;; Hooks
 (defhook *wm-hooks*
-    ((:command-mode-start *command-mode-start-hook* 
+    ((:command-mode-start *command-mode-start-hook*
       '(command-mode-start-message)
       "A hook called whenever command mode is started.")
      (:command-mode-end *command-mode-end-hook* '(command-mode-end-message)

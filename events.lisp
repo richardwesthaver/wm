@@ -167,7 +167,7 @@ The Caller is responsible for setting up the input focus."
   "Find the command mapped to the (code state) and return it."
   ;; KMAPS is a list of keymaps that may match the user's key sequence.
   (dformat 1 "Awaiting key ~a~%" kmaps)
-  (let* ((key (code-state->key code state))
+  (let* ((key (key-from-code-state code state))
          (key-seq (cons key key-seq))
          (bindings (mapcar (lambda (m)
                              (lookup-key m key))
@@ -424,6 +424,7 @@ converted to an atom is removed."
                   (+ x width) y))
 
 (define-wm-event-handler :exposure (window x y width height count)
+  (declare (ignore x y width height))
   (let (screen ml)
     (when (zerop count)
       (cond

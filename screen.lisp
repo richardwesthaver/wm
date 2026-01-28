@@ -315,7 +315,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                           :transform #'xlib:drawable-id)
     (xlib:change-property focus-window :_NET_WM_NAME
                           "wm"
-                          :string 8 :transform #'xlib:char->card8)
+                          :string 8 :transform #'xlib:card8-from-char)
 
     ;; _NET_CLIENT_LIST
     (xlib:change-property root :_NET_CLIENT_LIST
