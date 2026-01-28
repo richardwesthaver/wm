@@ -1155,7 +1155,7 @@ backward (counterclockwise)"
       ((:f) (rotate-stack-forward g h))
       ((:b) (rotate-stack-backward g h)))))
 
-(setq *command-class* 'wm-tiling-command)
+(setq *command-class* 'wm-tile-command)
 
 (defcommand swap-windows ()
   "Exchange two windows"

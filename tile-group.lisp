@@ -1126,7 +1126,7 @@ windows used to draw the numbers in. The caller must destroy them."
           (show-frame-indicator group))
         (wm-message "Cannot split smaller than minimum size."))))
 
-(setq *command-class* 'wm-tiling-command)
+(setq *command-class* 'wm-tile-command)
 
 (defcommand hsplit (&optional (ratio "1/2"))
 "Split the current frame into 2 side-by-side frames."

@@ -11,9 +11,13 @@
 
 (defkernel wm-command (command) ())
 ;; instead of requiring a :class slot, we just subclass wm-command for our groups (tiling, floating, and dynamic)
-(defkernel wm-tiling-command (wm-command) ())
-(defkernel wm-floating-command (wm-command) ())
-(defkernel wm-dynamic-command (wm-tiling-command) ())
+(defkernel wm-tile-command (wm-command) ())
+(defmethod command-class ((self wm-tile-command)) 'tile-group)
+(defkernel wm-float-command (wm-command) ())
+(defmethod command-class ((self wm-float-command)) 'float-group)
+(defkernel wm-dynamic-command (wm-tile-command) ())
+(defmethod command-class ((self wm-dynamic-command)) 'dynamic-group)
+
 (init :commands :name :wm :class 'wm-command :names t)
 
 (defvar *dynamic-command-blacklist* nil
@@ -78,9 +82,9 @@ only return active commands."
           (read-one-line (current-screen) prompt))
       (throw 'cmd :abort)))
 
-(define-command-type :y-or-n (input prompt)
+(define-command-type :y-or-n (prompt)
   (let* ((positive-responses '("y" t))
-         (s (or (read-arg input)
+         (s (or (read-arg *command-input*)
                 (read-one-line (current-screen) (concat prompt "(y/n): ")))))
     (member s positive-responses :test #'equalp)))
 
@@ -98,37 +102,37 @@ only return active commands."
         (throw 'cmd (format nil "No such symbol: ~a::~a."
                               (package-name pkg) var)))))
 
-(define-command-type :variable (input prompt)
-  (lookup-symbol (read-wm-arg input prompt)))
+(define-command-type :variable (prompt)
+  (lookup-symbol (read-wm-arg *command-input* prompt)))
 
-(define-command-type :function (input prompt)
+(define-command-type :function (prompt)
   (multiple-value-bind (sym pkg var)
-      (lookup-symbol (read-wm-arg input prompt))
+      (lookup-symbol (read-wm-arg *command-input* prompt))
     (if (fboundp sym)
         sym
         (throw 'cmd (format nil "The symbol ~A::~A is not bound to any function."
                               (package-name pkg) var)))))
 
-(define-command-type :command (input prompt)
-  (or (read-arg input)
+(define-command-type :command (prompt)
+  (or (read-arg *command-input*)
       (completing-read-screen (current-screen)
                        prompt
                        (wm-commands))))
 
-(define-command-type :key-seq (input prompt)
+(define-command-type :key-seq (prompt)
   (labels ((update (seq)
              (wm-message "~a ~{~a ~}"
                       prompt
                       (mapcar 'print-key (reverse seq)))))
-    (let ((rest (read-args input)))
-      (or (and rest (parse-key-seq rest))
+    (let ((rest (read-args *command-input*)))
+      (or (and rest (parse-wm-key-seq rest))
           ;; read a key sequence from the user
           (with-focus (screen-key-window (current-screen))
             (wm-message "~a" prompt)
             (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))))))))
 
-(define-command-type :window-number (input prompt)
-  (when-let ((n (or (read-arg input)
+(define-command-type :window-number (prompt)
+  (when-let ((n (or (read-arg *command-input*)
                (completing-read-screen (current-screen)
                                 prompt
                                 (mapcar 'window-map-number
@@ -139,44 +143,44 @@ only return active commands."
       (window-number win)
       (throw 'cmd "No such window."))))
 
-(define-command-type :number (input prompt)
-  (when-let ((n (or (read-arg input)
+(define-command-type :number (prompt)
+  (when-let ((n (or (read-arg *command-input*)
                     (read-one-line (current-screen) prompt))))
     (handler-case (parse-number n)
       (invalid-number (c)
         (declare (ignore c))
         (throw 'cmd "Number required.")))))
 
-(define-command-type :string (input prompt)
-  (or (read-arg input)
+(define-command-type :string (prompt)
+  (or (read-arg *command-input*)
       (read-one-line (current-screen) prompt)))
 
-(define-command-type :password (input prompt)
-  (or (read-arg input)
+(define-command-type :password (prompt)
+  (or (read-arg *command-input*)
       (read-one-line (current-screen) prompt :password t)))
 
-(define-command-type :key (input prompt)
-  (when-let ((s (or (read-arg input)
+(define-command-type :key (prompt)
+  (when-let ((s (or (read-arg *command-input*)
                (read-one-line (current-screen) prompt))))
     (kbd s)))
 
-(define-command-type :window-name (input prompt)
-  (or (read-arg input)
+(define-command-type :window-name (prompt)
+  (or (read-arg *command-input*)
       (completing-read-screen (current-screen) prompt
                        (mapcar 'window-name
                                (group-windows (current-group))))))
 
-(define-command-type :direction (input prompt)
+(define-command-type :direction (prompt)
   (let* ((values '(("up" :up)
                    ("down" :down)
                    ("left" :left)
                    ("right" :right)))
-         (string (read-wm-arg input prompt (mapcar 'first values)))
+         (string (read-wm-arg *command-input* prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
         (throw 'cmd "No matching direction."))))
 
-(define-command-type :gravity (input prompt)
+(define-command-type :gravity (prompt)
 "Set the current window's gravity."
   (let* ((values '(("center" :center)
                    ("top" :top)
@@ -187,7 +191,7 @@ only return active commands."
                    ("top-left" :top-left)
                    ("bottom-right" :bottom-right)
                    ("bottom-left" :bottom-left)))
-         (string (read-wm-arg input prompt (mapcar 'first values)))
+         (string (read-wm-arg *command-input* prompt (mapcar 'first values)))
          (gravity (second (assoc string values :test 'string-equal))))
     (or gravity
         (throw 'cmd "No matching gravity."))))
@@ -206,18 +210,18 @@ only return active commands."
           (find-if #'match-whole (screen-groups screen))
           (find-if #'match-partial (screen-groups screen))))))
 
-(define-command-type :group (input prompt)
+(define-command-type :group (prompt)
   (let ((match (select-group (current-screen)
-                             (or (read-arg input)
+                             (or (read-arg *command-input*)
                                  (completing-read-screen (current-screen) prompt
                                                   (mapcar 'group-name
                                                           (screen-groups (current-screen))))))))
     (or match
         (throw 'cmd "No such group."))))
 
-(define-command-type :frame (input prompt)
+(define-command-type :frame (prompt)
   (declare (ignore prompt))
-  (if-let ((arg (read-arg input)))
+  (if-let ((arg (read-arg *command-input*)))
     (or (find arg (group-frames (current-group))
               :key (lambda (f)
                      (string (get-frame-number-translation f)))
@@ -226,60 +230,18 @@ only return active commands."
     (or (choose-frame-by-number (current-group))
         (throw 'cmd :abort))))
 
-(define-command-type :shell (input prompt)
+(define-command-type :shell (prompt)
   (declare (ignore prompt))
   (let ((prompt (format nil "~A -c " *shell-program*))
         (*input-history* *input-shell-history*))
     (unwind-protect
-         (or (read-args input)
+         (or (read-args *command-input*)
              (completing-read-screen (current-screen) prompt 'complete-program))
       (setf *input-shell-history* *input-history*))))
 
-(define-command-type :rest (input prompt)
-  (or (read-args input)
+(define-command-type :rest (prompt)
+  (or (read-args *command-input*)
       (read-one-line (current-screen) prompt)))
-
-(defun call-interactively (command &optional (input ""))
-  "Parse the command's arguments from input given the command's
-argument specifications then execute it. Returns a string or nil if user
-aborted."
-  (declare (type (or string symbol) command)
-           (type (or string argument-line) input))
-  ;; Catch parse errors
-  (catch 'error
-    (let* ((arg-line (if (stringp input)
-                         (make-argument-line :string input
-                                             :start 0)
-                         input))
-           (cmd-data (or (get-command command)
-                         (throw 'cmd (format nil "Command '~a' not found." command))))
-           (arg-specs (command-args cmd-data))
-           (args (loop for spec in arg-specs
-                    collect (let* ((type (if (listp spec)
-                                             (first spec)
-                                             spec))
-                                   (prompt (when (listp spec)
-                                             (second spec)))
-                                   (fn (gethash type *command-types*)))
-                              (unless fn
-                                (throw 'cmd (format nil "Bad argument type: ~s" type)))
-                              ;; If the prompt is NIL then it's
-                              ;; considered an optional argument and
-                              ;; we shouldn't prompt for it if the
-                              ;; arg line is empty.
-                              (if (and (null prompt)
-                                       (argument-line-end-p arg-line))
-                                  (loop-finish)
-                                  (funcall fn arg-line prompt))))))
-      ;; Did the whole string get parsed?
-      (unless (or (argument-line-end-p arg-line)
-                  (position-if 'alphanumericp (argument-line-string arg-line) :start (argument-line-start arg-line)))
-        (throw 'cmd (format nil "Trailing garbage: ~{~A~^ ~}" (subseq (argument-line-string arg-line)
-                                                                        (argument-line-start arg-line)))))
-      ;; Success
-      (prog1
-          (apply (command-name cmd-data) args)
-        (setf *last-command* command)))))
 
 (defcommand colon (&optional initial-input)
   "Read a command from the user with optional INITIAL-TEXT. When

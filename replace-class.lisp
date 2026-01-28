@@ -83,3 +83,6 @@
                 (format s "Change class to ~A, removing all mixins" new))
       (apply #'change-class object new rest)))
   object)
+
+(save :commands :wm)
+(reset :commands)
