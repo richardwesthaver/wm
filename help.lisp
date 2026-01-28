@@ -64,7 +64,7 @@ which-key window. Two arguments will be passed to this formatter:
                         (print-key-seq key-seq)
                         (or (columnize data cols) '("(EMPTY MAP)")))))
 
-(defcommand commands ()
+(defcommand list-commands ()
   "List all available commands."
   (let* ((screen (current-screen))
          (data (wm-commands))

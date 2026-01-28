@@ -6,7 +6,7 @@
 (in-package :wm/tests)
 (defsuite :wm)
 (in-suite :wm)
-
+(xkb:load-xkbcommon)
 (defvar *display-string* ":0")
 (defvar *dpy* nil)
 (defvar *screen* nil)
@@ -17,7 +17,7 @@
      ,@body))
 
 (defun expand-key-description (&rest desc)
-  (let ((args (list (car desc) :keysym)))
+  (let ((args (list (car desc) :sym)))
     (dolist (mod (cdr desc))
       (push mod args)
       (push t args))
@@ -32,7 +32,7 @@
   (expect-key "C-s-l" :to-be (108 :control :super))
   (expect-key "C--" :to-be (45 :control))
   (expect-key "-" :to-be (45))
-  (signals wm::kbd-parse-error (wm::parse-key "C-")))
+  (signals io/kbd::kbd-parse-error (wm::parse-key "C-")))
 
 (deftest test-bar ()
   (is (= 3 (count #\X (bar 60 5 #\X #\= ) :test #'char=)))

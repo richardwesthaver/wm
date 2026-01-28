@@ -281,7 +281,7 @@ frame."
             (frame-raise-window group (window-frame nw) nw))
         (wm-message "No other window."))))
 
-(defcommand (pull-window-by-number tile-group) (n &optional (group (current-group)))
+(defcommand pull-window-by-number (n &optional (group (current-group)))
   "Pull window N from another frame into the current frame and focus it."
   (declare (interactive (window-number "Pull: ")))
   (let ((win (find n (group-windows group) :key 'window-number :test '=)))
@@ -314,24 +314,26 @@ current frame and raise it."
         (frame-raise-window group (window-frame win) win)
         (echo-string (group-screen group) "No other window."))))
 
-(defcommand (pull-hidden-next tile-group) ()
+(setq *command-class* 'wm-tile-command)
+
+(defcommand pull-hidden-next ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
     (focus-forward group (only-tile-windows (sort-windows group)) t
                    (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
-(defcommand (pull-hidden-previous tile-group) ()
+(defcommand pull-hidden-previous ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
     (focus-forward group (nreverse (only-tile-windows (sort-windows group))) t
                    (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
-(defcommand (pull-hidden-other tile-group) ()
+(defcommand pull-hidden-other ()
 "Pull the last focused, hidden window into the current frame."
   (let ((group (current-group)))
     (pull-other-hidden-window group)))
 
-(defcommand (pull-from-windowlist tile-group) (&optional (fmt *window-format*))
+(defcommand pull-from-windowlist (&optional (fmt *window-format*))
   "Pulls a window selected from the list of windows.
 This allows a behavior similar to Emacs' switch-to-buffer
 when selecting another window."
@@ -354,7 +356,7 @@ when selecting another window."
       (pull-window win2 f1)
       (focus-frame (window-group win1) f2))))
 
-(defcommand (exchange-direction tile-group) (dir &optional (win (current-window)))
+(defcommand exchange-direction (dir &optional (win (current-window)))
   "Exchange the current window (by default) with the top window of the frame in specified direction. (bound to 'C-t x' by default)
 - up
 - down
@@ -370,7 +372,7 @@ when selecting another window."
       (wm-message "No window in current frame!")))
 
 
-(defcommand (echo-frame-windows tile-group) (&optional (fmt *window-format*))
+(defcommand echo-frame-windows (&optional (fmt *window-format*))
   "Display a list of all the windows in the current frame."
   (declare (interactive rest))
   (echo-windows fmt (current-group) (frame-windows (current-group)
@@ -378,7 +380,7 @@ when selecting another window."
 
 (command-alias :frame-windows :echo-frame-windows)
 
-(defcommand (gravity tile-group) (gravity)
+(defcommand gravity (gravity)
   "Set a window's gravity within its frame. Gravity controls where the
 window will appear in a frame if it is smaller that the
 frame. Possible values are:
@@ -397,7 +399,7 @@ frame. Possible values are:
     (setf (window-gravity (current-window)) gravity)
     (maximize-window (current-window))))
 
-(defcommand (pull-marked tile-group) ()
+(defcommand pull-marked ()
 "Pull all marked windows into the current frame and clear the marks."
   (let ((group (current-group)))
     (dolist (i (marked-windows group))
@@ -421,12 +423,12 @@ frame. Possible values are:
                 :role (and (not (equal role "")) role))
           *window-placement-rules*)))
 
-(defcommand (remember tile-group) (lock title)
+(defcommand remember (lock title)
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
   (declare (interactive (y-or-n "Lock to group? ") (y-or-n "Use title? ")))
   (make-rule-for-window (current-window) lock title))
 
-(defcommand (forget tile-group) ()
+(defcommand forget ()
   "Forget the window placement rule that matches the current window."
   (let* ((window (current-window))
          (match (rule-matching-window window)))
@@ -436,21 +438,21 @@ frame. Possible values are:
           (wm-message "Rule forgotten."))
         (wm-message "No matching rule."))))
 
-(defcommand (dump-window-placement-rules tile-group) (file)
+(defcommand dump-window-placement-rules (file)
   "Dump *window-placement-rules* to FILE."
   (declare (interactive (rest "Filename: ")))
   (dump-to-file *window-placement-rules* file))
 
 (command-alias :dump-rules :dump-window-placement-rules)
 
-(defcommand (restore-window-placement-rules tile-group) (file)
+(defcommand restore-window-placement-rules (file)
   "Restore *window-placement-rules* from FILE."
   (declare (interactive (rest "Filename: ")))
   (setf *window-placement-rules* (read-dump-from-file file)))
 
 (command-alias :restore-rules :restore-window-placement-rules)
 
-(defcommand (redisplay tile-group) ()
+(defcommand redisplay ()
   "Refresh current window by a pair of resizes, also make it occupy entire frame."
   (let ((window (current-window)))
     (when window
@@ -471,7 +473,7 @@ frame. Possible values are:
                                                 (window-height-inc window)))))
       (maximize-window window)))))
 
-(defcommand (unmaximize tile-group) (&optional (window (current-window)))
+(defcommand unmaximize (&optional (window (current-window)))
   "Use the size the program requested for current window (if any) instead of maximizing it."
   (declare (interactive rest))
   (let ((status (not (window-normal-size window)))
