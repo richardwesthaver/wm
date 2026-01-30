@@ -28,9 +28,9 @@
 
 (defun float-window-modifier ()
   "Convert the *FLOAT-WINDOW-MODIFIER* to its corresponding X11."
-  (when-let ((fn (find-symbol (concat "MODIFIERS-" (symbol-name *float-window-modifier*))
-                              (find-package "WM"))))
-    (funcall fn *modifiers*)))
+  (when-let ((fn (find-symbol (concat "KEYMOD-" (symbol-name *float-window-modifier*))
+                              (find-package "KBD"))))
+    (funcall fn *xkeymod*)))
 
 ;; some book keeping functions
 (defmethod (setf window-x) :before (val (window float-window))
@@ -395,7 +395,7 @@
                          (:configure-notify t)
                          (:exposure t)
                          (t nil))))
-              (xlib:grab-pointer (screen-root screen) '(:button-release :pointer-motion))
+              (xlib:grab-pointer (wm-screen-root screen) '(:button-release :pointer-motion))
               (unwind-protect
                    ;; Wait until the mouse button is released
                    (loop for ev = (xlib:process-event *display*

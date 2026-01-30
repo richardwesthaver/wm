@@ -204,7 +204,7 @@
 (defcommand refresh-heads (&optional (screen (current-screen))) ()
   "Refresh screens in case a monitor was connected, but a
   ConfigureNotify event was snarfed by another program."
-  (head-force-refresh screen (make-screen-heads screen (screen-root screen))))
+  (head-force-refresh screen (make-screen-heads screen (wm-screen-root screen))))
 
 (defun orphaned-frames (screen)
   "Returns a list of frames on a screen not associated with any group.

@@ -22,10 +22,15 @@
 ((default (build))
  (build ()
   (with-core (:quit t :input t)
+   ;; pre-load hooks
+   (asdf:load-system :core)
+   (funcall (find-symbol "LOAD-XKBCOMMON" :xkb)) ; requires xkbcommon.so
+   (asdf:load-system :xlib)
    (asdf:load-system :wm)
+   ;; (asdf:load-system :util)
+   ;; (asdf:load-system :modeline)
    (in-package :wm-user)
    ;; post-load hooks
-   (funcall (find-symbol "LOAD-XKBCOMMON" :xkb)) ; requires xkbcommon.so
    (sb-ext:save-lisp-and-die 
     ".stash/wm" 
     :toplevel (find-symbol "START-WM" :wm)

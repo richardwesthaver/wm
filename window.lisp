@@ -12,32 +12,33 @@
 (defvar *default-window-name* "Unnamed"
   "The name given to a window that does not supply its own name.")
 
-(define-wm-class window ()
-  ((xwin    :initarg :xwin    :accessor window-xwin)
-   (width   :initarg :width   :accessor window-width)
-   (height  :initarg :height  :accessor window-height)
-   ;; these are only used to hold the requested map location.
-   (x       :initarg :x       :accessor window-x)
-   (y       :initarg :y       :accessor window-y)
-   (gravity :initform nil     :accessor window-gravity)
-   (group   :initarg :group   :accessor window-group)
-   (number  :initarg :number  :accessor window-number)
-   (parent                    :accessor window-parent)
-   (title   :initarg :title   :accessor window-title)
-   (user-title :initform nil  :accessor window-user-title)
-   (class   :initarg :class   :accessor window-class)
-   (type    :initarg :type    :accessor window-type)
-   (res     :initarg :res     :accessor window-res)
-   (role    :initarg :role    :accessor window-role)
-   (unmap-ignores :initarg :unmap-ignores :accessor window-unmap-ignores)
-   (state   :initarg :state   :accessor window-state)
-   (normal-hints :initarg :normal-hints :accessor window-normal-hints)
-   (marked  :initform nil     :accessor window-marked)
-   (plist   :initarg :plist   :accessor window-plist)
-   (fullscreen :initform nil  :accessor window-fullscreen)))
+(eval-always
+  (define-wm-class window ()
+    ((xwin    :initform nil :initarg :xwin    :accessor window-xwin)
+     (width   :initarg :width   :accessor window-width)
+     (height  :initarg :height  :accessor window-height)
+     ;; these are only used to hold the requested map location.
+     (x       :initarg :x       :accessor window-x)
+     (y       :initarg :y       :accessor window-y)
+     (gravity :initform nil     :accessor window-gravity)
+     (group   :initarg :group   :accessor window-group)
+     (number  :initarg :number  :accessor window-number)
+     (parent                    :accessor window-parent)
+     (title   :initform nil :initarg :title   :accessor window-title)
+     (user-title :initform nil  :accessor window-user-title)
+     (class   :initarg :class   :accessor window-class)
+     (type    :initarg :type    :accessor window-type)
+     (res     :initarg :res     :accessor window-res)
+     (role    :initarg :role    :accessor window-role)
+     (unmap-ignores :initarg :unmap-ignores :accessor window-unmap-ignores)
+     (state   :initarg :state   :accessor window-state)
+     (normal-hints :initarg :normal-hints :accessor window-normal-hints)
+     (marked  :initform nil     :accessor window-marked)
+     (plist   :initarg :plist   :accessor window-plist)
+     (fullscreen :initform nil  :accessor window-fullscreen))))
 
 (defmethod print-wm-object ((object window) stream)
-  (format stream "WINDOW ~s #x~x" (window-name object) (window-id object)))
+  (format stream "WINDOW~@[ ~s~] #x~x" (window-name object) (window-id object)))
 
 ;;; Window Management API
 
@@ -56,7 +57,6 @@ may need to sync itself. WHAT-CHANGED is a hint at what changed."))
   (:documentation "Report what window the head is currently on."))
 (defgeneric really-raise-window (window)
   (:documentation "Really bring the window to the top of the window stack in group"))
-
 
 (defmethod window-group :around ((window window))
   (if (find window *always-show-windows*)
@@ -146,7 +146,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
   (remove-if-not 'window-modal-p (copy-list windows)))
 
 (defun x-of (window filter)
-  (let* ((root (screen-root (window-screen window)))
+  (let* ((root (wm-screen-root (window-screen window)))
          (root-id (xlib:drawable-id root))
          (win-id (xlib:window-id (window-xwin window))))
     (loop for w in (funcall filter (window-gang window))
@@ -170,7 +170,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
 
 (defun shadows-of (window)
   "Given modal window WINDOW return the list of windows in its shadow."
-  (let* ((root (screen-root (window-screen window)))
+  (let* ((root (wm-screen-root (window-screen window)))
          (root-id (xlib:drawable-id root))
          (tr (window-transient-for window)))
     (cond
@@ -209,7 +209,9 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
       *default-window-name*))
 
 (defun window-id (window)
-  (xlib:window-id (window-xwin window)))
+  ;; WINDOW-XWIN undefined when using WHEN-LET? investigate..
+  (when (window-xwin window)
+    (xlib:window-id (window-xwin window))))
 
 (defun window-in-current-group-p (window)
   (or
@@ -613,7 +615,7 @@ and bottom_end_x."
   (let ((screen (group-screen group)))
     (mapcar (lambda (f)
               (let ((w (xlib:create-window
-                        :parent (screen-root screen)
+                        :parent (wm-screen-root screen)
                         :x (window-x f)
                         :y (window-y  f)
                         :width 1
@@ -639,7 +641,7 @@ and bottom_end_x."
   ;; says.
   (let* ((xwin (window-xwin window))
          (master-window (xlib:create-window
-                         :parent (screen-root screen)
+                         :parent (wm-screen-root screen)
                          :x (xlib:drawable-x (window-xwin window))
                          :y (xlib:drawable-y (window-xwin window))
                          :width (window-width window)
@@ -665,9 +667,9 @@ and bottom_end_x."
 
 (defun process-existing-windows (screen)
   "Windows present when WM starts up must be absorbed by WM."
-  (let ((children (xlib:query-tree (screen-root screen)))
+  (let ((children (xlib:query-tree (wm-screen-root screen)))
         (*processing-existing-windows* t)
-        (stacking (xlib:get-property (screen-root screen) :_NET_CLIENT_LIST_STACKING :type :window)))
+        (stacking (xlib:get-property (wm-screen-root screen) :_NET_CLIENT_LIST_STACKING :type :window)))
     (when stacking
       (dformat 3 "Using window stacking: ~{~X ~}~%" stacking)
       ;; sort by _NET_CLIENT_LIST_STACKING
@@ -702,18 +704,18 @@ and bottom_end_x."
                key))
            (key-modifiers-exist-p (key)
              (and
-              (or (not (key-meta key)) (modifiers-meta *modifiers*))
-              (or (not (key-alt key)) (modifiers-alt *modifiers*))
-              (or (not (key-hyper key)) (modifiers-hyper *modifiers*))
-              (or (not (key-super key)) (modifiers-super *modifiers*)))))
-    (loop for code in (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key)))
+              (or (not (key-meta key)) (keymod-meta *xkeymod*))
+              (or (not (key-alt key)) (keymod-alt *xkeymod*))
+              (or (not (key-hyper key)) (keymod-hyper *xkeymod*))
+              (or (not (key-super key)) (keymod-super *xkeymod*)))))
+    (loop for code in (dprint (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key))))
           ;; some keysyms aren't mapped to keycodes so just ignore them.
           when (and code (key-modifiers-exist-p key))
           do
           ;; Some keysyms, such as upper case letters, need the
           ;; shift modifier to be set in order to grab properly.
              (let ((key
-                     (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
+                     (if (and (not (eql (key-sym key) (dprint (xlib:keysym-from-keycode *display* code 0))))
                               (eql (key-sym key) (xlib:keysym-from-keycode *display* code 1)))
                          (add-shift-modifier key)
                          key)))
@@ -722,19 +724,20 @@ and bottom_end_x."
                               :sync-pointer-p nil :sync-keyboard-p nil)
                ;; Ignore capslock and numlock by also grabbing the
                ;; keycombos with them on.
-               (xlib:grab-key w code :modifiers (x11-mods key nil t) :owner-p t
+               (xlib:grab-key w code :modifiers (x11-mods key t) :owner-p t
                                      :sync-keyboard-p nil :sync-keyboard-p nil)
-               (when (modifiers-numlock *modifiers*)
+               (when (keymod-numlock *xkeymod*)
                  (xlib:grab-key w code
-                                :modifiers (x11-mods key t nil) :owner-p t
+                                :modifiers (cons :numlock (x11-mods key)) :owner-p t
                                 :sync-pointer-p nil :sync-keyboard-p nil)
-                 (xlib:grab-key w code :modifiers (x11-mods key t t) :owner-p t
+                 (xlib:grab-key w code :modifiers (cons :numlock (x11-mods key t)) :owner-p t
                                        :sync-keyboard-p nil :sync-keyboard-p nil))))))
 
 (defun xwin-grab-keys (win group)
-  (dolist (map (deref-keymaps (top-maps group)))
-    (dolist (i map)
-      (xwin-grab-key win (keybind-key i)))))
+  (dolist (map (deref-keymaps (top-maps group))) ;; vector -> list
+    (dformat 1 "Grabbing keymaps ~A" map)
+    (sb-int:dovector (i map)
+      (xwin-grab-key win (dprint (keybind-key i))))))
 
 (defun grab-keys-on-window (win)
   (xwin-grab-keys (window-xwin win) (window-group win)))
@@ -907,7 +910,7 @@ needed."
     ;; lame workaround to fix bug where non-focused window doesn't
     ;; listen unless an event is caught by the listener. In this case
     ;; a fake click is sent.
-    (xlib-fake-click (screen-root screen) (screen-focus-window screen) 1)
+    (xlib-fake-click (wm-screen-root screen) (screen-focus-window screen) 1)
     (when (eq group (screen-current-group screen))
       (xlib:set-input-focus *display* (screen-focus-window screen) :POINTER-ROOT)
       (setf (screen-focus screen) nil)
@@ -1199,7 +1202,7 @@ formatting. This is a simple wrapper around the command WINDOWLIST."
                                  (keysym-from-name "TAB"))
                                 ((char= ch #\Newline)
                                  (keysym-from-name "RET"))
-                                (t (first (xlib:keysyms-from-character ch *display*))))))
+                                (t (first (xlib:xkeysyms-from-character ch *display*))))))
                  (when sym
                    (send-fake-key window
                                   (make-key :sym sym)))))

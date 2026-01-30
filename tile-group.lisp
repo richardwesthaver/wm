@@ -1049,7 +1049,7 @@ desktop when starting."
 (defun draw-frame-outline (group f tl br)
   "Draw an outline around FRAME."
   (let* ((screen (group-screen group))
-         (win (if (frame-window f) (window-xwin (frame-window f)) (screen-root screen)))
+         (win (if (frame-window f) (window-xwin (frame-window f)) (wm-screen-root screen)))
          (width (screen-frame-outline-width screen))
          (gc (screen-frame-outline-gc screen))
          (halfwidth (/ width 2)))
@@ -1079,7 +1079,7 @@ desktop when starting."
 
 (defun clear-frame-outlines (group)
   "Clear the outlines drawn with DRAW-FRAME-OUTLINES."
-  (xlib:clear-area (screen-root (group-screen group))))
+  (xlib:clear-area (wm-screen-root (group-screen group))))
 
 (defun draw-frame-numbers (group)
   "Draw the number of each frame in its corner. Return the list of
@@ -1088,7 +1088,7 @@ windows used to draw the numbers in. The caller must destroy them."
     (prog1
         (mapcar (lambda (f)
                   (let ((w (xlib:create-window
-                            :parent (screen-root screen)
+                            :parent (wm-screen-root screen)
                             :x (frame-display-x group f)
                             :y (frame-display-y group f)
                             :width 1 :height 1

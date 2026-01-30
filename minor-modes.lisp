@@ -42,9 +42,6 @@ this class."))
   "A dynamic variable holding all unscoped minor modes as mixed into the same
 object.")
 
-(defvar *active-global-minor-modes* ()
-  "A list of all currently active global minor modes.")
-
 ;;; Sync Keys
 (defun minor-mode-sync-keys-hook-function (&rest rest)
   (declare (ignore rest))
@@ -103,7 +100,7 @@ object.")
   (:method (mode) (declare (ignore mode)) nil))
 
 (defgeneric minor-mode-scope (minor-mode-symbol)
-  (:documentation "Return as a keyword the scope of the minor mode"))
+  (:documentation "Return as a keyword indicating the scope of the minor mode"))
 
 (defgeneric minor-mode-keymap (minor-mode)
   (:method (minor-mode) nil)
@@ -288,7 +285,7 @@ modes are enabled in them, then nullify the list of objects."
   ;; This functions is needed because calling autoenable-minor-mode from within
   ;; a method that accesses slots is implied to be undefined behavior, so we
   ;; cant do this from within initialize-instance.
-  (let ((objects (prog1 (wm-class-new-objects (current-screen))
+  (let ((objects (when (wm-class-new-objects (current-screen))
                    (setf (wm-class-new-objects (current-screen)) nil))))
     (when (and objects *active-global-minor-modes*)
       (map nil #'sync-minor-modes objects))))
@@ -303,6 +300,7 @@ modes."
   "List all minor modes followed by the major mode for OBJECT."
   (sync-all-minor-modes)
   (when (typep object 'mixin-object)
+    ;; a minor-mode's name is the name of its class
     (mapcar #'class-name (mixin-classes (class-of object)))))
 
 (defun list-minor-modes (object)

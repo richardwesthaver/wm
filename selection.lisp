@@ -21,7 +21,7 @@
 (defun export-selection (selection)
   (let* ((screen (current-screen))
          (selwin (screen-focus-window (current-screen)))
-         (root (screen-root screen)))
+         (root (wm-screen-root screen)))
     (xlib:set-selection-owner *display* selection selwin)
     (unless (xlib:window-equal (xlib:selection-owner *display* selection) selwin)
       (error "Can't set selection owner"))

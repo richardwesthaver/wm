@@ -46,7 +46,7 @@ HEIGHT are subtracted."
         (setf width (+ width *outer-gaps-size*)))
     (values x y width height)))
 
-(defun wm::maximize-window (win)
+(defun gap-maximize-window (win)
   "Redefined gaps aware maximize function."
   (multiple-value-bind (x y wx wy width height border stick)
       (wm::geometry-hints win)
@@ -55,7 +55,6 @@ HEIGHT are subtracted."
           (frame (wm::window-frame win)))
       (if (apply-gaps-p win)
           (multiple-value-setq (ox oy ow oh) (gaps-offsets win)))
-
       ;; Only do width or height subtraction if result will be positive,
       ;; otherwise WM will crash. Also, only modify window dimensions
       ;; if needed (i.e. window at least fills frame minus gap).
@@ -65,10 +64,8 @@ HEIGHT are subtracted."
       (when (and (< oh height)
                  (>= height (- (wm::frame-display-height (window-group win) frame) oh)))
         (setf height (- height oh)))
-
       (setf x (+ x ox)
             y (+ y oy))
-
       ;; This is the only place a window's geometry should change
       (set-window-geometry win :x wx :y wy :width width :height height :border-width 0)
       (xlib:with-state ((window-parent win))
@@ -103,11 +100,11 @@ HEIGHT are subtracted."
 
 (defun reset-all-windows ()
   "Reset the size for all tiled windows"
-  (mapcar #'wm::maximize-window
+  (mapcar #'gap-maximize-window
           (wm::only-tile-windows (wm:screen-windows (current-screen)))))
 
 ;; Redefined neighbour for working with head gaps
-(defun wm::neighbour (direction frame frameset)
+(defun gap-neighbour (direction frame frameset)
   "Returns the best neighbour of FRAME in FRAMESET on the DIRECTION edge.
    Valid directions are :UP, :DOWN, :LEFT, :RIGHT.
    eg: (NEIGHBOUR :UP F FS) finds the frame in FS that is the 'best'

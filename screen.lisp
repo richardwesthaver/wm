@@ -24,10 +24,10 @@ identity with a range check."
           as e = (elt src i)
           as c = (if (characterp e) (char-code e) e)
           if (and (integerp c) (<= min c max))
-            do (setf (aref dst j) c)
+          do (setf (aref dst j) c)
           else
-            ;; replace unknown characters with question marks
-            do (setf (aref dst j) (char-code #\?))
+          ;; replace unknown characters with question marks
+          do (setf (aref dst j) (char-code #\?))
           finally (return i))))
 
 (defun screen-x (screen)
@@ -39,17 +39,17 @@ identity with a range check."
   0)
 
 (defun screen-height (screen)
-  (let ((root (screen-root screen)))
+  (let ((root (wm-screen-root screen)))
     (xlib:drawable-height root)))
 
 (defun screen-width (screen)
-  (let ((root (screen-root screen)))
+  (let ((root (wm-screen-root screen)))
     (xlib:drawable-width root)))
 
 (defun find-screen (root)
   "Return the screen containing the root window."
   (find-if (lambda (s)
-             (xlib:window-equal (screen-root s) root))
+             (xlib:window-equal (wm-screen-root s) root))
            *screen-list*))
 
 (defun screen-windows (screen)
@@ -69,7 +69,7 @@ identity with a range check."
 
 (defun netwm-update-client-list-stacking (screen)
   (unless *initializing*
-    (xlib:change-property (screen-root screen)
+    (xlib:change-property (wm-screen-root screen)
                           :_NET_CLIENT_LIST_STACKING
                           ;; Order is bottom to top.
                           (reverse (mapcar 'window-xwin (all-windows)))
@@ -78,7 +78,7 @@ identity with a range check."
                           :mode :replace)))
 
 (defun netwm-update-client-list (screen)
-  (xlib:change-property (screen-root screen)
+  (xlib:change-property (wm-screen-root screen)
                         :_NET_CLIENT_LIST
                         (screen-mapped-windows screen)
                         :window 32
@@ -124,7 +124,7 @@ identity with a range check."
   (when (eq (window-group window)
             (screen-current-group screen))
     (xlib:set-input-focus *display* (window-xwin window) :POINTER-ROOT)
-    (xlib:change-property (screen-root screen) :_NET_ACTIVE_WINDOW
+    (xlib:change-property (wm-screen-root screen) :_NET_ACTIVE_WINDOW
                           (list (window-xwin window))
                           :window 32
                           :transform #'xlib:drawable-id
@@ -156,7 +156,7 @@ identity with a range check."
   (dformat 3 "find-window-by-parent!~%")
   (find xwin windows :key 'window-parent :test 'xlib:window-equal))
 
-(defun screen-root (screen)
+(defun wm-screen-root (screen)
   (xlib:screen-root (screen-number screen)))
 
 (defun update-colors-for-screen (screen)
@@ -207,7 +207,7 @@ identity with a range check."
 (defmacro set-any-color (val color)
   `(progn (dolist (s *screen-list*)
             (setf (,val s) (alloc-color s ,color)))
-    (update-colors-all-screens)))
+          (update-colors-all-screens)))
 
 ;; FIXME: I don't like any of this. Isn't there a way to define
 ;; a setf method to call (update-colors-all-screens) when the user
@@ -286,7 +286,7 @@ there is more than one frame."
 (defmacro with-current-screen (screen &body body)
   "A macro to help us out with early set up."
   `(let ((*screen-list* (list ,screen)))
-    ,@body))
+     ,@body))
 
 (defun current-screen ()
   "Return the current screen."
@@ -297,7 +297,7 @@ there is more than one frame."
 FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
   (let* ((screen-number (screen-number screen))
          (focus-window (screen-focus-window screen))
-         (root (screen-root screen)))
+         (root (wm-screen-root screen)))
     ;; _NET_SUPPORTED
     (xlib:change-property root :_NET_SUPPORTED
                           (mapcar (lambda (a)
@@ -305,7 +305,6 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                                   (append +netwm-supported+
                                           (mapcar #'car +netwm-window-types+)))
                           :atom 32)
-
     ;; _NET_SUPPORTING_WM_CHECK
     (xlib:change-property root :_NET_SUPPORTING_WM_CHECK
                           (list focus-window) :window 32
@@ -316,155 +315,155 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
     (xlib:change-property focus-window :_NET_WM_NAME
                           "wm"
                           :string 8 :transform #'xlib:card8-from-char)
-
     ;; _NET_CLIENT_LIST
     (xlib:change-property root :_NET_CLIENT_LIST
                           () :window 32
                           :transform #'xlib:drawable-id)
-
     ;; _NET_DESKTOP_GEOMETRY
     (xlib:change-property root :_NET_DESKTOP_GEOMETRY
                           (list (xlib:screen-width screen-number)
                                 (xlib:screen-height screen-number))
                           :cardinal 32)
-
     ;; _NET_DESKTOP_VIEWPORT
     (xlib:change-property root :_NET_DESKTOP_VIEWPORT
                           (list 0 0) :cardinal 32)
-
     (netwm-set-group-properties screen)))
 
 (defun init-screen (screen-number id host)
   "Given a screen number, returns a screen structure with initialized members"
   ;; Listen for the window manager events on the root window
-  (dformat 1 "Initializing screen: ~a ~a~%" host id)
-  (setf (xlib:window-event-mask (xlib:screen-root screen-number))
-        '(:substructure-redirect
-          :substructure-notify
-          :property-change
-          :structure-notify
-          :button-press
-          :exposure))
-  (xlib:display-finish-output *display*)
-  ;; Initialize the screen structure
-  (labels ((ac (color)
-             ;; We add an alpha channel to the color returned by
-             ;; xlib:alloc-color. This is normally done by wm:alloc-color,
-             ;; but that requires a screen instance.
-             (logior (xlib:alloc-color (xlib:screen-default-colormap screen-number) color)
-                     (ash #xff 24))))
-    (let* ((default-colormap (xlib:screen-default-colormap screen-number))
-           (screen-root (xlib:screen-root screen-number))
-           (fg-color (ac +default-foreground-color+))
-           (bg-color (ac +default-background-color+))
-           (win-bg-color (ac +default-window-background-color+))
-           (border-color (ac +default-border-color+))
-           (focus-color (ac +default-focus-color+))
-           (unfocus-color (ac +default-unfocus-color+))
-           (float-focus-color (ac +default-float-focus-color+))
-           (float-unfocus-color (ac +default-float-unfocus-color+))
-           (font (open-font *display*
-                            (cond ((font-exists-p +default-font-name+)
-                                   +default-font-name+)
-                                  ((font-exists-p "fixed")
-                                   "fixed")
-                                  (t
-                                   "*"))))
-           (message-window (xlib:create-window :parent screen-root
-                                               :x 0 :y 0 :width 1 :height 1
-                                               :colormap default-colormap
-                                               :background bg-color
-                                               :border border-color
-                                               :border-width 1
-                                               :bit-gravity :north-east
-                                               :event-mask '(:exposure)))
-           (screen (make-wm-class-instance
-                    'screen
-                    :id id
-                    :host host
-                    :number screen-number
-                    :border-color border-color
-                    :fg-color fg-color
-                    :bg-color bg-color
-                    :win-bg-color win-bg-color
-                    :focus-color focus-color
-                    :unfocus-color unfocus-color
-                    :float-focus-color float-focus-color
-                    :float-unfocus-color float-unfocus-color
-                    :msg-border-width 1
-                    :frame-outline-width +default-frame-outline-width+
-                    :fonts (list font)
-                    :input-window (xlib:create-window
-                                   :parent screen-root
-                                   :x 0 :y 0 :width 20 :height 20
-                                   :colormap default-colormap
-                                   :background bg-color
-                                   :border border-color
-                                   :border-width 1
-                                   :event-mask '(:key-press :key-release))
-                    :focus-window (xlib:create-window
-                                   :parent screen-root
-                                   :x 0 :y 0 :width 1 :height 1)
-                    :key-window (xlib:create-window
-                                 :parent screen-root
-                                 :x 0 :y 0 :width 1 :height 1
-                                 :event-mask '(:key-press :key-release))
-                    :frame-window (xlib:create-window
-                                   :parent screen-root
-                                   :x 0 :y 0 :width 20 :height 20
-                                   :colormap default-colormap
-                                   :background bg-color
-                                   :border border-color
-                                   :border-width 1
-                                   :event-mask '(:exposure))
-                    :frame-outline-gc (xlib:create-gcontext
-                                       :drawable screen-root
-                                       :font (when (typep font 'xlib:font) font)
-                                       :foreground fg-color
-                                       :background fg-color
-                                       :line-style :double-dash
-                                       :line-width +default-frame-outline-width+)
-                    :message-cc (make-ccontext
-                                 :win message-window
-                                 :font font
-                                 :gc (xlib:create-gcontext
-                                      :drawable message-window
-                                      :font (when (typep font 'xlib:font) font)
-                                      :foreground fg-color
-                                      :background bg-color))))
-           (group (make-wm-class-instance 'tile-group
-                                           :screen screen
-                                           :number 1
-                                           :name *default-group-name*)))
-      (setf (screen-groups screen) (list group)
-            (screen-current-group screen) group
-            (ccontext-screen (screen-message-cc screen)) screen
-            (screen-heads screen) (make-screen-heads screen screen-root)
-            (tile-group-frame-tree group) (copy-heads screen)
-            (tile-group-current-frame group) (first (tile-group-frame-tree group))
-            (xlib:window-background screen-root) *default-bg-color*)
-      ;; The focus window is mapped at all times
-      (xlib:map-window (screen-focus-window screen))
-      (xlib:map-window (screen-key-window screen))
-      (netwm-set-properties screen)
-      (update-colors-for-screen screen)
-      (update-color-map screen)
-      (xwin-grab-keys (screen-focus-window screen) group)
-      screen)))
+  (declare (optimize (debug 3)))
+  (dformat 1 "Initializing screen: ~@[~a ~]~a ~a~%" (unless (sequence:emptyp host) host) id screen-number)
+  (let ((root (xlib:screen-root screen-number)))
+    (setf (xlib:window-event-mask (xlib:screen-root screen-number))
+          '(:substructure-redirect
+            :substructure-notify
+            :property-change
+            :structure-notify
+            :button-press
+            :exposure))
+    (xlib:display-finish-output *display*)
+    (dformat 1 "Initializing screen structures on root ~A~%" root)
+    ;; Initialize the screen structure
+    (labels ((ac (color)
+               ;; We add an alpha channel to the color returned by
+               ;; xlib:alloc-color. This is normally done by wm:alloc-color,
+               ;; but that requires a screen instance.
+               (logior (xlib:alloc-color (xlib:screen-default-colormap screen-number) color)
+                       (ash #xff 24))))
+      (let* ((default-colormap (dprint (xlib:screen-default-colormap screen-number)))
+             (fg-color (ac +default-foreground-color+))
+             (bg-color (ac +default-background-color+))
+             (win-bg-color (ac +default-window-background-color+))
+             (border-color (ac +default-border-color+))
+             (focus-color (ac +default-focus-color+))
+             (unfocus-color (ac +default-unfocus-color+))
+             (float-focus-color (ac +default-float-focus-color+))
+             (float-unfocus-color (ac +default-float-unfocus-color+))
+             (font (dprint (open-font *display*
+                              (cond ((font-exists-p +default-font-name+)
+                                     +default-font-name+)
+                                    ((font-exists-p "fixed")
+                                     "fixed")
+                                    (t
+                                     "*")))))
+             (message-window (dprint (xlib:create-window :parent root
+                                                 :x 0 :y 0 :width 1 :height 1
+                                                 :colormap default-colormap
+                                                 :background bg-color
+                                                 :border border-color
+                                                 :border-width 1
+                                                 :bit-gravity :north-east
+                                                 :event-mask '(:exposure))))
+             (screen (dprint (make-wm-class-instance
+                      'screen
+                      :id id
+                      :host host
+                      :number screen-number
+                      :border-color border-color
+                      :fg-color fg-color
+                      :bg-color bg-color
+                      :win-bg-color win-bg-color
+                      :focus-color focus-color
+                      :unfocus-color unfocus-color
+                      :float-focus-color float-focus-color
+                      :float-unfocus-color float-unfocus-color
+                      :msg-border-width 1
+                      :frame-outline-width +default-frame-outline-width+
+                      :fonts (list font)
+                      :input-window (dprint (xlib:create-window
+                                     :parent root
+                                     :x 0 :y 0 :width 20 :height 20
+                                     :colormap default-colormap
+                                     :background bg-color
+                                     :border border-color
+                                     :border-width 1
+                                     :event-mask '(:key-press :key-release)))
+                      :focus-window (dprint (xlib:create-window
+                                     :parent root
+                                     :x 0 :y 0 :width 1 :height 1))
+                      :key-window (dprint (xlib:create-window
+                                   :parent root
+                                   :x 0 :y 0 :width 1 :height 1
+                                   :event-mask '(:key-press :key-release)))
+                      :frame-window (dprint (xlib:create-window
+                                     :parent root
+                                     :x 0 :y 0 :width 20 :height 20
+                                     :colormap default-colormap
+                                     :background bg-color
+                                     :border border-color
+                                     :border-width 1
+                                     :event-mask '(:exposure)))
+                      :frame-outline-gc (dprint (xlib:create-gcontext
+                                         :drawable root
+                                         :font (when (typep font 'xlib:font) font)
+                                         :foreground fg-color
+                                         :background fg-color
+                                         :line-style :double-dash
+                                         :line-width +default-frame-outline-width+))
+                      :message-cc (dprint (make-ccontext
+                                   :win message-window
+                                   :font font
+                                   :gc (xlib:create-gcontext
+                                        :drawable message-window
+                                        :font (when (typep font 'xlib:font) font)
+                                        :foreground fg-color
+                                        :background bg-color))))))
+             (group (dprint (make-wm-class-instance 'tile-group
+                                            :screen screen
+                                            :number 1
+                                            :name *default-group-name*))))
+        (dformat 1 "Setting up groups on ~A~%" screen)
+        (setf (screen-groups screen) (list group)
+              (screen-current-group screen) group
+              (ccontext-screen (screen-message-cc screen)) screen
+              (screen-heads screen) (make-screen-heads screen root)
+              (tile-group-frame-tree group) (copy-heads screen)
+              (tile-group-current-frame group) (first (tile-group-frame-tree group))
+              (xlib:window-background root) *default-bg-color*)
+        (dformat 1 "Mapping focus and key windows on ~A~%" screen)
+        ;; The focus window is mapped at all times
+        (xlib:map-window (screen-focus-window screen))
+        (xlib:map-window (screen-key-window screen))
+        (netwm-set-properties screen)
+        (update-colors-for-screen screen)
+        (update-color-map screen)
+        (dformat 1 "Grabbing screen focus on ~A~%" screen)
+        (xwin-grab-keys (screen-focus-window screen) group)
+        screen))))
 
 ;;; Screen commands
-
 (defcommand snext () ()
-"Go to the next screen."
+  "Go to the next screen."
   (switch-to-screen (next-screen))
   (group-wake-up (current-group)))
 
 (defcommand sprev () ()
-"Go to the previous screen."
+  "Go to the previous screen."
   (switch-to-screen (next-screen (reverse (sort-screens))))
   (group-wake-up (current-group)))
 
 (defcommand sother () ()
-"Go to the last screen."
+  "Go to the last screen."
   (switch-to-screen (cadr *screen-list*))
   (group-wake-up (current-group)))

@@ -107,7 +107,7 @@ EXAMPLE:
                            event
                            (xlib:make-event-mask event)
                            :display *display*
-                           :root (screen-root screen)
+                           :root (wm-screen-root screen)
                            ;; Apparently we need these in here, though they
                            ;; make no sense for a key event.
                            :x 0 :y 0 :root-x 0 :root-y 0

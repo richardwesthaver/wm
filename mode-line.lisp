@@ -163,7 +163,7 @@ timer.")
 (defun make-mode-line-window (screen)
   "Create a window suitable for a modeline."
   (xlib:create-window
-   :parent (screen-root screen)
+   :parent (wm-screen-root screen)
    :x 0 :y 0 :width 1 :height 1
    :background (alloc-color screen *mode-line-background-color*)
    :border (alloc-color screen *mode-line-border-color*)
@@ -402,7 +402,7 @@ appropriate mode line click function."
              :mode :visible
              :position *mode-line-position*)))
     (push ml *mode-lines*)
-    (xlib:reparent-window xwin (screen-root screen) 0 0)
+    (xlib:reparent-window xwin (wm-screen-root screen) 0 0)
     (when (update-mode-line-position ml
                                      (xlib:drawable-x xwin)
                                      (xlib:drawable-y xwin))

@@ -53,7 +53,7 @@ and *message-window-input-gravity*."
 (defun setup-win-gravity (screen win gravity)
   "Position the x, y of the window according to its gravity. This
 function expects to be wrapped in a with-state for win."
-  (xlib:with-state ((screen-root screen))
+  (xlib:with-state ((wm-screen-root screen))
     (let* ((w (+ (xlib:drawable-width win)
                  (* (xlib:drawable-border-width win) 2)))
            (h (+ (xlib:drawable-height win)

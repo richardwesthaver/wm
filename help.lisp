@@ -75,7 +75,7 @@ which-key window. Two arguments will be passed to this formatter:
                         (columnize data cols))))
 
 (defun final-key-p (keys class)
-  "Determine if the key is a memeber of a class"
+  "Determine if the key is a member of a class"
   (member (lastcar keys) (mapcar #'parse-key class) :test #'equalp))
 
 (defun help-key-p (keys)
@@ -304,10 +304,10 @@ KMAPS are enabled"
 (defcommand modifiers ()
   "List the modifiers WM recognizes and what MOD-X it thinks they're on."
   (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
-              "Meta" (modifiers-meta *modifiers*)
-              "Alt" (modifiers-alt *modifiers*)
-              "Super" (modifiers-super *modifiers*)
-              "Hyper" (modifiers-hyper *modifiers*)
-              "AltGr" (modifiers-altgr *modifiers*)))
+              "Meta" (keymod-meta *xkeymod*)
+              "Alt" (keymod-alt *xkeymod*)
+              "Super" (keymod-super *xkeymod*)
+              "Hyper" (keymod-hyper *xkeymod*)
+              "AltGr" (keymod-altgr *xkeymod*)))
 
 (setq cmd:*command-names-p* t)

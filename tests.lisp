@@ -24,7 +24,7 @@
     (apply 'kbd:make-key (nreverse args))))
 
 (defmacro expect-key (kbd &key to-be)
-  `(isequalp (wm::parse-key ,kbd) (expand-key-description ,@to-be)))
+  `(isequalp (wm::parse-wm-key ,kbd) (expand-key-description ,@to-be)))
 
 (deftest test-parse-key ()
   (expect-key "C-l" :to-be (108 :control))
@@ -32,7 +32,7 @@
   (expect-key "C-s-l" :to-be (108 :control :super))
   (expect-key "C--" :to-be (45 :control))
   (expect-key "-" :to-be (45))
-  (signals io/kbd::kbd-parse-error (wm::parse-key "C-")))
+  (signals io/kbd::kbd-parse-error (wm::parse-wm-key "C-")))
 
 (deftest test-bar ()
   (is (= 3 (count #\X (bar 60 5 #\X #\= ) :test #'char=)))

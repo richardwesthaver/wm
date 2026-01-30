@@ -72,8 +72,6 @@
    *top-level-error-action*
    *window-name-source*
    *frame-number-map*
-   *all-modifiers*
-   *modifiers*
    *screen-list*
    *initializing*
    *processing-existing-windows*
@@ -140,15 +138,6 @@
    +withdrawn-state+
    +normal-state+
    +iconic-state+
-   ;; Modifiers
-   modifiers
-   modifiers-p
-   modifiers-alt
-   modifiers-altgr
-   modifiers-super
-   modifiers-meta
-   modifiers-hyper
-   modifiers-numlock
    ;; Conditions
    wm-condition
    wm-error
@@ -417,7 +406,7 @@
    quit-wm))
 
 (std:defpkg :wm-user
-  (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:skel #:homer #:krypt #:packy))
+  (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:kbd #:skel #:homer #:krypt #:packy #:cmd))
 
 (eval-when (:load-toplevel)
   (pushnew :wm *features*)

@@ -170,7 +170,7 @@ at 0. Return a netwm compliant group id."
       ;; restore the focus
       (setf (screen-focus screen) nil)
       (group-wake-up new-group)
-      (xlib:change-property (screen-root screen) :_NET_CURRENT_DESKTOP
+      (xlib:change-property (wm-screen-root screen) :_NET_CURRENT_DESKTOP
                             (list (netwm-group-id new-group))
                             :cardinal 32)
       (mapc (lambda (w)
@@ -305,7 +305,7 @@ there exists one."
 (defun netwm-set-group-properties (screen)
   "Set NETWM properties regarding groups of SCREEN.
 Groups are known as \"virtual desktops\" in the NETWM standard."
-  (let ((root (screen-root screen)))
+  (let ((root (wm-screen-root screen)))
     ;; _NET_NUMBER_OF_DESKTOPS
     (xlib:change-property root :_NET_NUMBER_OF_DESKTOPS
                           (list (length (screen-groups screen)))

@@ -70,7 +70,8 @@
   (:use #:std-lisp :wm #:cmd)
   (:export 
    :*inner-gaps-size* :*outer-gaps-size* 
-   :*head-gaps-size* :*gaps-on*))
+   :*head-gaps-size* :*gaps-on*
+   :gap-maximize-window :gap-neighbour))
 
 (defpackage #:wm/ttf-fonts
   (:shadowing-import-from :wm :version :message)

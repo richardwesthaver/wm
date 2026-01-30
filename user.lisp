@@ -353,7 +353,7 @@ like xprop."
    "~{~30a: ~a~^~%~}"
    (let ((win (if (current-window)
                   (window-xwin (current-window))
-                  (screen-root (current-screen)))))
+                  (wm-screen-root (current-screen)))))
      (loop for i in (xlib:list-properties win)
            collect i
            collect (multiple-value-bind (values type)

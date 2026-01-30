@@ -229,16 +229,15 @@ Window types are in +WINDOW-TYPES+.")
 
 (defparameter +netwm-window-types+
   '(
-    ;; (:_NET_WM_WINDOW_TYPE_DESKTOP . :desktop)
+    (:_NET_WM_WINDOW_TYPE_DESKTOP . :desktop)
     (:_NET_WM_WINDOW_TYPE_DOCK . :dock)
-    ;; (:_NET_WM_WINDOW_TYPE_TOOLBAR . :toolbar)
-    ;; (:_NET_WM_WINDOW_TYPE_MENU . :menu)
-    ;; (:_NET_WM_WINDOW_TYPE_UTILITY . :utility)
-    ;; (:_NET_WM_WINDOW_TYPE_SPLASH . :splash)
+    (:_NET_WM_WINDOW_TYPE_TOOLBAR . :toolbar)
+    (:_NET_WM_WINDOW_TYPE_MENU . :menu)
+    (:_NET_WM_WINDOW_TYPE_UTILITY . :utility)
+    (:_NET_WM_WINDOW_TYPE_SPLASH . :splash)
     (:_NET_WM_WINDOW_TYPE_DIALOG . :dialog)
     (:_NET_WM_WINDOW_TYPE_NORMAL . :normal))
-  "Alist mapping NETWM window types to keywords.
-Include only those we are ready to support.")
+  "Alist mapping NETWM window types to keywords.")
 
 ;; Window states
 (defconstant +withdrawn-state+ 0)
@@ -335,7 +334,7 @@ are valid values.
 (defvar *transient-gravity* :center)
 
 (declaim (type (member :message :break :abort) *top-level-error-action*))
-(defvar *top-level-error-action* :abort
+(defvar *top-level-error-action* :message
   "If an error is encountered at the top level, in
 WM-INTERNAL-LOOP, then this variable decides what action
 shall be taken. By default it will print a message to the screen
@@ -353,6 +352,12 @@ to login remotely to regain control. :abort quits wm.")
 :class - Use the window's resource class.
 :resource-name - Use the window's resource name.")
 
+(defvar *active-global-minor-modes* ()
+  "A list of all currently active global minor modes.")
+
+(defgeneric wm-class-new-objects (self)
+  (:method ((self null)) nil))
+
 (defclass wm-class ()
   ((new-objects
     :initform nil
@@ -365,7 +370,7 @@ when they are touched")))
 (defmethod initialize-instance :after ((obj wm-class) &key &allow-other-keys)
   ;; Register all newly created objects so that they can have the relevant minor
   ;; modes autoenabled.
-  (pushnew obj (wm-class-new-objects obj) :test #'eq))
+  (dprint (pushnew obj (wm-class-new-objects obj) :test #'equalp)))
 
 (defgeneric print-wm-object (object stream)
   (:method (object stream)
@@ -386,11 +391,12 @@ make-instance."
   ;; initialize-instance because autoenabling a minor mode involves changing the
   ;; class of the object, which is implied to be undefined behavior if called
   ;; within a method which accesses the objects slots.
-  (declare (special *active-global-minor-modes*))
-  (let ((object (apply #'make-instance class initargs)))
+  (dformat 1 "Initializing ~A ~S" class initargs)
+  (let ((object (dprint (apply #'make-instance class initargs))))
+  (dformat 1 "Initializing " object)
     (prog1 object
       (loop for class in *active-global-minor-modes*
-            when (typep object (scope-type (minor-mode-scope class)))
+            when (typep object (scope-type (minor-mode-scope (dprint class))))
             do (autoenable-minor-mode class object))
       (setf (wm-class-new-objects object)
             (remove object (wm-class-new-objects object) :test #'eq)))))
@@ -399,7 +405,7 @@ make-instance."
   "Define a class and a method for REPLACE-CLASS which specializes
 upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
   (unless superclasses (setq superclasses '(wm-class)))
-  `(progn
+  `(eval-always
      (defclass ,class-name ,superclasses ,slots ,@options)
      (defmethod replace-class ((object ,class-name) new &rest r)
        (apply #'replace-class-in-mixin
@@ -499,7 +505,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (WM-CLASS) is used."
   ((id :initarg :id :reader screen-id)
    (host :initarg :host :reader screen-host)
    ;; REVIEW 2026-01-07: holds an actual screen
-   (number :initarg :number :reader screen-number)
+   (number :initform nil :initarg :number :accessor screen-number)
    (heads :initform () :accessor screen-heads)
    (groups :initform () :accessor screen-groups)
    (current-group :accessor screen-current-group)
@@ -587,23 +593,17 @@ char."
         ;; translate the frame number to a char. FIXME: it loops after 9
         (char (prin1-to-string num) 0))))
 
-;; TODO 2026-01-07: change to DEFINE-BITFIELD
-(defstruct modifiers
-  (meta nil)
-  (alt nil)
-  (hyper nil)
-  (super nil)
-  (altgr nil)
-  (numlock nil))
-
-(defvar *all-modifiers* nil
+(defvar *modifier-keycodes* nil
   "A list of all keycodes that are considered modifiers")
 
-(defvar *modifiers* nil
+(declaim (keymod *xkeymod*))
+(defvar *xkeymod* 0
   "A mapping from modifier type to x11 modifier.")
 
-(defmethod print-wm-object ((object screen) stream)
-  (format stream "SCREEN ~s" (screen-number object)))
+(defmethod print-wm-object ((obj screen) stream)
+  (format stream "SCREEN~@[ ~s~]" 
+          (when (slot-boundp obj 'wm::number)
+            (screen-number obj))))
 
 (defvar *screen-list* '()
   "The list of screens managed by WM.")

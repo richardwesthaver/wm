@@ -184,17 +184,18 @@ Available completion styles include
 ;;; keysym functions
 (defun is-modifier (keycode)
   "Return t if keycode is a modifier"
-  (or (find keycode *all-modifiers* :test 'eql)
+  (or (find keycode *modifier-keycodes* :test '=)
       ;; Treat No Symbol keys as modifiers (and therefore ignorable)
       (= (xlib:keysym-from-keycode *display* keycode 0) 0)))
 
 (defun register-altgr-as-modifier ()
   "Register the keysym(s) for ISO_Level3 as modifiers."
-  (setf *all-modifiers*
+  (setf *modifier-keycodes*
         (append (multiple-value-list
-                 (xlib:keycodes-from-keysym *display*
-                                        (keysym-name-code "ISO_Level3")))
-                *all-modifiers*)))
+                 (xlib:keycodes-from-keysym 
+                  *display*
+                  (keysym-name-code "ISO_Level3")))
+                *modifier-keycodes*)))
 
 (defun character-from-keycode (code mods)
   (let ((idx (if (member :shift mods) 1 0)))
@@ -278,8 +279,8 @@ Available completion styles include
 (defun read-key-no-modifiers ()
   "Like read-key but never returns a modifier key."
   (loop for k = (read-key)
-       while (is-modifier (car k))
-       finally (return k)))
+        while (is-modifier (car k))
+        finally (return k)))
 
 (defun read-key-no-modifiers-or-click ()
   (loop
@@ -503,7 +504,7 @@ match with an element of the completions."
 (defun key-from-code-state (code state)
   (let* ((mods    (xlib:make-state-keys state))
          (shift-p (and (find :shift mods) t))
-         (altgr-p (and (intersection (modifiers-altgr *modifiers*) mods) t))
+         (altgr-p (and (keymod-altgr *xkeymod*) mods))
          (base    (if altgr-p *altgr-offset* 0))
          (sym     (xlib:keysym-from-keycode *display* code base))
          (upsym   (xlib:keysym-from-keycode *display* code (+ base 1))))
@@ -514,10 +515,10 @@ match with an element of the completions."
                           sym)
               :control (and (find :control mods) t)
               :shift (and shift-p (eql sym upsym))
-              :meta (and (intersection mods (modifiers-meta *modifiers*)) t)
-              :alt (and (intersection mods (modifiers-alt *modifiers*)) t)
-              :hyper (and (intersection mods (modifiers-hyper *modifiers*)) t)
-              :super (and (intersection mods (modifiers-super *modifiers*)) t)
+              :meta (and mods (keymod-meta *xkeymod*))
+              :alt (and mods (keymod-alt *xkeymod*))
+              :hyper (and mods (keymod-hyper *xkeymod*))
+              :super (and mods (keymod-super *xkeymod*))
               :altgr altgr-p)))
 
 ;;; input string utility functions
@@ -825,12 +826,12 @@ input (pressing Return), nil otherwise."
   "Return all the keycodes that are associated with a modifier."
   (flatten (multiple-value-list (xlib:modifier-mapping *display*))))
 
-(defun get-modifier-map ()
+(defun get-xkeymod ()
   (labels ((find-mod (mod codes)
              (let* ((keysym (keysym-name-code mod))
                     (keycodes (multiple-value-list (xlib:keycodes-from-keysym *display* keysym))))
                (intersection keycodes codes))))
-    (let ((modifiers (make-modifiers)))
+    (let ((modifiers (make-keymod)))
       (multiple-value-bind
             (shift-codes lock-codes control-codes mod1-codes mod2-codes mod3-codes mod4-codes mod5-codes)
           (xlib:modifier-mapping *display*)
@@ -840,40 +841,40 @@ input (pressing Return), nil otherwise."
               do
               (cond ((or (find-mod "Meta_L" codes)
                          (find-mod "Meta_R" codes))
-                     (push mod (modifiers-meta modifiers)))
+                     (setf (keymod-meta modifiers) t))
                     ((or (find-mod "Alt_L" codes)
                          (find-mod "Alt_R" codes))
-                     (push mod (modifiers-alt modifiers)))
+                     (setf (keymod-alt modifiers) t))
                     ((or (find-mod "Super_L" codes)
                          (find-mod "Super_R" codes))
-                     (push mod (modifiers-super modifiers)))
+                     (setf (keymod-super modifiers) t))
                     ((or (find-mod "Hyper_L" codes)
                          (find-mod "Hyper_R" codes))
-                     (push mod (modifiers-hyper modifiers)))
+                     (setf (keymod-hyper modifiers) t))
                     ((find-mod "Num_Lock" codes)
-                     (push mod (modifiers-numlock modifiers)))
+                     (setf (keymod-numlock modifiers) t))
                     ((find-mod "ISO_Level3" codes)
-                     (push mod (modifiers-altgr modifiers)))))
+                     (setf (keymod-altgr modifiers) t))))
         ;; If alt is defined but meta isn't set meta to alt and clear alt
-        (when (and (modifiers-alt modifiers)
-                   (null (modifiers-meta modifiers)))
-          (setf (modifiers-meta modifiers) (modifiers-alt modifiers)
-                (modifiers-alt modifiers) nil))
+        (when (and (keymod-alt modifiers)
+                   (not (keymod-meta modifiers)))
+          (setf (keymod-meta modifiers) (keymod-alt modifiers)
+                (keymod-alt modifiers) nil))
         modifiers))))
 
 (defun update-modifier-map ()
-  (setf *modifiers* (get-modifier-map)
-        *all-modifiers* (all-modifier-codes)))
+  (setf *xkeymod* (get-xkeymod)
+        *modifier-keycodes* (all-modifier-codes)))
 
 ;; (defun wmmod-from-x11mod (screen state)
 ;;   (let ((mod nil))
-;;     (when (member state (modifiers-alt (screen-modifiers screen)))
+;;     (when (member state (keymod-alt (screen-modifiers screen)))
 ;;       (push :alt mod))
-;;     (when (member state (modifiers-meta (screen-modifiers screen)))
+;;     (when (member state (keymod-meta (screen-modifiers screen)))
 ;;       (push :meta mod))
-;;     (when (member state (modifiers-hyper (screen-modifiers screen)))
+;;     (when (member state (keymod-hyper (screen-modifiers screen)))
 ;;       (push :hyper mod))
-;;     (when (member state (modifiers-super (screen-modifiers screen)))
+;;     (when (member state (keymod-super (screen-modifiers screen)))
 ;;       (push :super mod))
 ;;     (when (member state :control)
 ;;       (push :control mod))

@@ -60,7 +60,7 @@
 
 (defun stop-clipboard-manager ()
   (when (timer-p *clipboard-timer*)
-    (unschedule-timer *clipboard-timer*)
+    (sb-ext:unschedule-timer *clipboard-timer*)
     (setq *clipboard-timer* nil)))
 
 (defvar *clipboard-poll-timeout* 5)

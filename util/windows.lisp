@@ -2,6 +2,7 @@
 
 ;;; Code:
 (in-package #:wm/windows)
+(setq *command-names-p* t)
 
 ;;; Global Windows
 (defun global-windows ()
@@ -92,26 +93,27 @@ select the screen."
           (ppcre:split " " (string-upcase x)))))
 
 ;; Basic operations
-(defcommand window-tags (&optional (argwin nil))
-  "Show window tags"
-  (let* ((win (or argwin (current-window)))
-         (tags (xlib:get-property (window-xwin win) :WM_TAGS))
-         (tagstring (utf8-to-string tags))
-         (taglist 
-           (if tags (string-split-by-spaces tagstring) nil)))
-    (if argwin taglist (wm-message "Tags: ~{~%~a~}" taglist))))
+(eval-always
+  (defcommand window-tags (&optional (argwin nil))
+    "Show window tags"
+    (let* ((win (or argwin (current-window)))
+           (tags (xlib:get-property (window-xwin win) :WM_TAGS))
+           (tagstring (utf8-to-string tags))
+           (taglist 
+             (if tags (string-split-by-spaces tagstring) nil)))
+      (if argwin taglist (wm-message "Tags: ~{~%~a~}" taglist))))
 
-(defun (setf window-tags) (newtags &optional (argwin nil))
-  "Set the window tag set for a window"
-  (let* ((win (or argwin (current-window)))
-         (tagstring (format nil "~{~A ~}" (mapcar 'string-upcase newtags))))
-    (xlib:change-property 
-     (window-xwin win)
-     :WM_TAGS
-     (sb-ext:string-to-octets
-      tagstring
-      :external-format :utf-8)
-     :UTF8_STRING 8)))
+  (defun (setf window-tags) (newtags &optional (argwin nil))
+    "Set the window tag set for a window"
+    (let* ((win (or argwin (current-window)))
+           (tagstring (format nil "~{~A ~}" (mapcar 'string-upcase newtags))))
+      (xlib:change-property 
+       (window-xwin win)
+       :WM_TAGS
+       (sb-ext:string-to-octets
+        tagstring
+        :external-format :utf-8)
+       :UTF8_STRING 8))))
 
 (defun clear-tags-if (clearp &optional (argwin nil))
   "Remove tags matched by predicate"
@@ -121,15 +123,16 @@ select the screen."
     (setf (window-tags win) new-tags)))
 
 ;; Commands for basic operations
-(defcommand clear-tags (&optional (argtags nil) (argwin nil))
-  "Remove specified or all tags"
-  (declare (interactive rest rest))
-  (let*
-      ((tags (string-split-by-spaces argtags))
-       (condition (if tags 
-                      (lambda (x) (find x tags :test 'equalp)) 
-                      (constantly t))))
-    (clear-tags-if condition argwin)))
+(eval-always
+  (defcommand clear-tags (&optional (argtags nil) (argwin nil))
+    "Remove specified or all tags"
+    (declare (interactive rest rest))
+    (let*
+        ((tags (string-split-by-spaces argtags))
+         (condition (if tags 
+                        (lambda (x) (find x tags :test 'equalp)) 
+                        (constantly t))))
+      (clear-tags-if condition argwin))))
 
 (defcommand clear-all-tags ()
   "Remove all tags and start afresh"
@@ -325,3 +328,5 @@ in current group and only to them"
             (+ x (* width *window-height-fraction*)))
            (round
             (+ y (* height *window-width-fraction*)))))))
+
+(setq *command-names-p* nil)

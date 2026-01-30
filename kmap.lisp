@@ -25,20 +25,19 @@ prefix map.")
   "Color of a keybinding when displayed in windows such as the prefix
 keybinding in the which-key window.")
 
-(defun x11-mods (key &optional with-numlock with-capslock)
-  "Return the modifiers for key in a format that xlib understands. if
-WITH-NUMLOCK is non-nil then include the numlock modifier. if WITH-CAPSLOCK is
-non-nil then include the capslock modifier. Most of the time these just gets
-in the way."
+(defun x11-mods (key &optional with-capslock with-scroll-lock)
+  "Return the modifiers for key in a format that xlib understands. If
+WITH-CAPSLOCK is non-nil then include the capslock modifier. Most of the time
+these just gets in the way."
   (let (mods)
     (when (key-shift key) (push :shift mods))
     (when (key-control key) (push :control mods))
-    (when (key-meta key) (setf mods (append (modifiers-meta *modifiers*) mods)))
-    (when (key-alt key) (setf mods (append (modifiers-alt *modifiers*) mods)))
-    (when (key-hyper key) (setf mods (append (modifiers-hyper *modifiers*) mods)))
-    (when (key-super key) (setf mods (append (modifiers-super *modifiers*) mods)))
-    (when with-numlock (setf mods (append (modifiers-numlock *modifiers*) mods)))
+    (when (or (key-meta key) (key-alt key)) (push :mod-1 mods))
+    (when (key-altgr key) (push :mod-5 mods))
+    (when (or (key-hyper key) (key-super key)) (push :mod-4 mods))
+    (when (key-numlock key) (push :mod-2 mods))
     (when with-capslock (push :lock mods))
+    (when with-scroll-lock (push :mod-3 mods))
     (apply 'xlib:make-state-mask mods)))
 
 (defvar *altgr-offset* 2

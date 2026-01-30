@@ -82,7 +82,7 @@
   (dformat 4 "CONFIGURE NOTIFY ~@{~S ~}~%" stack-mode window x y width height border-width value-mask)
   (when-let ((screen (find-screen window)))
     (let ((old-heads (screen-heads screen))
-          (new-heads (make-screen-heads screen (screen-root screen))))
+          (new-heads (make-screen-heads screen (wm-screen-root screen))))
       (cond
         ((equalp old-heads new-heads)
          (dformat 3 "Bogus configure-notify on root window of ~S~%" screen) t)

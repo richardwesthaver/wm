@@ -32,7 +32,7 @@
                          event
                          (xlib:make-event-mask event)
                          :display *display*
-                         :root (screen-root (window-screen win))
+                         :root (wm-screen-root (window-screen win))
                          ;; Apparently we need these in here, though they
                          ;; make no sense for a key event.
                          :x 0 :y 0 :root-x 0 :root-y 0
@@ -61,7 +61,7 @@
      (xtest:fake-button-event *display* button t)
      (xtest:fake-button-event *display* button nil))
     (t
-     (xlib-fake-click (screen-root (window-screen win)) (window-xwin win) button))))
+     (xlib-fake-click (wm-screen-root (window-screen win)) (window-xwin win) button))))
 
 ;;; Pointer helper functions
 (defun grab-pointer (screen)
@@ -74,7 +74,7 @@
                                            :mask-char *grab-pointer-character-mask*
                                            :foreground *grab-pointer-foreground*
                                            :background *grab-pointer-background*)))
-    (xlib:grab-pointer (screen-root screen) nil :owner-p nil
+    (xlib:grab-pointer (wm-screen-root screen) nil :owner-p nil
                        :cursor cursor)))
 
 (defun ungrab-pointer ()
@@ -97,7 +97,7 @@
 
 (defun warp-pointer (screen x y)
   "Move the pointer to the specified location."
-  (let ((root (screen-root screen)))
+  (let ((root (wm-screen-root screen)))
     (xlib:warp-pointer root x y)))
 
 (defun warp-pointer-relative (dx dy)
