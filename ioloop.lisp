@@ -285,7 +285,7 @@ The action is to call FUNCTION with arguments ARGS."
               (if (and errno (plusp errno))
                   (unless (eql errno sb-unix:eintr)
                     (dformat 1
-                             "Unexpected ~S error: ~A~%"
+                             "Unexpected ~S error: ~A"
                              'sb-unix:unix-fast-select
                              (sb-int:strerror errno)))
                   (progn

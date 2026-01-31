@@ -333,7 +333,7 @@
 
           (let ((left-quadrant (< relx (floor initial-width 2)))
                 (top-quadrant (< rely (floor initial-height 2))))
-            (dformat 4 "corner: left: ~a top: ~a~%" left-quadrant top-quadrant)
+            (dformat 4 "corner: left: ~a top: ~a" left-quadrant top-quadrant)
 
             ;; When resizing warp pointer to closest corner
             (when (find :button-3 (xlib:make-state-keys state-mask))

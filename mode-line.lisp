@@ -206,7 +206,7 @@ timer.")
       (xlib:map-window window)
       (setf (xlib:window-priority window) :below)
       (redraw-mode-line mode-line)
-      (dformat 3 "modeline: ~s~%" mode-line)
+      (dformat 3 "modeline: ~s" mode-line)
       (turn-on-mode-line-timer)
       (run-hook-with-args *new-mode-line-hook* mode-line))))
 
@@ -339,7 +339,7 @@ timer.")
 appropriate mode line click function."
   (let ((registered-ids *mode-line-on-click-functions*)
         (bounds-list (mode-line-on-click-bounds ml)))
-    (dformat 3 "In mode line click: x=~A~&~2Tregistered ids: ~S~&~2Tbounds: ~S~&"
+    (dformat 3 "In mode line click: x=~A~&~2Tregistered ids: ~S~&~2Tbounds: ~S"
              x registered-ids bounds-list)
     (loop for (xbeg xend ybeg yend id args) in bounds-list
           do (when (and (< xbeg x xend)

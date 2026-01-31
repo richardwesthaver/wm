@@ -379,7 +379,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
 (defun xwin-role (win)
   "Return WM_WINDOW_ROLE"
   (let ((name (xlib:get-property win :WM_WINDOW_ROLE)))
-    (dformat 10 "role: ~a~%" name)
+    (dformat 10 "role: ~a" name)
     (if name
         (utf8-to-string name)
         "")))
@@ -489,7 +489,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
     (xlib:unmap-subwindows (window-parent window))))
 
 (defun hide-window (window)
-  (dformat 2 "hide window: ~s~%" window)
+  (dformat 2 "hide window: ~s" window)
   (unless (eql (window-state window) +iconic-state+)
     (setf (window-state window) +iconic-state+)
     ;; Mark window as hidden
@@ -631,7 +631,7 @@ and bottom_end_x."
                                 (screen-bg-color screen)
                                 (string (format nil "~A" (window-number f))))
                 (xlib:display-finish-output *display*)
-                (dformat 3 "mapped ~S~%" (window-number f))
+                (dformat 3 "mapped ~S" (window-number f))
                 w))
             (group-windows group))))
 
@@ -671,7 +671,7 @@ and bottom_end_x."
         (*processing-existing-windows* t)
         (stacking (xlib:get-property (wm-screen-root screen) :_NET_CLIENT_LIST_STACKING :type :window)))
     (when stacking
-      (dformat 3 "Using window stacking: ~{~X ~}~%" stacking)
+      (dformat 3 "Using window stacking: ~{~X ~}" stacking)
       ;; sort by _NET_CLIENT_LIST_STACKING
       (setf children (stable-sort children #'< :key
                                   (lambda (xwin)
@@ -684,12 +684,12 @@ and bottom_end_x."
                     (internal-window-p screen win))
           (if (eq (xwin-type win) :dock)
               (progn
-                (dformat 1 "Window ~S is dock-type. Placing in mode-line.~%" win)
+                (dformat 1 "Window ~S is dock-type. Placing in mode-line" win)
                 (place-mode-line-window screen win))
               (if (or (eql map-state :viewable)
                       (eql wm-state +iconic-state+))
                   (progn
-                    (dformat 1 "Processing ~S ~S~%" (xwin-name win) win)
+                    (dformat 1 "Processing ~S ~S" (xwin-name win) win)
                     (xlib:with-server-grabbed (*display*)
                       (process-mapped-window screen win)))))))))
   (dolist (w (screen-windows screen))
@@ -708,14 +708,14 @@ and bottom_end_x."
               (or (not (key-alt key)) (keymod-alt *xkeymod*))
               (or (not (key-hyper key)) (keymod-hyper *xkeymod*))
               (or (not (key-super key)) (keymod-super *xkeymod*)))))
-    (loop for code in (dprint (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key))))
+    (loop for code in (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key)))
           ;; some keysyms aren't mapped to keycodes so just ignore them.
           when (and code (key-modifiers-exist-p key))
           do
           ;; Some keysyms, such as upper case letters, need the
           ;; shift modifier to be set in order to grab properly.
              (let ((key
-                     (if (and (not (eql (key-sym key) (dprint (xlib:keysym-from-keycode *display* code 0))))
+                     (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
                               (eql (key-sym key) (xlib:keysym-from-keycode *display* code 1)))
                          (add-shift-modifier key)
                          key)))
@@ -737,7 +737,7 @@ and bottom_end_x."
   (dolist (map (deref-keymaps (top-maps group))) ;; vector -> list
     (dformat 1 "Grabbing keymaps ~A" map)
     (sb-int:dovector (i map)
-      (xwin-grab-key win (dprint (keybind-key i))))))
+      (xwin-grab-key win (keybind-key i)))))
 
 (defun grab-keys-on-window (win)
   (xwin-grab-keys (window-xwin win) (window-group win)))
@@ -857,7 +857,7 @@ needed."
   ;; This function cannot request info about WINDOW from the xserver as it may not exist anymore.
   (let ((group (window-group window))
         (screen (window-screen window)))
-    (dformat 1 "withdraw window ~a~%" screen)
+    (dformat 1 "withdraw window ~a" screen)
     ;; Save it for later since it is only withdrawn, not destroyed.
     (push window (screen-withdrawn-windows screen))
     (setf (window-state window) +withdrawn-state+
@@ -889,9 +889,9 @@ needed."
           (delete window (screen-withdrawn-windows screen)))
     (setf (screen-urgent-windows screen)
           (delete window (screen-urgent-windows screen)))
-    (dformat 1 "destroy window ~a~%" screen)
-    (dformat 3 "destroying parent window~%")
-    (dformat 7 "parent window is ~a~%" (window-parent window))
+    (dformat 1 "destroy window ~a" screen)
+    (dformat 3 "destroying parent window")
+    (dformat 7 "parent window is ~a" (window-parent window))
     (xlib:destroy-window (window-parent window))))
 
 (defun move-window-to-head (group window)
@@ -904,7 +904,7 @@ needed."
 
 (defun no-focus (group last-win)
   "don't focus any window but still read keyboard events."
-  (dformat 3 "NO-FOCUS called~%")
+  (dformat 3 "NO-FOCUS called")
   (let* ((screen (group-screen group)))
     (setf (group-current-window group) nil)
     ;; lame workaround to fix bug where non-focused window doesn't
@@ -920,7 +920,7 @@ needed."
 
 (defmethod focus-window (window &optional (raise t))
   "Make the window visible and give it keyboard focus. If raise is t, raise the window."
-  (dformat 3 "focus-window: ~s~%" window)
+  (dformat 3 "focus-window: ~s" window)
   (let* ((group (window-group window))
          (screen (group-screen group))
          (cw (screen-focus screen))
@@ -965,7 +965,7 @@ needed."
 
 (defun xwin-kill (window)
   "Kill the client associated with window."
-  (dformat 3 "Kill client~%")
+  (dformat 3 "Kill client")
   (xlib:kill-client *display* (xlib:window-id window)))
 
 (defun default-window-menu-filter (item-string item-object user-input)

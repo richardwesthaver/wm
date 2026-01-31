@@ -114,7 +114,7 @@ than the root window's width and height.")
            (hints-min-aspect (and hints (xlib:wm-size-hints-min-aspect hints)))
            (hints-max-aspect (and hints (xlib:wm-size-hints-max-aspect hints)))
            center)
-      ;;    (dformat 4 "hints: ~s~%" hints)
+      ;;    (dformat 4 "hints: ~s" hints)
       ;; determine what the width and height should be
       (cond
         ;; handle specially fullscreen windows.
@@ -198,7 +198,7 @@ than the root window's width and height.")
   "Maximize the window."
   (multiple-value-bind (x y wx wy width height border stick)
       (geometry-hints win)
-    (dformat 4 "maximize window ~a x: ~d y: ~d width: ~d height: ~d border: ~d stick: ~s~%" win x y width height border stick)
+    (dformat 4 "maximize window ~a x: ~d y: ~d width: ~d height: ~d border: ~d stick: ~s" win x y width height border stick)
     ;; This is the only place a window's geometry should change
     (set-window-geometry win :x wx :y wy :width width :height height :border-width 0)
     (xlib:with-state ((window-parent win))

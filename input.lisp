@@ -363,6 +363,7 @@ match with an element of the completions."
 
 (defun read-one-char (screen)
   "Read a single character from the user."
+  (dformat 1 "Reading from screen ~A" screen)
   (with-focus (screen-key-window screen)
     (let ((k (read-key-no-modifiers)))
       (character-from-keycode (car k) (xlib:make-state-keys (cdr k))))))
@@ -897,6 +898,7 @@ input (pressing Return), nil otherwise."
 (defun y-or-n-p (message)
   "Ask a \"y or n\" question on the current screen and return T if the
 user presses 'y'."
+  (dprint message)
   (wm-message "~a(y or n) " message)
   (eql (read-one-char (current-screen))
        #\y))

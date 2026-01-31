@@ -9,6 +9,8 @@
 ;;; Code:
 (in-package #:wm)
 
+(init :commands :name :wm :class 'wm-command :names t)
+
 (defkernel wm-command (command) ())
 (defmethod name ((self wm-command))
   "The name of a WM command, which is the keyword used to access it in
@@ -23,8 +25,6 @@
 (defmethod command-class ((self wm-float-command)) 'float-group)
 (defkernel wm-dynamic-command (wm-tile-command) ())
 (defmethod command-class ((self wm-dynamic-command)) 'dynamic-group)
-
-(init :commands :name :wm :class 'wm-command :names t)
 
 (defvar *dynamic-command-blacklist* nil
   "A blacklist of commands for dynamic groups specifically.")

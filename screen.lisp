@@ -153,7 +153,7 @@ identity with a range check."
   (window-by-id (xlib:window-id xwin)))
 
 (defun find-window-by-parent (xwin &optional (windows (all-windows)))
-  (dformat 3 "find-window-by-parent!~%")
+  (dformat 3 "find-window-by-parent!")
   (find xwin windows :key 'window-parent :test 'xlib:window-equal))
 
 (defun wm-screen-root (screen)
@@ -333,7 +333,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
   "Given a screen number, returns a screen structure with initialized members"
   ;; Listen for the window manager events on the root window
   (declare (optimize (debug 3)))
-  (dformat 1 "Initializing screen: ~@[~a ~]~a ~a~%" (unless (sequence:emptyp host) host) id screen-number)
+  (dformat 1 "Initializing screen: ~@[~a ~]~a ~a" (unless (sequence:emptyp host) host) id screen-number)
   (let ((root (xlib:screen-root screen-number)))
     (setf (xlib:window-event-mask (xlib:screen-root screen-number))
           '(:substructure-redirect
@@ -343,7 +343,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
             :button-press
             :exposure))
     (xlib:display-finish-output *display*)
-    (dformat 1 "Initializing screen structures on root ~A~%" root)
+    (dformat 1 "Initializing screen structures on root ~A" root)
     ;; Initialize the screen structure
     (labels ((ac (color)
                ;; We add an alpha channel to the color returned by
@@ -433,7 +433,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                                             :screen screen
                                             :number 1
                                             :name *default-group-name*))))
-        (dformat 1 "Setting up groups on ~A~%" screen)
+        (dformat 1 "Setting up groups on ~A" screen)
         (setf (screen-groups screen) (list group)
               (screen-current-group screen) group
               (ccontext-screen (screen-message-cc screen)) screen
@@ -441,14 +441,14 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
               (tile-group-frame-tree group) (copy-heads screen)
               (tile-group-current-frame group) (first (tile-group-frame-tree group))
               (xlib:window-background root) *default-bg-color*)
-        (dformat 1 "Mapping focus and key windows on ~A~%" screen)
+        (dformat 1 "Mapping focus and key windows on ~A" screen)
         ;; The focus window is mapped at all times
         (xlib:map-window (screen-focus-window screen))
         (xlib:map-window (screen-key-window screen))
         (netwm-set-properties screen)
         (update-colors-for-screen screen)
         (update-color-map screen)
-        (dformat 1 "Grabbing screen focus on ~A~%" screen)
+        (dformat 1 "Grabbing screen focus on ~A" screen)
         (xwin-grab-keys (screen-focus-window screen) group)
         screen))))
 

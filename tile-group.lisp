@@ -91,7 +91,7 @@
 
 (defmethod group-move-request ((group tile-group) (window tile-window) x y relative-to)
   (when *honor-window-moves*
-    (dformat 3 "Window requested new position ~D,~D relative to ~S~%" x y relative-to)
+    (dformat 3 "Window requested new position ~D,~D relative to ~S" x y relative-to)
     (let* ((pointer-pos (multiple-value-list (xlib:global-pointer-position *display*)))
            (pos  (if (eq relative-to :parent)
                      (list
@@ -841,7 +841,7 @@ one."
   (:method (group frame)
     (mapc (lambda (w)
             (when (eq (window-frame w) frame)
-              (dformat 3 "maximizing ~S~%" w)
+              (dformat 3 "maximizing ~S" w)
               (maximize-window w)))
           (group-tile-windows group))))
 
@@ -939,7 +939,7 @@ respectively."
            (invert-amount (not (first candidate-frames-to-alter)))
            (effective-amount (if invert-amount (- amount) amount)))
       (when (and frame-to-alter (not (= effective-amount 0)))
-        (dformat 10 "Resizing frame ~s ~s~%" dim effective-amount)
+        (dformat 10 "Resizing frame ~s ~s" dim effective-amount)
         (move-split-in-tree group frame-to-alter effective-amount)
         (unless (and *resize-hides-windows* (eq *top-map* *resize-map*))
           (tree-iterate frame-to-alter
@@ -1102,7 +1102,7 @@ windows used to draw the numbers in. The caller must destroy them."
                                     (screen-fg-color screen)
                                     (screen-bg-color screen)
                                     (string (get-frame-number-translation f)))
-                    (dformat 3 "mapped ~S~%" (frame-number f))
+                    (dformat 3 "mapped ~S" (frame-number f))
                     w))
                 (group-frames group))
       (xlib:display-finish-output *display*))))
@@ -1345,7 +1345,7 @@ select one. Returns the selected frame or nil if aborted."
                  winner)
                (when ch
                  (let ((num (read-from-string (string ch) nil nil)))
-                   (dformat 3 "read ~S ~S~%" ch num)
+                   (dformat 3 "read ~S ~S" ch num)
                    (find ch (group-frames group)
                          :test 'char=
                          :key 'get-frame-number-translation)))))

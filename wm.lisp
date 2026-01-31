@@ -38,7 +38,7 @@ further up."
     ;; ignore asynchronous window errors
     ((and asynchronous
           (find error-key '(xlib:window-error xlib:drawable-error xlib:match-error)))
-     (dformat 4 "Ignoring error: ~s~%" error-key))
+     (dformat 4 "Ignoring error: ~s" error-key))
     ((eq error-key 'xlib:access-error)
      (write-line "Another window manager is running.")
      (throw :top-level :quit))
@@ -193,7 +193,7 @@ further up."
     (setf *display* (xlib:open-display host :display display :protocol protocol)
           (xlib:display-error-handler *display*) 'error-handler)
     (with-simple-restart (quit-wm "Quit WM")
-      ;; (log::with-conditions-logged
+      (log::with-conditions-logged
         ;; In the event of an error, we always need to close the display
         (unwind-protect
              (progn
@@ -227,7 +227,7 @@ further up."
                    (mapc 'unhide-window (reverse (group-windows (screen-current-group s))))
                    ;; update groups
                    (dolist (g (reverse (screen-groups s)))
-                     (dformat 3 "Group windows: ~S~%" (group-windows g))
+                     (dformat 3 "Group windows: ~S" (group-windows g))
                      (group-startup g))
                    ;; switch to the (old) current group.
                    (let ((netwm-id (first (xlib:get-property (wm-screen-root s) :_NET_CURRENT_DESKTOP))))
@@ -242,8 +242,7 @@ further up."
                (let ((*package* (find-package *default-package*)))
                  (run-hook *start-hook*)
                  (wm-internal-loop)))
-          (xlib:close-display *display*))))
-  ;; )
+          (xlib:close-display *display*)))))
   :quit)
 
 (defun force-wm-restart (&key (close-display t))
@@ -251,27 +250,30 @@ further up."
     (xlib:close-display *display*))
   (apply 'execv (first sb-ext:*posix-argv*) sb-ext:*posix-argv*))
 
-;; Usage: (start-wm)
+(defmethod init ((self (eql :wm)) &key)
+  (init :xdg)
+  (setq *data-dir* (default-data-dir))
+  (ensure-data-dir)
+  (std:init :log :pipe 
+            `((level-filter :id :level-filter)
+              (tag-tree-filter :id :tag-filter)
+              (backup-file-sink :path ,(data-dir-file "wm.log"))))
+  (load-commands :wm)
+  (set-signal-handler sb-posix:sighup
+    (dformat 0 "SIGHUP received: forcing immediate restart of wm")
+    (force-wm-restart)))
+
 (defun start-wm (&optional (display-str (or (sb-posix:getenv "DISPLAY") ":0")))
   "Start the stump window manager."
-  (std:init :xdg)
-  (setf *data-dir* (default-data-dir))
-  (ensure-data-dir)
-  (std:init :log :pipe `((level-filter :id :level-filter)
-                         (tag-tree-filter :id :tag-filter)
-                         (rotating-file-sink :path ,(data-dir-file "wm.log"))))
-  ;; (macroexpand
-  ;;  '(set-signal-handler sb-posix:sighup
-  ;;    (dformat 0 "SIGHUP received: forcing immediate restart of wm~%")
-  ;;    (force-wm-restart)))
+  (std:init :wm)
   (let ((*in-main-thread* t))
-    (dformat 10 "initialization complete~%")
+    (dformat 10 "initialization complete")
     (loop
       (let ((ret (catch :top-level (wm-internal display-str))))
         (setf *last-unhandled-error* nil)
         (cond ((and (consp ret)
                     (typep (first ret) 'condition))
-               (format t "~&Caught '~a' at the top level. Please report this.~%~a"
+               (format t "~&Caught '~a' at the top level.~%~a"
                        (first ret) (second ret))
                (setf *last-unhandled-error* ret))
               ;; we need to jump out of the event loop in order to hup

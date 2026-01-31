@@ -124,7 +124,7 @@ area."
                                   (when ch
                                     (let ((num
                                             (read-from-string (string ch) nil nil)))
-                                      (dformat 3 "read ~S ~S~%" ch num)
+                                      (dformat 3 "read ~S ~S" ch num)
                                       (find num (group-windows group)
                                             :test #'=
                                             :key 'window-number)))))

@@ -87,12 +87,12 @@
 (defun grab-keyboard (xwin)
   (let ((ret (xlib:grab-keyboard xwin :owner-p nil
                                  :sync-keyboard-p nil :sync-pointer-p nil)))
-    (dformat 5 "vvv Grab keyboard: ~s~%" ret)
+    (dformat 5 "vvv Grab keyboard: ~s" ret)
     ret))
 
 (defun ungrab-keyboard ()
   (let ((ret (xlib:ungrab-keyboard *display*)))
-    (dformat 5 "^^^ Ungrab keyboard: ~s~%" ret)
+    (dformat 5 "^^^ Ungrab keyboard: ~s" ret)
     ret))
 
 (defun warp-pointer (screen x y)

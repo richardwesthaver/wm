@@ -457,8 +457,7 @@ empty keymap."
                            (setf curmap m)))))
                   (traverse-and-bind (seq)
                     (loop for (key . rest) on (ppcre:split " " seq)
-                          do (let ((bind (lookup-key curmap
-                                           (kbd key))))
+                          do (let ((bind (lookup-key curmap (kbd key))))
                                (attempt-binding key rest bind seq)))))
                (if (not (or (symbolp bind-to)
                             (stringp bind-to)
@@ -1077,3 +1076,5 @@ Example:
            ,@(when define-command-definer
                (list (define-command-macro mode)))
            (sync-keys))))))
+
+(save-commands :wm)
