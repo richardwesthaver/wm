@@ -334,7 +334,7 @@ are valid values.
 (defvar *transient-gravity* :center)
 
 (declaim (type (member :message :break :abort) *top-level-error-action*))
-(defvar *top-level-error-action* :message
+(defvar *top-level-error-action* :abort
   "If an error is encountered at the top level, in
 WM-INTERNAL-LOOP, then this variable decides what action
 shall be taken. By default it will print a message to the screen

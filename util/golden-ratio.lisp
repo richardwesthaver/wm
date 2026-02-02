@@ -15,11 +15,11 @@
     (let* ((target-x (target-px (wm::head-width (current-head))))
            (target-y (target-px (wm::head-height (current-head)))))
       (setq *golden-ratio-on* nil)
-      (balance-frames)
-      (resize (resize-px target-x
-                         (wm::frame-width to-frame))
-              (resize-px target-y
-                         (wm::frame-height to-frame)))
+      (wm::balance-frames)
+      (wm::resize (resize-px target-x
+                             (wm::frame-width to-frame))
+                  (resize-px target-y
+                             (wm::frame-height to-frame)))
       (setq *golden-ratio-on* t))))
 
 (defcommand toggle-golden-ratio ()

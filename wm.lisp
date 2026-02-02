@@ -254,7 +254,7 @@ further up."
   (init :xdg)
   (setq *data-dir* (default-data-dir))
   (ensure-data-dir)
-  (std:init :log :pipe 
+  (init :log :pipe 
             `((level-filter :id :level-filter)
               (tag-tree-filter :id :tag-filter)
               (backup-file-sink :path ,(data-dir-file "wm.log"))))
@@ -265,7 +265,7 @@ further up."
 
 (defun start-wm (&optional (display-str (or (sb-posix:getenv "DISPLAY") ":0")))
   "Start the stump window manager."
-  (std:init :wm)
+  (init :wm)
   (let ((*in-main-thread* t))
     (dformat 10 "initialization complete")
     (loop

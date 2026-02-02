@@ -27,8 +27,8 @@
    (funcall (find-symbol "LOAD-XKBCOMMON" :xkb)) ; requires xkbcommon.so
    (asdf:load-system :xlib)
    (asdf:load-system :wm)
-   ;; (asdf:load-system :util)
-   ;; (asdf:load-system :modeline)
+   (asdf:load-system :util)
+   (asdf:load-system :modeline)
    (in-package :wm-user)
    ;; post-load hooks
    (sb-ext:save-lisp-and-die 
