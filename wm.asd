@@ -7,7 +7,7 @@
   :license "GNU General Public License"
   :description "A tiling, keyboard driven window manager"
   :serial t
-  :depends-on (#:core #:xlib #:skel)
+  :depends-on (#:core #:xlib)
   :components ((:file "pkg")
                (:file "prim")
                (:file "font-rendering")

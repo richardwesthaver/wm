@@ -36,7 +36,7 @@
       (clear-frame f (current-group))))
   (draw-frame-outlines (current-group) (current-head)))
 
-(defcommand resize-direction (d)
+(defcommand (:wm resize-direction) (d)
   "Resize frame to direction D"
   (declare (interactive (direction "Direction: ")))
   (case (princ d)
@@ -58,9 +58,11 @@
       (when (current-window)
         (focus-window (current-window))))))
 
-(define-interactive-keymap (iresize tile-group) (:on-enter #'setup-iresize
-                                                 :on-exit #'resize-unhide
-                                                 :abort-if #'abort-resize-p)
+(setq *command-class* 'wm-tile-command)
+
+(define-interactive-keymap (:wm iresize) (:on-enter #'setup-iresize
+                                          :on-exit #'resize-unhide
+                                          :abort-if #'abort-resize-p)
 
   ((kbd "Up") "resize-direction up")
   ((kbd "C-p") "resize-direction up")
@@ -81,3 +83,5 @@
   ((kbd "C-f") "resize-direction right")
   ((kbd "f") "resize-direction right")
   ((kbd "l") "resize-direction right"))
+
+(setq *command-class* 'wm-command)

@@ -85,4 +85,3 @@
   object)
 
 (save :commands :wm)
-(reset :commands)

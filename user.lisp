@@ -207,7 +207,8 @@ such a case, kill the shell command to resume WM."
                         "You are about to quit the window manager to TTY."
                         "Really ^1^Bquit^b^n ^B^WM^n^b?"
                         "^B^6Confirm?^n "))
-      (quit-wm)
+      (progn (dprint "got here..")
+             (quit-wm))
       (xlib:unmap-window (screen-message-window (current-screen)))))
 
 (defcommand restart-soft ()

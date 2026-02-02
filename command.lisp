@@ -8,10 +8,8 @@
 
 ;;; Code:
 (in-package #:wm)
-
-(init :commands :name :wm :class 'wm-command :names t)
-
 (defkernel wm-command (command) ())
+(init :commands :name :wm :class 'wm-command :names t :clean t)
 (defmethod name ((self wm-command))
   "The name of a WM command, which is the keyword used to access it in
 *COMMANDS*. NOTE: uses linear search."
@@ -249,7 +247,7 @@ only return active commands."
   (or (read-args *command-input*)
       (read-one-line (current-screen) prompt)))
 
-(defcommand colon (&optional initial-input)
+(defcommand (:wm colon) (&optional initial-input)
   "Read a command from the user with optional INITIAL-TEXT. When
 supplied, the text will appear in the prompt.
 

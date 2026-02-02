@@ -970,10 +970,8 @@ Example:
         `(progn
            ;; Ensure that the superclasses are valid for a minor mode. 
            (validate-minor-mode-superclasses ',superclasses)
-
            ;; Ensure that SCOPE is a valid scope for the superclass list.
            (validate-scope ,scope ',superclasses)
-
            ,@(when expose-keymaps 
                `((,(if (or (eql rebind :root-map)
                            (eql rebind :all-maps))
@@ -991,7 +989,6 @@ Example:
                    ,top-map
                    ',(make-special-variable-name mode 'root-map))
                   ,(format nil "The top map for ~A" mode))))
-
            (defclass ,mode ,superclasses
              ((,gkeymap
                :initform ,@(if expose-keymaps
@@ -1004,7 +1001,6 @@ Example:
               ,@slots)
              (:default-initargs ,@default-initargs)
              ,@other-opts)
-
            ,@(when (or mix-after mix-before)
                (flet ((mkc (s)
                         (list 'cons (car s) (cdr s))))
@@ -1015,7 +1011,6 @@ Example:
                    `((set-mix-rule ',mode
                                    (list ,@mix-b)
                                    (list ,@mix-a))))))
-           
            ,(if global 
                 `(defmethod minor-mode-global-p ((mode (eql ',mode))) t)
                 `(let ((method (ignore-errors
@@ -1023,12 +1018,10 @@ Example:
                                              nil '((eql ,mode))))))
                    (when method
                      (remove-method #'minor-mode-global-p method))))
-
            (let ((fn ,(when lighter-on-click
                         lighter-on-click)))
              (defmethod lighter-on-click ((,gmode (eql ',mode)))
                fn))
-
            (defmethod minor-mode-lighter ((,gmode ,mode))
              (cons
               ,(if lighter-make-clickable
@@ -1038,17 +1031,13 @@ Example:
                                              ',mode)
                    `(funcall ,(genlighter mode lighter) ,gmode))
               (call-next-method)))
-
            (defmethod minor-mode-scope ((,gmode (eql ',mode)))
              (declare (ignore ,gmode))
              ,scope)
-
            ,@(when make-hooks
                (define-hooks mode))
-
            (defmethod minor-mode-keymap ((,gmode ,mode))
              (cons (slot-value ,gmode ',gkeymap) (call-next-method)))
-
            ,@(cond (enable-when
                     (let ((args (car enable-when))
                           (body (cdr enable-when)))
@@ -1059,9 +1048,7 @@ Example:
                    (t `((defmethod enable-when ((mode (eql ',mode))
                                                 (obj ,(scope-type scope)))
                           t))))
-
            ,@(define-enable-methods mode scope)
-
            ,@(when interactive
                `((defcommand ,(cond ((eq interactive t) mode)
                                     (t interactive))
@@ -1072,9 +1059,6 @@ Example:
                            (ynpp (disable))
                            ((minor-mode-enabled-p ',mode) (disable))
                            (t (enable)))))))
-
            ,@(when define-command-definer
                (list (define-command-macro mode)))
            (sync-keys))))))
-
-(save-commands :wm)

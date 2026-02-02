@@ -411,3 +411,4 @@
 (eval-when (:load-toplevel)
   (pushnew :wm *features*)
   (setq *default-package* "WM-USER"))
+

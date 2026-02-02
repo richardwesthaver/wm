@@ -19,7 +19,7 @@
   (wm-message "~S finished." name)
   (pop-top-map))
 
-(defcommand call-and-exit-kmap (command exit-command)
+(defcommand (:wm call-and-exit-kmap) (command exit-command)
   "This command effectively calls two other commands in succession, via run-commands.
 it is designed for use in the define-interactive-keymap macro, to implement exiting
 the keymap on keypress. "
