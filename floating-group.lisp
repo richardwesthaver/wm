@@ -417,16 +417,16 @@
     (call-next-method)))
 
 ;;; Bindings
-(defvar *float-group-top-map* nil)
-(defvar *float-group-root-map* nil
+(defvar *float-group-top-map* (sparse-keymap))
+(defvar *float-group-root-map* (sparse-keymap)
   "Commands specific to a floating group context hang from this keymap.
 It is available as part of the @dnf{prefix map} when the active group
 is a float group.")
 
-(fill-keymap *float-group-top-map*
+(define-keymap *float-group-top-map* ()
   *escape-key* '*float-group-root-map*)
 
-(fill-keymap *float-group-root-map*
+(define-keymap *float-group-root-map* ()
   (kbd "n")  "next"
   (kbd "p")  "prev")
 

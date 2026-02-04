@@ -735,9 +735,10 @@ and bottom_end_x."
 
 (defun xwin-grab-keys (win group)
   (dolist (map (deref-keymaps (top-maps group))) ;; vector -> list
-    (dformat 1 "Grabbing keymaps ~A" map)
-    (sb-int:dovector (i map)
-      (xwin-grab-key win (keybind-key i)))))
+    (unless (sequence:emptyp map)
+      (dformat 1 "Grabbing keymaps ~A" map)
+      (sb-int:dovector (i map)
+        (xwin-grab-key win (keybind-key i))))))
 
 (defun grab-keys-on-window (win)
   (xwin-grab-keys (window-xwin win) (window-group win)))

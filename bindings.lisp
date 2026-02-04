@@ -20,13 +20,13 @@ C-t.")
 (defvar *escape-fake-key* (kbd "t")
   "The binding that sends the fake escape key to the current window.")
 
-(defvar *groups-map* nil
+(defvar *groups-map* (sparse-keymap)
   "The keymap that group related key bindings sit on. It is bound to 'C-t g' by default.")
 
-(defvar *exchange-window-map* nil
+(defvar *exchange-window-map* (sparse-keymap)
   "The keymap that exchange-window key bindings sit on. It is bound to 'C-t x' by default.")
 
-(defvar *help-map* nil
+(defvar *help-map* (sparse-keymap)
   "Help related bindings hang from this keymap")
 
 (defvar *group-top-maps* '((tile-group *tile-group-top-map*)
@@ -39,30 +39,31 @@ Order is important. Each map is seached in the order they appear in
 the list (inactive maps being skipped). In general the order should go
 from most specific groups to most general groups.")
 
-(defvar *group-top-map* nil)
-(defvar *group-root-map* nil
+(defvar *group-top-map* (sparse-keymap))
+(defvar *group-root-map* (sparse-keymap)
   "Commands specific to a group context hang from this keymap.
 It is available as part of the @dnf{prefix map}.")
-(defvar *tile-group-top-map* nil)
-(defvar *tile-group-root-map* nil
+(defvar *tile-group-top-map* (sparse-keymap))
+(defvar *tile-group-root-map* (sparse-keymap)
   "Commands specific to a tile-group context hang from this keymap.
 It is available as part of the @dnf{prefix map} when the active group
 is a tile group.")
 
 ;; Do it this way so its easier to wipe the map and get a clean one.
-(defmacro fill-keymap (map &rest bindings)
-  `(unless ,map
-     (setf ,map
-           (let ((m (sparse-keymap)))
-             ,@(loop for i = bindings then (cddr i)
-                    while i
-                    collect `(define-key m ,(first i) ,(second i)))
-             m))))
+;; (defmacro fill-keymap (map &rest bindings)
+;;   `(unless (not (sequence:emptyp ,map))
+;;      (setf ,map
+;;            (let ((m (sparse-keymap)))
+;;              ,@(loop for i = bindings then (cddr i)
+;;                      while i
+;;                      collect `(define-key m ,(first i) ,(second i)))
+;;              m))))
 
-(fill-keymap *top-map*
+(define-keymap *top-map* ()
   *escape-key* '*root-map*)
 
-(fill-keymap *root-map*
+;; TODO: define-smart-keymap (shadow mod keys)
+(define-keymap *root-map* ()
   (kbd "c")   "exec xterm"
   (kbd "C-c") "exec xterm"
   (kbd "e")   "emacs"
@@ -94,10 +95,10 @@ is a tile group.")
   (kbd "F10") "gselect 10"
   (kbd "h")   '*help-map*)
 
-(fill-keymap *group-top-map*
+(define-keymap *group-top-map* ()
   *escape-key* '*group-root-map*)
 
-(fill-keymap *group-root-map*
+(define-keymap *group-root-map* ()
   (kbd "C-u") "next-urgent"
   (kbd "M-n")     "next"
   (kbd "M-p")     "prev"
@@ -129,10 +130,10 @@ is a tile group.")
   (kbd "i")   "info"
   (kbd "I")   "show-window-properties")
 
-(fill-keymap *tile-group-top-map*
+(define-keymap *tile-group-top-map* ()
   *escape-key* '*tile-group-root-map*)
 
-(fill-keymap *tile-group-root-map*
+(define-keymap *tile-group-root-map* ()
   (kbd "n")       "pull-hidden-next"
   (kbd "C-n")     "pull-hidden-next"
   (kbd "C-M-n")   "next-in-frame"
@@ -180,7 +181,7 @@ is a tile group.")
   (kbd "l")       "redisplay"
   (kbd "C-l")     "redisplay")
 
-(fill-keymap *groups-map*
+(define-keymap *groups-map* ()
   (kbd "g")     "groups"
   (kbd "c")     "gnew"
   (kbd "n")     "gnext"
@@ -209,20 +210,20 @@ is a tile group.")
   (kbd "8")     "gselect 8"
   (kbd "9")     "gselect 9"
   (kbd "0")     "gselect 10")
-(fill-keymap *exchange-window-map*
-             (kbd "Up")    "exchange-direction up"   
-             (kbd "Down")  "exchange-direction down" 
-             (kbd "Left")  "exchange-direction left" 
-             (kbd "Right") "exchange-direction right"
-             (kbd "p")     "exchange-direction up"   
-             (kbd "n")     "exchange-direction down" 
-             (kbd "b")     "exchange-direction left" 
-             (kbd "f")     "exchange-direction right"
-             (kbd "k")     "exchange-direction up"   
-             (kbd "j")     "exchange-direction down" 
-             (kbd "h")     "exchange-direction left" 
-             (kbd "l")     "exchange-direction right")    
-(fill-keymap *help-map*
+(define-keymap *exchange-window-map* ()
+  (kbd "Up")    "exchange-direction up"   
+  (kbd "Down")  "exchange-direction down" 
+  (kbd "Left")  "exchange-direction left" 
+  (kbd "Right") "exchange-direction right"
+  (kbd "p")     "exchange-direction up"   
+  (kbd "n")     "exchange-direction down" 
+  (kbd "b")     "exchange-direction left" 
+  (kbd "f")     "exchange-direction right"
+  (kbd "k")     "exchange-direction up"   
+  (kbd "j")     "exchange-direction down" 
+  (kbd "h")     "exchange-direction left" 
+  (kbd "l")     "exchange-direction right")    
+(define-keymap *help-map* ()
   (kbd "v") "describe-variable"
   (kbd "f") "describe-function"
   (kbd "k") "describe-key"
@@ -230,7 +231,7 @@ is a tile group.")
   (kbd "w") "where-is")
 
 (defcommand command-mode ()
-"Command mode allows you to type WM commands without needing the
+  "Command mode allows you to type WM commands without needing the
 'C-t' prefix. Keys not bound in WM will still get sent to the
 current window. To exit command mode, type 'C-g'."
   (run-hook *command-mode-start-hook*)
@@ -246,13 +247,12 @@ most standards, a terrible prefix key but it makes a great example."
   (declare (interactive (key "Key: ")))
   (check-type key key)
   (copy key *escape-key*)
-  ;; if the escape key has no modifiers then disable the fake key by
-  ;; giving it keysym -1, an impossible value. Otherwise you have 2
-  ;; identical bindings and the one that appears first in the list
-  ;; will be matched.
+  ;; if the escape key has no modifiers then disable the fake key by giving it
+  ;; keysym 0 (NoSymbol). Otherwise you have 2 identical bindings and the one
+  ;; that appears first in the list will be matched.
   (copy (make-key :sym (if (key-mods-p *escape-key*)
-                              (key-sym key)
-                              -1)) 
+                           (key-sym key)
+                           0))
         *escape-fake-key*)
   (sync-keys))
 

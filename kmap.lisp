@@ -12,11 +12,11 @@
 ;;; Code:
 (in-package :wm)
 
-(defvar *top-map* nil
+(defvar *top-map* (sparse-keymap)
   "The top level key map. This is where you'll find the binding for the
 prefix map.")
 
-(defvar *root-map* nil
+(defvar *root-map* (sparse-keymap)
   "This is the keymap by default bound to C-t (along with
  *group-root-map* and either *tile-group-root-map*, *float-group-root-map*,
  or *dynamic-group-map*). It is known as the prefix map.")
@@ -70,23 +70,23 @@ these just gets in the way."
 
 (defun %sync-top-map (map)
   ;; TODO 2026-01-25: should probably be equiv?
-  (when (eq map *top-map*)
+  (when (equalp map *top-map*)
     (sync-keys)))
 
 ;; We need to tell the X server when changing the top-map bindings.
 (add-hook *keymap-hook* '%sync-top-map :name :define)
 
 ;;; The Top Map
-;; TODO 2026-01-25: async-aware queue
-(defvar *top-map-queue* nil)
+;; DONE 2026-01-25: async-aware queue
+(defvar *top-map-queue* (make-cons-queue))
 
 (defun push-top-map (new-top)
-  (push *top-map* *top-map-queue*)
+  (push-queue *top-map* *top-map-queue*)
   (setf *top-map* new-top)
   (sync-keys))
 
 (defun pop-top-map ()
   (when *top-map-queue*
-    (setf *top-map* (pop *top-map-queue*))
+    (setf *top-map* (pop-queue *top-map-queue*))
     (sync-keys)
     t))

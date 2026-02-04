@@ -504,7 +504,7 @@ ROOT-MAP-SPEC."
         (root-map (if root-map-spec
                       (make-minor-mode-keymap root-map-spec)
                       (sparse-keymap))))
-    (fill-keymap top-map *escape-key* root-map)
+    (define-keymap top-map () *escape-key* root-map)
     (generate-keymap top-map-spec top-map)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

@@ -199,7 +199,8 @@ Available completion styles include
 
 (defun character-from-keycode (code mods)
   (let ((idx (if (member :shift mods) 1 0)))
-    (xlib:character-from-keysym *display* (xlib:keysym-from-keycode *display* code idx) 0)))
+    (dprint code)
+    (xlib:character-from-keysym *display* (dprint (xlib:keysym-from-keycode *display* code idx)) 0)))
 
 ;;; line and key reading functions
 (defun setup-input-window (screen prompt input)
@@ -366,6 +367,7 @@ match with an element of the completions."
   (dformat 1 "Reading from screen ~A" screen)
   (with-focus (screen-key-window screen)
     (let ((k (read-key-no-modifiers)))
+      (dprint k)
       (character-from-keycode (car k) (xlib:make-state-keys (cdr k))))))
 
 (defun read-one-char-or-click (group)
@@ -856,11 +858,6 @@ input (pressing Return), nil otherwise."
                      (setf (keymod-numlock modifiers) t))
                     ((find-mod "ISO_Level3" codes)
                      (setf (keymod-altgr modifiers) t))))
-        ;; If alt is defined but meta isn't set meta to alt and clear alt
-        (when (and (keymod-alt modifiers)
-                   (not (keymod-meta modifiers)))
-          (setf (keymod-meta modifiers) (keymod-alt modifiers)
-                (keymod-alt modifiers) nil))
         modifiers))))
 
 (defun update-modifier-map ()

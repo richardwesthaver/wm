@@ -84,7 +84,7 @@
        (> 1 value 0)))
 
 (defun set-dynamic-group-initial-values (&key head-placement-policy overflow-policy
-                                           master-layout default-split-ratio)
+                                              master-layout default-split-ratio)
   "Set the default initial values for the class allocated slots of dynamic groups.
 These values are used only upon the first instantiation of a dynamic group."
   (symbol-macrolet ((initial (get 'dynamic-group 'initial-values)))
@@ -194,8 +194,8 @@ the layout, master frame, the master window, and the window stack."
 ;; specific head. Specific names can be provided through the key arguments, and
 ;; key arguments are themselves the default names. 
 (defmacro with-group-head-info ((group head &key layout split-ratio
-                                              master-frame master-window
-                                              stack-frames stack-windows)
+                                                 master-frame master-window
+                                                 stack-frames stack-windows)
                                 &body body)
   (with-gensyms (head-info)
     `(let ((,head-info (dynamic-group-head-info ,group ,head)))
@@ -237,8 +237,8 @@ the layout, master frame, the master window, and the window stack."
                      (if (eql update-heads :unset)
                          (loop for info in (slot-value g 'head-info-alist)
                                when (eql old (cadr info))
-                                 do (setf (cadr info) new)
-                                    (dynamic-group-retile-head g (car info)))
+                               do (setf (cadr info) new)
+                                  (dynamic-group-retile-head g (car info)))
                          (loop for info in (slot-value g 'head-info-alist)
                                do (setf (cadr info) new)
                                   (dynamic-group-retile-head g (car info))))))
@@ -257,8 +257,8 @@ the layout, master frame, the master window, and the window stack."
                      (if (eql update-heads :unset)
                          (loop for info in (slot-value g 'head-info-alist)
                                when (= old (caddr (cddddr info)))
-                                 do (setf (caddr (cddddr info)) new)
-                                    (dynamic-group-retile-head g (car info)))
+                               do (setf (caddr (cddddr info)) new)
+                                  (dynamic-group-retile-head g (car info)))
                          (loop for info in (slot-value g 'head-info-alist)
                                do (setf (caddr (cddddr info)) new)
                                   (dynamic-group-retile-head g (car info))))))
@@ -457,7 +457,7 @@ return NIL. RATIO is a fraction to split by."
         (error 'dynamic-group-too-many-windows :group group))))
 
 (defmethod group-add-window ((group dynamic-group) window &key frame raise
-                             &allow-other-keys)
+                                                          &allow-other-keys)
   (cond ((typep window 'float-window)
          (call-next-method)) 
         ((eq frame :float)
@@ -631,7 +631,7 @@ policy of GROUP"
          (with-group-head-info (group head)
            (let* ((fh (tile-group-frame-head group head)) 
                   (tree (case layout ((:top :left) (cadr fh)) ; get stack tree
-                                     ((:bottom :right) (car fh))))
+                              ((:bottom :right) (car fh))))
                   (frame-to-split (get-final-frame tree)))
              (dyn-split-frame-in-dir-with-frame group
                                                 frame-to-split
@@ -734,7 +734,7 @@ floating windows onto the stack."
                                 (append
                                  (loop for w in (head-windows group head)
                                        when (float-window-p w)
-                                         collect w)
+                                       collect w)
                                  stack-windows)
                                 stack-windows)))))
         (setf master-window nil
@@ -784,27 +784,27 @@ floating windows onto the stack."
           (with-group-head-info (group head)
             (loop for new-head in potential-heads
                   unless (dynamic-group-head-full-p group new-head)
-                    return (progn
-                             (setf unplaced nil)
-                             (case window-to-move
-                               ((:new-window)
-                                (dynamic-group-place-window group new-head window))
-                               ((:master-window)
-                                (let ((m master-window))
-                                  (group-delete-window group m)
-                                  (dynamic-group-place-window group new-head m)))
-                               ((:stack-end)
-                                (let ((e (lastcar stack-windows)))
-                                  (group-delete-window group e)
-                                  (dynamic-group-place-window group new-head e)))
-                               ((:stack-beg)
-                                (let ((b (car stack-windows)))
-                                  (group-delete-window group b)
-                                  (dynamic-group-place-window group new-head b)))
-                               (otherwise
-                                (error
-                                 "Invalid window section of overflow policy: ~A"
-                                 window-to-move)))))
+                  return (progn
+                           (setf unplaced nil)
+                           (case window-to-move
+                             ((:new-window)
+                              (dynamic-group-place-window group new-head window))
+                             ((:master-window)
+                              (let ((m master-window))
+                                (group-delete-window group m)
+                                (dynamic-group-place-window group new-head m)))
+                             ((:stack-end)
+                              (let ((e (lastcar stack-windows)))
+                                (group-delete-window group e)
+                                (dynamic-group-place-window group new-head e)))
+                             ((:stack-beg)
+                              (let ((b (car stack-windows)))
+                                (group-delete-window group b)
+                                (dynamic-group-place-window group new-head b)))
+                             (otherwise
+                              (error
+                               "Invalid window section of overflow policy: ~A"
+                               window-to-move)))))
             (when unplaced (handle-group-overflow group head window)))
           (handle-group-overflow group head window)))))
 
@@ -972,7 +972,7 @@ stack."
              (curwin (group-current-window group))
              (curwin-master-p (eq curwin master-window)))
         (psetf (cdr lw) (list (car stack-windows))
-                 stack-windows (cdr stack-windows))
+               stack-windows (cdr stack-windows))
         (synchronize-frames-and-windows group head)
         (focus-frame group (case *rotation-focus-policy*
                              ((:preserve) curframe)
@@ -1169,7 +1169,7 @@ backward (counterclockwise)"
         (if (and w1 w2)
             (exchange-windows w1 w2)
             (throw 'cmd (format nil "Frame ~A has no window"
-                                  (or (and w1 f2) (and w2 f1)))))))))
+                                (or (and w1 f2) (and w2 f1)))))))))
 
 (define-command-type :dynamic-layout (input prompt)
   (let* ((values '(("Top" :top)
@@ -1271,28 +1271,28 @@ backward (counterclockwise)"
 
 ;;; Dynamic group keybindings
 
-(defvar *dynamic-group-top-map* nil)
-(defvar *dynamic-group-root-map* nil
+(defvar *dynamic-group-top-map* (sparse-keymap))
+(defvar *dynamic-group-root-map* (sparse-keymap)
   "Commands specific to a dynamic group context hang from this keymap.
 It is available as part of the @dnf{prefix map} when the active group
 is a dynamic group.")
 
-(fill-keymap *dynamic-group-top-map*
+(define-keymap *dynamic-group-top-map* ()
   *escape-key* '*dynamic-group-root-map*)
 
-(fill-keymap *dynamic-group-root-map*
-             (kbd "n") "rotate-windows forward"
-             (kbd "p") "rotate-windows backward"
-             (kbd "N") "rotate-stack forward"
-             (kbd "P") "rotate-stack backward"
-             (kbd "C-n") "fnext-in-head"
-             (kbd "C-p") "fprev-in-head"
-             (kbd "M-n") "hnext"
-             (kbd "M-p") "hprev"
-             (kbd "f") "fselect"
-             (kbd "F") "curframe"
-             (kbd "s") "swap-windows"
-             (kbd "RET") "exchange-with-master")
+(define-keymap *dynamic-group-root-map* ()
+  (kbd "n") "rotate-windows forward"
+  (kbd "p") "rotate-windows backward"
+  (kbd "N") "rotate-stack forward"
+  (kbd "P") "rotate-stack backward"
+  (kbd "C-n") "fnext-in-head"
+  (kbd "C-p") "fprev-in-head"
+  (kbd "M-n") "hnext"
+  (kbd "M-p") "hprev"
+  (kbd "f") "fselect"
+  (kbd "F") "curframe"
+  (kbd "s") "swap-windows"
+  (kbd "RET") "exchange-with-master")
 
 (pushnew '(dynamic-group *dynamic-group-top-map*) *group-top-maps*)
 

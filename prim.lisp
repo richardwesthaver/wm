@@ -393,7 +393,6 @@ make-instance."
   ;; within a method which accesses the objects slots.
   (dformat 1 "Initializing ~A ~S" class initargs)
   (let ((object (dprint (apply #'make-instance class initargs))))
-  (dformat 1 "Initializing " object)
     (prog1 object
       (loop for class in *active-global-minor-modes*
             when (typep object (scope-type (minor-mode-scope (dprint class))))
@@ -686,7 +685,8 @@ positive direction."
          ;; sort it and crop numbers below/above min depending on dir
          (nums (sort (remove-if (lambda (n)
                                   (funcall dirfn n min))
-                                l) dirfn))
+                                l)
+                     dirfn))
          (max (car (last nums)))
          (inc (if (eq dir :negative) -1 1))
          (new-num (loop for n = min then (+ n inc)

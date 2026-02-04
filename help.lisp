@@ -9,8 +9,6 @@
 ;;; Code:
 (in-package #:wm)
 
-(setq cmd:*command-names-p* nil)
-
 (defvar *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
   "The format string that decides how keybindings will show up in the
 which-key window. Two arguments will be passed to this formatter:
@@ -23,9 +21,10 @@ which-key window. Two arguments will be passed to this formatter:
   (let* ((rows (ceiling (length list) columns))
          (data (loop for i from 0 below (length list) by (max rows 1)
                      collect (subseq list i (min (+ i rows) (length list)))))
-         (max (mapcar (lambda (col)
-                        (reduce 'max col :key 'length :initial-value 0))
-                      data))
+         (max (map 'list 
+                   (lambda (col)
+                     (reduce 'max col :key 'length :initial-value 0))
+                   data))
          (padstr (make-string pad :initial-element char))
          (cols ;; normalize width
            (loop
@@ -45,17 +44,18 @@ which-key window. Two arguments will be passed to this formatter:
 (defun display-bindings-for-keymaps (key-seq &rest keymaps)
   (let* ((screen (current-screen))
          (data (mapcan (lambda (map)
-                         (mapcar (lambda (b)
-                                   (let ((bound-to (keybind-cmd b)))
-                                     (format nil *which-key-format*
-                                             (print-key (keybind-key b))
-                                             (cond ((or (symbolp bound-to)
-                                                        (stringp bound-to))
-                                                    bound-to)
-                                                   ((keymap-p bound-to)
-                                                    "Anonymous Keymap")
-                                                   (t "Unknown")))))
-                                 map))
+                         (map 'list 
+                              (lambda (b)
+                                (let ((bound-to (keybind-cmd b)))
+                                  (format nil *which-key-format*
+                                          (print-key (keybind-key b))
+                                          (cond ((or (symbolp bound-to)
+                                                     (stringp bound-to))
+                                                 bound-to)
+                                                ((keymap-p bound-to)
+                                                 "Anonymous Keymap")
+                                                (t "Unknown")))))
+                              map))
                        keymaps))
          (cols (ceiling (1+ (length data))
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
@@ -269,14 +269,15 @@ FIND-BINDING-IN-KMAP."
    (reduce
     (lambda (result map)
       (let* ((binding (handler-case (find key map
-                                          :key 'keybind-key :test 'equalp)
+                                          :key 'keybind-key :test 'key=)
+                        ;; ugly hack
                         (type-error () nil)))
              (command (when binding (keybind-cmd binding))))
         (if command
             (setf result (cons command result))
             result)))
     kmaps
-    :initial-value ())))
+    :initial-value nil)))
 
 (defun get-kmaps-at-key-seq (kmaps key-seq)
   "get a list of kmaps that are activated when pressing KEY-SEQ when
@@ -284,14 +285,14 @@ KMAPS are enabled"
   (if (= 1 (length key-seq))
       (get-kmaps-at-key kmaps (first key-seq))
       (get-kmaps-at-key-seq (get-kmaps-at-key kmaps (first key-seq))
-                            (rest key-seq))))
+                            (cdr key-seq))))
 
 (defun which-key-mode-key-press-hook (key key-seq cmd)
   "*key-press-hook* for which-key-mode"
-  (declare (ignore key cmd))
+  (dformat 1 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
   (when (not (eq *top-map* *resize-map*))
     (let* ((oriented-key-seq (reverse key-seq))
-           (maps (get-kmaps-at-key-seq (deref-keymaps (top-maps)) oriented-key-seq)))
+           (maps (get-kmaps-at-key-seq (top-maps) oriented-key-seq)))
       (when-let ((only-maps (remove-if-not 'keymap-p maps)))
                 (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
 
@@ -309,5 +310,3 @@ KMAPS are enabled"
               "Super" (keymod-super *xkeymod*)
               "Hyper" (keymod-hyper *xkeymod*)
               "AltGr" (keymod-altgr *xkeymod*)))
-
-(setq cmd:*command-names-p* t)

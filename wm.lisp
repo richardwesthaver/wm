@@ -51,16 +51,18 @@ further up."
 
 (defgeneric handle-top-level-condition (c))
 
-;; Do nothing by default; there's nothing wrong with signalling arbitrary
-;; conditions
-(defmethod handle-top-level-condition (c))
+(defmethod handle-top-level-condition (c)
+  (log-message* :info c))
 
-(defmethod handle-top-level-condition ((c warning)) (muffle-warning))
+(defmethod handle-top-level-condition ((c warning)) 
+  (log-message* :warn c)
+  (muffle-warning))
 
 (defmethod handle-top-level-condition ((c serious-condition))
+  (log-message* :fatal c)
   (ecase *top-level-error-action*
     (:message
-     (let ((s (format nil "~&Caught '~a' at the top level. Please report this." c)))
+     (let ((s (format nil "~&Caught '~a' at the top level" c)))
        (write-line s)
        (print-backtrace)
        (wm-message "^1*^B~a" s)))
@@ -71,6 +73,9 @@ further up."
                 (throw :top-level (list c (get-backtrace))))))
     (:abort
      (throw :top-level (list c (get-backtrace))))))
+
+(defmethod handle-top-level-condition ((c sb-sys:interactive-interrupt))
+  (sb-ext:exit :code 130))
 
 (defclass request-channel ()
   ((in    :initarg :in
@@ -193,56 +198,54 @@ further up."
     (setf *display* (xlib:open-display host :display display :protocol protocol)
           (xlib:display-error-handler *display*) 'error-handler)
     (with-simple-restart (quit-wm "Quit WM")
-      (log::with-conditions-logged
-        ;; In the event of an error, we always need to close the display
-        (unwind-protect
-             (progn
-               (let ((*initializing* t))
-                 ;; we need to do this first because init-screen grabs keys
-                 (dformat 5 "Updating modifier map")
-                 (update-modifier-map)
-                 ;; Initialize all the screens
-                 (setf *screen-list* (loop for i in (xlib:display-roots *display*)
-                                           for n from 0
-                                           collect (init-screen i n host)))
-                 (xlib:display-finish-output *display*)
-                 ;; Enable minor mode keymap lookup. This needs to be done after
-                 ;; screens are initialized.
-                 (push #'minor-mode-top-maps *minor-mode-maps*)
-                 ;; Load rc file
-                 (let ((*package* (find-package *default-package*)))
-                   (multiple-value-bind (success err rc) (load-init-file)
-                     (if success
-                         (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
-                         (wm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))
-                 (when *last-unhandled-error*
-                   (message-no-timeout "^B^1*WM Crashed With An Unhandled Error!~%Copy the error to the clipboard with the 'copy-unhandled-error' command.~%^b~a^B^n~%~%~a."
-                                       (first *last-unhandled-error*) (second *last-unhandled-error*)))
-                 (mapc 'process-existing-windows *screen-list*)
-                 ;; We need to setup each screen with its current window. Go
-                 ;; through them in reverse so the first screen's frame ends up
-                 ;; with focus.
-                 (dolist (s (reverse *screen-list*))
-                   ;; map the current group's windows
-                   (mapc 'unhide-window (reverse (group-windows (screen-current-group s))))
-                   ;; update groups
-                   (dolist (g (reverse (screen-groups s)))
-                     (dformat 3 "Group windows: ~S" (group-windows g))
-                     (group-startup g))
-                   ;; switch to the (old) current group.
-                   (let ((netwm-id (first (xlib:get-property (wm-screen-root s) :_NET_CURRENT_DESKTOP))))
-                     (when (and netwm-id (< netwm-id (length (screen-groups s))))
-                       (switch-to-group (elt (sort-groups s) netwm-id))))
-                   (redraw-current-message (current-screen))))
-               (run-hook *pre-thread-hook*)
-               ;; Start hashing the user's PATH so completion is quick
-               ;; the first time they try to run a command.
-               (sb-thread:make-thread #'rehash)
-               ;; Let's manage.
-               (let ((*package* (find-package *default-package*)))
-                 (run-hook *start-hook*)
-                 (wm-internal-loop)))
-          (xlib:close-display *display*)))))
+      ;; In the event of an error, we always need to close the display
+      (unwind-protect
+           (let ((*initializing* t))
+             ;; we need to do this first because init-screen grabs keys
+             (dformat 5 "Updating modifier map")
+             (update-modifier-map)
+             ;; Initialize all the screens
+             (setf *screen-list* (loop for i in (xlib:display-roots *display*)
+                                       for n from 0
+                                       collect (init-screen i n host)))
+             (xlib:display-finish-output *display*)
+             ;; Enable minor mode keymap lookup. This needs to be done after
+             ;; screens are initialized.
+             (push #'minor-mode-top-maps *minor-mode-maps*)
+             ;; Load rc file
+             (let ((*package* (find-package *default-package*)))
+               (multiple-value-bind (success err rc) (load-init-file)
+                 (if success
+                     (and *startup-message* (wm-message *startup-message* (print-key *escape-key*)))
+                     (wm-message "^B^1*Error loading ^b~A^B: ^n~A." rc err))))
+             (when *last-unhandled-error*
+               (message-no-timeout "^B^1*WM Crashed With An Unhandled Error!~%Copy the error to the clipboard with the 'copy-unhandled-error' command.~%^b~a^B^n~%~%~a."
+                                   (first *last-unhandled-error*) (second *last-unhandled-error*)))
+             (mapc 'process-existing-windows *screen-list*)
+             ;; We need to setup each screen with its current window. Go
+             ;; through them in reverse so the first screen's frame ends up
+             ;; with focus.
+             (dolist (s (reverse *screen-list*))
+               ;; map the current group's windows
+               (mapc 'unhide-window (reverse (group-windows (screen-current-group s))))
+               ;; update groups
+               (dolist (g (reverse (screen-groups s)))
+                 (dformat 3 "Group windows: ~S" (group-windows g))
+                 (group-startup g))
+               ;; switch to the (old) current group.
+               (let ((netwm-id (first (xlib:get-property (wm-screen-root s) :_NET_CURRENT_DESKTOP))))
+                 (when (and netwm-id (< netwm-id (length (screen-groups s))))
+                   (switch-to-group (elt (sort-groups s) netwm-id))))
+               (redraw-current-message (current-screen))))
+        (run-hook *pre-thread-hook*)
+        ;; Start hashing the user's PATH so completion is quick
+        ;; the first time they try to run a command.
+        (sb-thread:make-thread #'rehash)
+        ;; Let's manage.
+        (let ((*package* (find-package *default-package*)))
+          (run-hook *start-hook*)
+          (wm-internal-loop)))
+      (xlib:close-display *display*)))
   :quit)
 
 (defun force-wm-restart (&key (close-display t))
@@ -255,9 +258,8 @@ further up."
   (setq *data-dir* (default-data-dir))
   (ensure-data-dir)
   (init :log :pipe 
-            `((level-filter :id :level-filter)
-              (tag-tree-filter :id :tag-filter)
-              (backup-file-sink :path ,(data-dir-file "wm.log"))))
+        `((tag-tree-filter :id :tag-filter)
+          (backup-file-sink :path ,(data-dir-file "wm.log"))))
   (load-commands :wm)
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm")
