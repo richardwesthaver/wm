@@ -392,7 +392,7 @@ converted to an atom is removed."
   (setf (getf *x-selection* selection) nil))
 
 (define-wm-event-handler :selection-notify (window property selection)
-  (dformat 2 "selection-notify: ~s ~s ~s" window property selection)
+  (dformat 3 "selection-notify: ~s ~s ~s" window property selection)
   (when property
     (let* ((selection (or selection :primary))
            (sel-string (utf8-to-string

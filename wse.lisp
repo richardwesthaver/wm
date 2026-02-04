@@ -16,8 +16,7 @@
          (or arggroup (current-group)))))
     (mapcar (lambda (w) (move-window-to-group w group)) windows)))
 
-(defgeneric
-  list-windows (range)
+(defgeneric list-windows (range)
   (:documentation "List all the windows in a set."))
 
 (defmethod list-windows ((range t))

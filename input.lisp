@@ -199,8 +199,7 @@ Available completion styles include
 
 (defun character-from-keycode (code mods)
   (let ((idx (if (member :shift mods) 1 0)))
-    (dprint code)
-    (xlib:character-from-keysym *display* (dprint (xlib:keysym-from-keycode *display* code idx)) 0)))
+    (xlib:character-from-keysym *display* (xlib:keysym-from-keycode *display* code idx) 0)))
 
 ;;; line and key reading functions
 (defun setup-input-window (screen prompt input)
@@ -319,6 +318,7 @@ match with an element of the completions."
     (when line (string-trim " " line))))
 
 (defvar *input-candidate-selected-hook* nil)
+;; TODO: WM-EDITOR?
 (defun read-one-line (screen prompt &key completions (initial-input "") require-match password)
   "Read a line of input through WM and return it. Returns nil if the user aborted."
   (let ((*input-last-command* nil)
@@ -340,7 +340,7 @@ match with an element of the completions."
                                       (car compls))))))
              (key-loop ()
                (with-focus (screen-input-window screen)
-                 (loop for key = (read-key-or-selection)
+                 (loop for key = (dprint (read-key-or-selection))
                     do
                       (cond ((stringp key)
                              ;; handle selection
@@ -367,7 +367,7 @@ match with an element of the completions."
   (dformat 1 "Reading from screen ~A" screen)
   (with-focus (screen-key-window screen)
     (let ((k (read-key-no-modifiers)))
-      (dprint k)
+      (dprint k) ; keycodes
       (character-from-keycode (car k) (xlib:make-state-keys (cdr k))))))
 
 (defun read-one-char-or-click (group)

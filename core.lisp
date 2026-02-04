@@ -64,6 +64,7 @@
      (xlib-fake-click (wm-screen-root (window-screen win)) (window-xwin win) button))))
 
 ;;; Pointer helper functions
+;; TODO: bump-queue?
 (defun grab-pointer (screen)
   "Grab the pointer and set the pointer shape."
   (incf *grab-pointer-count*)

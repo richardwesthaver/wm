@@ -440,6 +440,7 @@ appropriate mode line click function."
   (check-type screen screen)
   (check-type head head)
   (check-type format (or symbol list string))
+  (dformat 3 "enabling modeline on ~A" head)
   (let ((mode-line (head-mode-line head)))
     (cond
       ((and state mode-line)

@@ -207,8 +207,7 @@ such a case, kill the shell command to resume WM."
                         "You are about to quit the window manager to TTY."
                         "Really ^1^Bquit^b^n ^B^WM^n^b?"
                         "^B^6Confirm?^n "))
-      (progn (dprint "got here..")
-             (quit-wm))
+      (quit-wm)
       (xlib:unmap-window (screen-message-window (current-screen)))))
 
 (defcommand restart-soft ()
@@ -292,9 +291,9 @@ current frame instead of switching to the window."
 (defcommand reload ()
   "Reload WM using ASDF."
   (wm-message "Reloading WM...")
+  ;; TODO std/defsys..
   #+asdf (with-restarts-menu
            (asdf:operate 'asdf:load-op :wm))
-  #-asdf (wm-message "^B^1*Sorry, WM can only be reloaded with asdf (for now).")
   #+asdf (wm-message "Reloading WM...^B^2*Done^n."))
 
 (defcommand emacs ()
