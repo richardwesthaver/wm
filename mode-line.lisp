@@ -447,7 +447,7 @@ appropriate mode line click function."
        (when format
          (setf (mode-line-format mode-line) format)))
       (state
-       (toggle-mode-line screen head (or format '*screen-mode-line-format*)))
+       (toggle-mode-line screen head (or format *screen-mode-line-format*)))
       (mode-line
        (toggle-mode-line screen head)))))
 
