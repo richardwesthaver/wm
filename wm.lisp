@@ -9,29 +9,6 @@
   "Dynamically bound to T during the execution of the main wm function.")
 
 ;;; Main
-(defun load-init-file (&optional (catch-errors t))
-  "Load the user's WM init file or the system wide one if that
-doesn't exist. Returns a values list: whether the file loaded (t if no
-rc files exist), the error if it didn't, and the rc file that was
-loaded. When CATCH-ERRORS is nil, errors are left to be handled
-further up."
-  (let* ((user-rc (std:xdg-config-file :wm))
-         (dir-rc
-           (probe-file (std:xdg-config-dir :wm "init.lisp")))
-         (conf-rc
-           (probe-file (std:xdg-config-dir :wm "config/")))
-         (etc-rc (probe-file #p"/etc/wmrc"))
-         (rc (or user-rc dir-rc conf-rc etc-rc)))
-    (if rc
-        (if catch-errors
-            (handler-case (load rc)
-              (error (c) (values nil (format nil "~a" c) rc))
-              (:no-error (&rest args) (declare (ignore args)) (values t nil rc)))
-            (progn
-              (load rc)
-              (values t nil rc)))
-        (values t nil nil))))
-
 (defun error-handler (display error-key &rest key-vals &key asynchronous &allow-other-keys)
   "Handle X errors"
   (cond
@@ -257,10 +234,9 @@ further up."
   (init :xdg)
   (setq *data-dir* (default-data-dir))
   (ensure-data-dir)
-  (init :log :pipe 
-        `((tag-tree-filter :id :tag-filter)
-          (backup-file-sink :path ,(data-dir-file "wm.log"))))
   (load-commands :wm)
+  (when-let ((cfg (load-wm-config)))
+    (build cfg))
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm")
     (force-wm-restart)))

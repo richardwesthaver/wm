@@ -1,19 +1,19 @@
 (in-package :wm/disk)
 
-(add-screen-mode-line-formatter #\D 'disk-mode-line)
+(add-screen-mode-line-formatter #\D 'wm/disk::disk-mode-line)
 
-(defparameter *disk-usage* nil)
+(defvar *disk-usage* nil)
 
-(defparameter *disk-formatters-alist*
+(defvar *disk-formatters-alist*
   '((#\d  disk-get-device)
     (#\s  disk-get-size)
     (#\u disk-get-used)
     (#\a  disk-get-available)
     (#\p  disk-get-use-percent)
     (#\m  disk-get-mount-point)
-    (#\f  disk-get-filesystem-type)))
+    (#\T  disk-get-filesystem-type)))
 
-(defparameter *disk-modeline-fmt* "%d:%p"
+(defvar *disk-modeline-fmt* "%d:%p"
   "The default value for displaying disk usage information on the modeline.
 
 %% = A literal '%'
@@ -77,8 +77,7 @@
 
 (defun disk-mode-line (ml)
   (declare (ignore ml))
-  (let ((fmts (loop for p in *disk-usage-paths* collect
-                   (format-expand *disk-formatters-alist*
-                                  *disk-modeline-fmt*
-                                  p))))
-    (format nil "~{~a ~}" fmts)))
+  (format nil "~{~a~^ ~}"
+          (collecting
+            (dolist (v *disk-usage-paths*)
+              (collect (format-expand *disk-formatters-alist* *disk-modeline-fmt* v))))))

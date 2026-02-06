@@ -32,7 +32,7 @@
     (#\c time-date-and-time)
     (#\C time-century)
     (#\d time-day-of-month-zero)
-    (#\D time-date)
+    ;; (#\D time-date)
     (#\e time-day-of-month)
     (#\F time-date-full)
     ;; (#\g)   last two digits of year of ISO week number (see %G)

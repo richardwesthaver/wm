@@ -81,6 +81,7 @@ timer.")
   "The timer that updates the modeline")
 
 ;;; Formatters
+
 (defun add-screen-mode-line-formatter (character fmt-fun)
   "Add a format function to a format character (or overwrite an existing one)."
   (setf *screen-mode-line-formatters*

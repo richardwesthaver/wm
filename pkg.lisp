@@ -403,12 +403,19 @@
    minor-mode-enabled-p
    find-minor-mode
    generate-keymap
-   quit-wm))
+   quit-wm
+   *wm-config*
+   wm-config
+   default-wm-logger-config))
 
 (std:defpkg :wm-user
   (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:kbd #:skel #:homer #:krypt #:packy #:cmd))
 
+(in-package :wm)
+(init :commands :name :wm :class 'wm-command :names t :clean t)
+(init :annotations :name :wm :copy :std)
 (eval-when (:load-toplevel)
   (pushnew :wm *features*)
   (setq *default-package* "WM-USER"))
+
 

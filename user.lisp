@@ -184,10 +184,10 @@ such a case, kill the shell command to resume WM."
   (handler-case 
       (with-restarts-menu (load-init-file nil))
     (error (c)
-      (wm-message "^1*^BError loading init file: ^n~A" c))
+      (wm-message "^1*^BError loading init files: ^n~A" c))
     (:no-error (&rest args)
       (declare (ignore args))
-      (wm-message "init file loaded successfully."))))
+      (wm-message "init files loaded successfully."))))
 
 (defcommand (:wm keyboard-quit abort) ()
   "This way you can exit from command mode. Also aliased as abort."

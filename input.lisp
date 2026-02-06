@@ -332,7 +332,7 @@ match with an element of the completions."
                                 :history -1
                                 :password password)))
     (labels ((match-input ()
-               (let* ((in (string-trim " " (input-line-string input)))
+               (let* ((in (dprint (string-trim " " (input-line-string input))))
                       (compls (input-find-completions in completions)))
                  (and (consp compls)
                       (string= in (if (consp (car compls))
@@ -347,7 +347,7 @@ match with an element of the completions."
                              (input-insert-string input key)
                              (draw-input-bucket screen prompt input))
                             ;; skip modifiers
-                            ((is-modifier (car key)))
+                            ((is-modifier (car key)) nil)
                             ((process-screen-input screen prompt input (car key) (cdr key))
                              (if (or (not require-match)
                                      (match-input))

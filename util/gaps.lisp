@@ -3,7 +3,7 @@
 ;;; Code:
 (in-package #:wm/gaps)
 
-(defvar *inner-gaps-size* 5)
+(defvar *inner-gaps-size* 2)
 (defvar *outer-gaps-size* 10)
 (defvar *head-gaps-size* 0)
 (defvar *gaps-on* nil)
@@ -182,4 +182,4 @@ HEIGHT are subtracted."
 (defcommand toggle-gaps-off ()
   "Turn gaps off"
   (setf *gaps-on* nil)
-  (exec (command :refresh-heads)))
+  (exec :refresh-heads))

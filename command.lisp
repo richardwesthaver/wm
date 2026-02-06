@@ -9,12 +9,10 @@
 ;;; Code:
 (in-package #:wm)
 (defkernel wm-command (command) ())
-(init :commands :name :wm :class 'wm-command :names t :clean t)
 (defmethod name ((self wm-command))
   "The name of a WM command, which is the keyword used to access it in
 *COMMANDS*. NOTE: uses linear search."
   (maphash (lambda (k v) (when (equiv v self) (return-from name k))) *commands*))
-
 ;; instead of requiring a :class slot, we just subclass wm-command for our
 ;; groups (tiling, floating, and dynamic)
 (defkernel wm-tile-command (wm-command) ())
@@ -255,7 +253,7 @@ String arguments with spaces may be passed to the command by delimiting them
 with double quotes. A backslash can be used to escape double quotes or
 backslashes inside the string. This does not apply to commands taking :REST or
 :SHELL type arguments."
-  (declare (interactive (rest "foo: ")))
+  ;; (declare (interactive (rest "foo: ")))
   (let ((cmd (completing-read-screen (current-screen) ": " (wm-commands) :initial-input (or initial-input ""))))
     (unless cmd
       (throw 'cmd :abort))

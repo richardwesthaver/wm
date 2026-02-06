@@ -1,7 +1,7 @@
 ;;; ~/comp/shed/wm/wm.sys --- WM Sytem Definitions
 (defsys :wm
  :version "0.1.1"
- :require (:core :xlib)
+ :require (:core :xlib :swank)
  :components 
  ((:file "pkg")
   (:file "prim")

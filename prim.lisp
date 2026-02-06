@@ -10,6 +10,54 @@
 ;;; Code:
 (in-package :wm)
 
+;;; Config
+(defvar *wm-config* nil)
+(defun default-wm-logger-config ()
+  (default-logger-config `(backup-file-sink :path ,(data-dir-file "wm.log"))))
+(defconfig wm-config (ast)
+  ((theme :initform nil) 
+   (logger :initform (default-wm-logger-config)) 
+   (groups :initform nil) 
+   (swank :initform nil)))
+
+(defmethod make-config ((self (eql :wm)) &rest args) (apply 'make-instance 'wm-config args))
+(defmethod load-config ((self (eql :wm)) (from pathname) &key)
+  (let ((c (make-config :wm)))
+    (with-safe-io-syntax (:wm)
+      (read-ast c from)
+      (load-ast c))
+    (setf (ast c) nil)
+    c))
+(defmethod build ((self wm-config) &key)
+  (setq *logger* (when-let ((log (slot-value self 'logger))) (build log)))
+  (load-theme (slot-value self 'theme))
+  (when (slot-value self 'swank)
+    (let ((swank-file (xdg-data-dir :wm "swank")))
+      (when (probe-file swank-file) (delete-file swank-file))
+      (std:with-thread ()
+        (swank:start-server swank-file))))
+  (setq *wm-config* self))
+
+(defun load-init-file (&optional (catch-errors t))
+  "Load the user's WM init file. Returns a values list: whether the file loaded (t if no
+user-init files exist), the error if it didn't, and the user-init file that
+was loaded. When CATCH-ERRORS is nil, errors are left to be handled further
+up."
+  (if-let ((user-init (probe-file (std:xdg-config-dir :wm "init.lisp"))))
+    (if catch-errors
+        (handler-case (load user-init)
+          (error (c) (values nil (format nil "~a" c) user-init))
+          (:no-error (&rest args) (declare (ignore args)) (values t nil user-init)))
+        (progn
+          (load user-init)
+          (values t nil user-init)))
+    (values t nil nil)))
+
+(defun load-wm-config ()
+  "Load the user's WM config file."
+  (when-let ((rc (or (std:xdg-config-file :wm) (probe-file #p"/etc/wmrc"))))
+    (load-config :wm rc)))
+
 ;;; Completions
 (defvar *maximum-completions* 100
   "Maximum number of completions to show in interactive prompts. Setting
@@ -257,10 +305,10 @@ Window types are in +WINDOW-TYPES+.")
   "The events to listen for on managed windows' parents.")
 
 ;; Message window variables
-(defvar *message-window-padding* 5
+(defvar *message-window-padding* 8
   "The number of pixels that pad the text in the message window.")
 
-(defvar *message-window-y-padding* 0
+(defvar *message-window-y-padding* 4
   "The number of pixels that pad the text in the message window vertically.")
 
 (defvar *message-window-margin* 0
