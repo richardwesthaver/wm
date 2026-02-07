@@ -697,6 +697,7 @@ and bottom_end_x."
     (xwin-hide w)))
 
 (defun xwin-grab-key (w key)
+  (dformat 2 "grabbing key ~A" key)
   (labels ((add-shift-modifier (key)
              ;; don't butcher the caller's structure
              (let ((key (copy-structure key)))
@@ -704,41 +705,39 @@ and bottom_end_x."
                key))
            (key-modifiers-exist-p (key)
              (and
-              (or (not (key-meta key)) (keymod-meta *xkeymod*))
-              (or (not (key-alt key)) (keymod-alt *xkeymod*))
-              (or (not (key-hyper key)) (keymod-hyper *xkeymod*))
-              (or (not (key-super key)) (keymod-super *xkeymod*)))))
+              (or (not (key-meta key)) (modmap-meta *xkeymod*))
+              (or (not (key-alt key)) (modmap-alt *xkeymod*))
+              (or (not (key-hyper key)) (modmap-hyper *xkeymod*))
+              (or (not (key-super key)) (modmap-super *xkeymod*)))))
     (loop for code in (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key)))
           ;; some keysyms aren't mapped to keycodes so just ignore them.
-          when (and code (key-modifiers-exist-p key))
-          do
+          when (and code (dprint (key-modifiers-exist-p key)))
           ;; Some keysyms, such as upper case letters, need the
           ;; shift modifier to be set in order to grab properly.
-             (let ((key
-                     (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
-                              (eql (key-sym key) (xlib:keysym-from-keycode *display* code 1)))
-                         (add-shift-modifier key)
-                         key)))
+          do (let ((key (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
+                                 (eql (key-sym key) (xlib:keysym-from-keycode *display* code 1)))
+                            (add-shift-modifier key)
+                            key)))
                (xlib:grab-key w code
                               :modifiers (x11-mods key) :owner-p t
                               :sync-pointer-p nil :sync-keyboard-p nil)
                ;; Ignore capslock and numlock by also grabbing the
                ;; keycombos with them on.
-               (xlib:grab-key w code :modifiers (x11-mods key t) :owner-p t
+               (xlib:grab-key w code :modifiers (x11-mods key nil t) :owner-p t
                                      :sync-keyboard-p nil :sync-keyboard-p nil)
-               (when (keymod-numlock *xkeymod*)
+               (when (modmap-numlock *xkeymod*)
                  (xlib:grab-key w code
-                                :modifiers (cons :numlock (x11-mods key)) :owner-p t
+                                :modifiers (x11-mods key t nil) :owner-p t
                                 :sync-pointer-p nil :sync-keyboard-p nil)
-                 (xlib:grab-key w code :modifiers (cons :numlock (x11-mods key t)) :owner-p t
+                 (xlib:grab-key w code :modifiers (x11-mods key t t) :owner-p t
                                        :sync-keyboard-p nil :sync-keyboard-p nil))))))
 
 (defun xwin-grab-keys (win group)
   (dolist (map (deref-keymaps (top-maps group))) ;; vector -> list
     (unless (sequence:emptyp map)
-      (dformat 1 "Grabbing keymaps ~A" map)
-      (sb-int:dovector (i map)
-        (xwin-grab-key win (keybind-key i))))))
+      (dformat 1 "Grabbing keymaps..")
+      (loop for i of-type keybind across map
+            do (xwin-grab-key win (keybind-key i))))))
 
 (defun grab-keys-on-window (win)
   (xwin-grab-keys (window-xwin win) (window-group win)))
@@ -766,6 +765,7 @@ and bottom_end_x."
 
 (defun sync-keys ()
   "Any time *top-map* is modified this must be called."
+  (dformat 1 "syncing keys..")
   (loop for i in *screen-list*
         do (xwin-ungrab-keys (screen-focus-window i))
            (loop for j in (screen-mapped-windows i)
@@ -773,9 +773,50 @@ and bottom_end_x."
            (loop for j in (screen-mapped-windows i)
                  do (xwin-grab-keys j (window-group (find-window j))))
            (xwin-grab-keys (screen-focus-window i) (screen-current-group i)))
+  ;; todo
   (when (current-window)
     (remap-keys-grab-keys (current-window)))
+  (dformat 1 "sync complete..")
   (xlib:display-finish-output *display*))
+
+(defcommand command-mode ()
+  "Command mode allows you to type WM commands without needing the
+'C-t' prefix. Keys not bound in WM will still get sent to the
+current window. To exit command mode, type 'C-g'."
+  (run-hook *command-mode-start-hook*)
+  (push-top-map *root-map*))
+
+(defcommand set-prefix-key (key)
+  "Change the WM prefix key to KEY.
+
+(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
+
+This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
+most standards, a terrible prefix key but it makes a great example."
+  (declare (interactive (key "Key: ")))
+  (check-type key key)
+  (setf *escape-key* key)
+  ;; if the escape key has no modifiers then disable the fake key by giving it
+  ;; keysym 0 (NoSymbol). Otherwise you have 2 identical bindings and the one
+  ;; that appears first in the list will be matched.
+  (copy (make-key :sym (if (key-mods-p *escape-key*)
+                           (key-sym key)
+                           0))
+        *escape-fake-key*)
+  (dformat 1 "New prefix key: ~A" *escape-key*)
+  (dformat 1 "Fake prefix key: ~A" *escape-fake-key*)
+  (sync-keys))
+
+(command-alias :escape :set-prefix-key)
+
+(defcommand bind-key (key command)                
+  "Hang a key binding off the escape key."
+  (declare (interactive (string "Key chord: ") (rest "Command: ")))
+  (define-key *root-map* (kbd key) command))
+
+(defcommand send-escape ()
+  "Send the escape key to the current window."
+  (send-meta-key (current-screen) *escape-key*))
 
 (defun netwm-remove-window (window)
   (xlib:delete-property (window-xwin window) :_NET_WM_DESKTOP))

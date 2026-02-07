@@ -189,7 +189,7 @@ The Caller is responsible for setting up the input focus."
                (when grab (ungrab-pointer)))))
           (match
               (values match key-seq))
-          ((and (find key *help-keys* :key #'kbd :test 'equalp))
+          ((find key *help-keys* :test 'key-eq)
            (apply 'display-bindings-for-keymaps (reverse (cdr key-seq)) (deref-keymaps kmaps))
            (values t key-seq))
           (t

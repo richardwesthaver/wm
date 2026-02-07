@@ -42,6 +42,7 @@ which-key window. Two arguments will be passed to this formatter:
     (apply 'mapcar 'concat (or cols '(nil)))))
 
 (defun display-bindings-for-keymaps (key-seq &rest keymaps)
+  (dformat 1 "Displaying bindings for ~A" key-seq)
   (let* ((screen (current-screen))
          (data (mapcan (lambda (map)
                          (map 'list 
@@ -62,7 +63,7 @@ which-key window. Two arguments will be passed to this formatter:
                                   (font-height (screen-font screen))))))
     (message-no-timeout "Prefix: ~a~%~{~a~^~%~}"
                         (print-key-seq key-seq)
-                        (or (columnize data cols) '("(EMPTY MAP)")))))
+                        (or (dprint (columnize data cols)) '("(EMPTY MAP)")))))
 
 (defcommand list-commands ()
   "List all available commands."
@@ -76,7 +77,7 @@ which-key window. Two arguments will be passed to this formatter:
 
 (defun final-key-p (keys class)
   "Determine if the key is a member of a class"
-  (member (lastcar keys) (mapcar #'parse-key class) :test #'equalp))
+  (member (lastcar keys) class :test #'key-eq))
 
 (defun help-key-p (keys)
   "If the key is for the help command."
@@ -84,7 +85,7 @@ which-key window. Two arguments will be passed to this formatter:
 
 (defun cancel-key-p (keys)
   "If a key is the cancelling key binding."
-  (final-key-p keys '("C-g")))
+  (final-key-p keys (list (kbd "C-g"))))
 
 (defcommand describe-key (keys)
   "Either interactively type the key sequence or supply it as text. This
@@ -268,10 +269,7 @@ FIND-BINDING-IN-KMAP."
   (deref-keymaps
    (reduce
     (lambda (result map)
-      (let* ((binding (handler-case (find key map
-                                          :key 'keybind-key :test 'key=)
-                        ;; ugly hack
-                        (type-error () nil)))
+      (let* ((binding (find key map :key 'keybind-key :test 'key-eq))
              (command (when binding (keybind-cmd binding))))
         (if command
             (setf result (cons command result))
@@ -305,8 +303,8 @@ KMAPS are enabled"
 (defcommand modifiers ()
   "List the modifiers WM recognizes and what MOD-X it thinks they're on."
   (wm-message "~@{~5@a: ~{~(~a~)~^ ~}~%~}"
-              "Meta" (keymod-meta *xkeymod*)
-              "Alt" (keymod-alt *xkeymod*)
-              "Super" (keymod-super *xkeymod*)
-              "Hyper" (keymod-hyper *xkeymod*)
-              "AltGr" (keymod-altgr *xkeymod*)))
+              "Meta" (modmap-meta *xkeymod*)
+              "Alt" (modmap-alt *xkeymod*)
+              "Super" (modmap-super *xkeymod*)
+              "Hyper" (modmap-hyper *xkeymod*)
+              "AltGr" (modmap-altgr *xkeymod*)))

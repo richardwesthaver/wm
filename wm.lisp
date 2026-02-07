@@ -140,8 +140,6 @@
       (let ((io (make-instance *default-io-loop*)))
         ;; (io-loop-add io (make-instance 'wm-timer-channel))
         (io-loop-add io (make-instance 'display-channel :display *display*))
-        ;; If we have no implementation for the current CL, then
-        ;; don't register the channel.
         (multiple-value-bind (in out) (open-pipe)
           (let ((channel (make-instance 'request-channel :in in :out out)))
             (io-loop-add io channel)
@@ -179,7 +177,6 @@
       (unwind-protect
            (let ((*initializing* t))
              ;; we need to do this first because init-screen grabs keys
-             (dformat 5 "Updating modifier map")
              (update-modifier-map)
              ;; Initialize all the screens
              (setf *screen-list* (loop for i in (xlib:display-roots *display*)

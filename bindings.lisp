@@ -14,7 +14,7 @@
 should use this specific key struct instead of creating their own
 C-t.")
 
-(defvar *help-keys* '("?" "C-h")
+(defvar *help-keys* (list (kbd "?") (kbd "C-h"))
   "The list of keys used to invoke the help command.")
 
 (defvar *escape-fake-key* (kbd "t")
@@ -61,7 +61,6 @@ is a tile group.")
 
 (define-keymap *top-map* ()
   *escape-key* '*root-map*)
-
 ;; TODO: define-smart-keymap (shadow mod keys)
 (define-keymap *root-map* ()
   (kbd "c")   "exec xterm"
@@ -94,10 +93,8 @@ is a tile group.")
   (kbd "F9")  "gselect 9"
   (kbd "F10") "gselect 10"
   (kbd "h")   '*help-map*)
-
 (define-keymap *group-top-map* ()
   *escape-key* '*group-root-map*)
-
 (define-keymap *group-root-map* ()
   (kbd "C-u") "next-urgent"
   (kbd "M-n")     "next"
@@ -129,10 +126,8 @@ is a tile group.")
   (kbd "A")   "title"
   (kbd "i")   "info"
   (kbd "I")   "show-window-properties")
-
 (define-keymap *tile-group-top-map* ()
   *escape-key* '*tile-group-root-map*)
-
 (define-keymap *tile-group-root-map* ()
   (kbd "n")       "pull-hidden-next"
   (kbd "C-n")     "pull-hidden-next"
@@ -180,7 +175,6 @@ is a tile group.")
   (kbd "+")       "balance-frames"
   (kbd "l")       "redisplay"
   (kbd "C-l")     "redisplay")
-
 (define-keymap *groups-map* ()
   (kbd "g")     "groups"
   (kbd "c")     "gnew"
@@ -229,40 +223,3 @@ is a tile group.")
   (kbd "k") "describe-key"
   (kbd "c") "describe-command"
   (kbd "w") "where-is")
-
-(defcommand command-mode ()
-  "Command mode allows you to type WM commands without needing the
-'C-t' prefix. Keys not bound in WM will still get sent to the
-current window. To exit command mode, type 'C-g'."
-  (run-hook *command-mode-start-hook*)
-  (push-top-map *root-map*))
-
-(defcommand set-prefix-key (key)
-  "Change the WM prefix key to KEY.
-
-(wm:set-prefix-key (wm:kbd \"C-M-H-s-z\"))
-
-This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
-most standards, a terrible prefix key but it makes a great example."
-  (declare (interactive (key "Key: ")))
-  (check-type key key)
-  (copy key *escape-key*)
-  ;; if the escape key has no modifiers then disable the fake key by giving it
-  ;; keysym 0 (NoSymbol). Otherwise you have 2 identical bindings and the one
-  ;; that appears first in the list will be matched.
-  (copy (make-key :sym (if (key-mods-p *escape-key*)
-                           (key-sym key)
-                           0))
-        *escape-fake-key*)
-  (sync-keys))
-
-(command-alias :escape :set-prefix-key)
-
-(defcommand bind-key (key command)                
-  "Hang a key binding off the escape key."
-  (declare (interactive (string "Key chord: ") (rest "Command: ")))
-  (define-key *root-map* (kbd key) command))
-
-(defcommand send-escape ()
-  "Send the escape key to the current window."
-  (send-meta-key (current-screen) *escape-key*))

@@ -1294,6 +1294,8 @@ is a dynamic group.")
   (kbd "s") "swap-windows"
   (kbd "RET") "exchange-with-master")
 
-(pushnew '(dynamic-group *dynamic-group-top-map*) *group-top-maps*)
+(pushnew '(dynamic-group *dynamic-group-top-map*) *group-top-maps*
+         :test (lambda (a b) (and (listp a) (listp b)
+                                  (eql (car a) (car b)))))
 
 (setq *command-class* 'wm-command)

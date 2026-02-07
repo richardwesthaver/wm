@@ -25,19 +25,17 @@ prefix map.")
   "Color of a keybinding when displayed in windows such as the prefix
 keybinding in the which-key window.")
 
-(defun x11-mods (key &optional with-capslock with-scroll-lock)
-  "Return the modifiers for key in a format that xlib understands. If
-WITH-CAPSLOCK is non-nil then include the capslock modifier. Most of the time
-these just gets in the way."
+(defun x11-mods (key &optional with-numlock with-capslock)
+  "Return the modifiers for key in a format that xlib understands."
   (let (mods)
     (when (key-shift key) (push :shift mods))
     (when (key-control key) (push :control mods))
-    (when (or (key-meta key) (key-alt key)) (push :mod-1 mods))
-    (when (key-altgr key) (push :mod-5 mods))
-    (when (or (key-hyper key) (key-super key)) (push :mod-4 mods))
-    (when (key-numlock key) (push :mod-2 mods))
+    (when (key-meta key) (setf mods (append (modmap-meta *xkeymod*) mods)))
+    (when (key-alt key) (setf mods (append (modmap-alt *xkeymod*) mods)))
+    (when (key-hyper key) (setf mods (append (modmap-hyper *xkeymod*) mods)))
+    (when (key-super key) (setf mods (append (modmap-super *xkeymod*) mods)))
+    (when with-numlock (setf mods (append (modmap-numlock *xkeymod*) mods)))
     (when with-capslock (push :lock mods))
-    (when with-scroll-lock (push :mod-3 mods))
     (apply 'xlib:make-state-mask mods)))
 
 (defvar *altgr-offset* 2
@@ -71,6 +69,7 @@ these just gets in the way."
 (defun %sync-top-map (map)
   ;; TODO 2026-01-25: should probably be equiv?
   (when (equalp map *top-map*)
+    (dprint "syncing top map..")
     (sync-keys)))
 
 ;; We need to tell the X server when changing the top-map bindings.
@@ -78,15 +77,15 @@ these just gets in the way."
 
 ;;; The Top Map
 ;; DONE 2026-01-25: async-aware queue
-(defvar *top-map-queue* (make-cons-queue))
+(defvar *top-map-queue* nil)
 
 (defun push-top-map (new-top)
-  (push-queue *top-map* *top-map-queue*)
+  (push *top-map* *top-map-queue*)
   (setf *top-map* new-top)
   (sync-keys))
 
 (defun pop-top-map ()
   (when *top-map-queue*
-    (setf *top-map* (pop-queue *top-map-queue*))
+    (setf *top-map* (pop *top-map-queue*))
     (sync-keys)
     t))

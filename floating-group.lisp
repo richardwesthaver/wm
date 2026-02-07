@@ -28,8 +28,8 @@
 
 (defun float-window-modifier ()
   "Convert the *FLOAT-WINDOW-MODIFIER* to its corresponding X11."
-  (when-let ((fn (find-symbol (concat "KEYMOD-" (symbol-name *float-window-modifier*))
-                              (find-package "KBD"))))
+  (when-let ((fn (find-symbol (concat "MODMAP-" (symbol-name *float-window-modifier*))
+                              (find-package "WM"))))
     (funcall fn *xkeymod*)))
 
 ;; some book keeping functions
@@ -430,7 +430,9 @@ is a float group.")
   (kbd "n")  "next"
   (kbd "p")  "prev")
 
-(pushnew '(float-group *float-group-top-map*) *group-top-maps*)
+(pushnew '(float-group *float-group-top-map*) *group-top-maps* 
+         :test (lambda (a b) (and (listp a) (listp b)
+                                  (eql (car a) (car b)))))
 
 (defcommand gnew-float (name)
   "Create a floating window group with the specified name and switch to it."

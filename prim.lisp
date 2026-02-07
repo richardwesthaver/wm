@@ -15,9 +15,15 @@
 (defun default-wm-logger-config ()
   (default-logger-config `(backup-file-sink :path ,(data-dir-file "wm.log"))))
 (defconfig wm-config (ast)
-  ((theme :initform nil) 
-   (logger :initform (default-wm-logger-config)) 
-   (groups :initform nil) 
+  ((theme :initform nil)
+   (logger :initform (default-wm-logger-config))
+   (groups :initform nil)
+   ;; (hooks)
+   ;; (mode-line-format)
+   ;; (desktop) 
+   ;; (kbd) (prefix-key,maps,etc)
+   ;; (commands)
+   ;; (skel)
    (swank :initform nil)))
 
 (defmethod make-config ((self (eql :wm)) &rest args) (apply 'make-instance 'wm-config args))
@@ -643,8 +649,16 @@ char."
 (defvar *modifier-keycodes* nil
   "A list of all keycodes that are considered modifiers")
 
-(declaim (keymod *xkeymod*))
-(defvar *xkeymod* 0
+(defstruct modmap
+  (meta nil)
+  (alt nil)
+  (hyper nil)
+  (super nil)
+  (altgr nil)
+  (numlock nil))
+
+(declaim (modmap *xkeymod*))
+(defvar *xkeymod* (make-modmap)
   "A mapping from modifier type to x11 modifier.")
 
 (defmethod print-wm-object ((obj screen) stream)

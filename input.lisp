@@ -51,7 +51,7 @@ and complete the input by mutating it."))
               (input-insert-char input #\Space))
             ;; Prepare the next completion
             (setf idx (mod (+ idx (if (eq direction :forward) 1 -1)) completion-count))
-          :error)))))
+            :error)))))
 
 (defun make-input-completion-style-cyclic ()
   (make-instance 'input-completion-style-cyclic))
@@ -78,7 +78,7 @@ and complete the input by mutating it."))
 
 (defun make-input-completion-style-unambiguous (&key (display-limit 64))
   (make-instance 'input-completion-style-unambiguous
-                 :display-limit display-limit))
+    :display-limit display-limit))
 
 (defun input-refine-prefix (str candidates)
   (remove-if-not (lambda (elt)
@@ -184,7 +184,7 @@ Available completion styles include
 ;;; keysym functions
 (defun is-modifier (keycode)
   "Return t if keycode is a modifier"
-  (or (find keycode *modifier-keycodes* :test '=)
+  (or (find keycode *modifier-keycodes* :test 'eql)
       ;; Treat No Symbol keys as modifiers (and therefore ignorable)
       (= (xlib:keysym-from-keycode *display* keycode 0) 0)))
 
@@ -194,7 +194,7 @@ Available completion styles include
         (append (multiple-value-list
                  (xlib:keycodes-from-keysym 
                   *display*
-                  (keysym-name-code "ISO_Level3")))
+                  (keysym-from-name "ISO_Level3")))
                 *modifier-keycodes*)))
 
 (defun character-from-keycode (code mods)
@@ -220,10 +220,10 @@ Available completion styles include
 ;; Hack to avoid clobbering input from numpads with numlock on.
 (defun input-handle-key-press-event (&rest event-slots
                                      &key event-key code state
-                                       &allow-other-keys)
+                                     &allow-other-keys)
   (declare (ignore event-slots))
   (let ((numlock-on-p (= 2 (logand 2 (nth-value 4 (xlib:keyboard-control *display*)))))
-         (numpad-key (assoc code *numpad-map*)))
+        (numpad-key (assoc code *numpad-map*)))
     (when (and numlock-on-p numpad-key)
       (setf code (first (rest numpad-key))
             state (rest (rest numpad-key))))
@@ -263,18 +263,18 @@ Available completion styles include
 (defun read-key ()
   "Return a dotted pair (code . state) key."
   (loop for ev = (xlib:process-event *display* :handler #'read-key-handle-event :timeout nil) do
-       (when (and (consp ev)
-                  (eq (first ev) :key-press))
-           (return (rest ev)))))
+           (when (and (consp ev)
+                      (eq (first ev) :key-press))
+             (return (rest ev)))))
 
 (defun read-key-or-click ()
   (loop for ev = (xlib:process-event *display* :handler #'read-key-or-click-handle-event :timeout nil)
-     do
-       (when (consp ev)
-         (when (eq (first ev) :key-press)
-           (return (values nil (rest ev) nil nil)))
-         (when (eq (first ev) :button-press)
-           (return (values t nil (second ev) (third ev)))))))
+        do
+           (when (consp ev)
+             (when (eq (first ev) :key-press)
+               (return (values nil (rest ev) nil nil)))
+             (when (eq (first ev) :button-press)
+               (return (values t nil (second ev) (third ev)))))))
 
 (defun read-key-no-modifiers ()
   "Like read-key but never returns a modifier key."
@@ -284,24 +284,24 @@ Available completion styles include
 
 (defun read-key-no-modifiers-or-click ()
   (loop
-     (multiple-value-bind (has-click k x y)
-         (read-key-or-click)
-       (if has-click
-           (return (values t nil x y))
-           (unless (is-modifier (car k))
-             (return (values nil k nil nil)))))))
+    (multiple-value-bind (has-click k x y)
+        (read-key-or-click)
+      (if has-click
+          (return (values t nil x y))
+          (unless (is-modifier (car k))
+            (return (values nil k nil nil)))))))
 
 (defun read-key-or-selection ()
-  (loop for ev = (xlib:process-event *display* :handler #'read-key-or-selection-handle-event :timeout nil) do
-       (cond ((stringp ev)
-              (return ev))
-             ((and (consp ev)
-                   (eq (first ev) :key-press))
-              (return (rest ev))))))
+  (loop for ev = (dprint (xlib:process-event *display* :handler #'read-key-or-selection-handle-event :timeout nil)) 
+        do (cond ((stringp ev)
+                  (return ev))
+                 ((and (consp ev)
+                       (eq (first ev) :key-press))
+                  (return (rest ev))))))
 
 (defun make-input-string (initial-input)
   (make-array (length initial-input) :element-type 'character :initial-contents initial-input
-              :adjustable t :fill-pointer t))
+                                     :adjustable t :fill-pointer t))
 
 (defun completing-read-screen (screen prompt completions &key (initial-input "") require-match)
   "Read a line of input through WM and return it with TAB
@@ -334,6 +334,7 @@ match with an element of the completions."
     (labels ((match-input ()
                (let* ((in (dprint (string-trim " " (input-line-string input))))
                       (compls (input-find-completions in completions)))
+                 (dformat 2 "in match-input..")
                  (and (consp compls)
                       (string= in (if (consp (car compls))
                                       (caar compls)
@@ -341,18 +342,18 @@ match with an element of the completions."
              (key-loop ()
                (with-focus (screen-input-window screen)
                  (loop for key = (dprint (read-key-or-selection))
-                    do
-                      (cond ((stringp key)
-                             ;; handle selection
-                             (input-insert-string input key)
-                             (draw-input-bucket screen prompt input))
-                            ;; skip modifiers
-                            ((is-modifier (car key)) nil)
-                            ((process-screen-input screen prompt input (car key) (cdr key))
-                             (if (or (not require-match)
-                                     (match-input))
-                                 (return (input-line-string input))
-                                 (draw-input-bucket screen prompt input "[No match]" t))))))))
+                       do
+                          (cond ((stringp key)
+                                 ;; handle selection
+                                 (input-insert-string input key)
+                                 (draw-input-bucket screen prompt input))
+                                ;; skip modifiers
+                                ((is-modifier (car key)) nil)
+                                ((process-screen-input screen prompt input (car key) (cdr key))
+                                 (if (or (not require-match)
+                                         (match-input))
+                                     (return (input-line-string input))
+                                     (draw-input-bucket screen prompt input "[No match]" t))))))))
       (draw-input-bucket screen prompt input)
       (setup-input-window screen prompt input)
       (catch :abort
@@ -413,15 +414,15 @@ match with an element of the completions."
                      (make-string (length line-content) :initial-element #\*)
                      line-content))
          (string-width (loop for char across string
-                          summing (text-line-width (screen-font screen)
-                                                   (string char)
-                                                   :translate #'translate-id)))
+                             summing (text-line-width (screen-font screen)
+                                                      (string char)
+                                                      :translate #'translate-id)))
          (space-width  (text-line-width (screen-font screen) " "    :translate #'translate-id))
          (tail-width   (text-line-width (screen-font screen) tail   :translate #'translate-id))
          (full-string-width (+ string-width space-width))
          (pos (input-line-position input))
          (width (max (loop :for line :in (append prompt-lines completions)
-                        :maximize (text-line-width font line :translate #'translate-id))
+                           :maximize (text-line-width font line :translate #'translate-id))
                      (+ prompt-offset
                         (max 100 (+ full-string-width space-width tail-width))))))
     (when errorp (rotatef (xlib:gcontext-background gcontext)
@@ -438,58 +439,58 @@ match with an element of the completions."
       (setup-win-gravity screen win *input-window-gravity*)
       ;; Display the input window text.
       (loop for i from 0 below (+ prompt-lines-length completions-length)
-         if (< i prompt-lines-length)
-         do (draw-image-glyphs win gcontext font
-                               *message-window-padding*
-                               (prompt-text-y i font *message-window-y-padding*)
-                               (nth i prompt-lines)
-                               :translate #'translate-id
-                               :size 16)
-         else
-         do (draw-image-glyphs win gcontext font
-                               *message-window-padding*
-                               (prompt-text-y i font *message-window-y-padding*)
-                               (nth (- i prompt-lines-length) completions)
-                               :translate #'translate-id
-                               :size 16))
+            if (< i prompt-lines-length)
+            do (draw-image-glyphs win gcontext font
+                                  *message-window-padding*
+                                  (prompt-text-y i font *message-window-y-padding*)
+                                  (nth i prompt-lines)
+                                  :translate #'translate-id
+                                  :size 16)
+            else
+            do (draw-image-glyphs win gcontext font
+                                  *message-window-padding*
+                                  (prompt-text-y i font *message-window-y-padding*)
+                                  (nth (- i prompt-lines-length) completions)
+                                  :translate #'translate-id
+                                  :size 16))
       ;; Pad the input to the left.
       (loop with x = (+ *message-window-padding* prompt-offset)
-         for char across string
-         for i from 0 below (length string)
-         for char-width = (text-line-width (screen-font screen) (string char) :translate #'translate-id)
-         if (= pos i)
-         do (xlib:with-gcontext (gcontext :foreground (xlib:gcontext-background gcontext)
-                                          :background (xlib:gcontext-foreground gcontext))
-              (draw-image-glyphs win gcontext (screen-font screen)
-                                 x
-                                 (prompt-text-y (1- prompt-lines-length)
-                                                font
-                                                *message-window-y-padding*)
-                                 (string char)
-                                 :translate #'translate-id
-                                 :size 16))
-         else
-         do (draw-image-glyphs win gcontext (screen-font screen)
-                               x
-                               (prompt-text-y (1- prompt-lines-length)
-                                              font
-                                              *message-window-y-padding*)
-                               (string char)
-                               :translate #'translate-id
-                               :size 16)
-         end
-         do (incf x char-width)
-         finally (when (>= pos (length string))
-                   (xlib:with-gcontext (gcontext :foreground (xlib:gcontext-background gcontext)
-                                                 :background (xlib:gcontext-foreground gcontext))
-                     (draw-image-glyphs win gcontext (screen-font screen)
-                                        x
-                                        (prompt-text-y (1- prompt-lines-length)
-                                                       font
-                                                       *message-window-y-padding*)
-                                        " "
-                                        :translate #'translate-id
-                                        :size 16))))
+            for char across string
+            for i from 0 below (length string)
+            for char-width = (text-line-width (screen-font screen) (string char) :translate #'translate-id)
+            if (= pos i)
+            do (xlib:with-gcontext (gcontext :foreground (xlib:gcontext-background gcontext)
+                                             :background (xlib:gcontext-foreground gcontext))
+                 (draw-image-glyphs win gcontext (screen-font screen)
+                                    x
+                                    (prompt-text-y (1- prompt-lines-length)
+                                                   font
+                                                   *message-window-y-padding*)
+                                    (string char)
+                                    :translate #'translate-id
+                                    :size 16))
+            else
+            do (draw-image-glyphs win gcontext (screen-font screen)
+                                  x
+                                  (prompt-text-y (1- prompt-lines-length)
+                                                 font
+                                                 *message-window-y-padding*)
+                                  (string char)
+                                  :translate #'translate-id
+                                  :size 16)
+            end
+            do (incf x char-width)
+            finally (when (>= pos (length string))
+                      (xlib:with-gcontext (gcontext :foreground (xlib:gcontext-background gcontext)
+                                                    :background (xlib:gcontext-foreground gcontext))
+                        (draw-image-glyphs win gcontext (screen-font screen)
+                                           x
+                                           (prompt-text-y (1- prompt-lines-length)
+                                                          font
+                                                          *message-window-y-padding*)
+                                           " "
+                                           :translate #'translate-id
+                                           :size 16))))
       (draw-image-glyphs win gcontext (screen-font screen)
                          (+ *message-window-padding* prompt-offset full-string-width space-width)
                          (prompt-text-y (1- prompt-lines-length)
@@ -505,23 +506,23 @@ match with an element of the completions."
       (draw-input-bucket screen prompt input tail))))
 
 (defun key-from-code-state (code state)
-  (let* ((mods    (xlib:make-state-keys state))
+  (let* ((mods    (print (xlib:make-state-keys state)))
          (shift-p (and (find :shift mods) t))
-         (altgr-p (and (keymod-altgr *xkeymod*) mods))
+         (altgr-p (and (intersection (modmap-altgr *xkeymod*) mods) t))
          (base    (if altgr-p *altgr-offset* 0))
          (sym     (xlib:keysym-from-keycode *display* code base))
          (upsym   (xlib:keysym-from-keycode *display* code (+ base 1))))
     ;; If a keysym has a shift modifier, then use the uppercase keysym
     ;; and remove remove the shift modifier.
     (make-key :sym (if (and shift-p (not (eql sym upsym)))
-                          upsym
-                          sym)
+                       upsym
+                       sym)
               :control (and (find :control mods) t)
               :shift (and shift-p (eql sym upsym))
-              :meta (and mods (keymod-meta *xkeymod*))
-              :alt (and mods (keymod-alt *xkeymod*))
-              :hyper (and mods (keymod-hyper *xkeymod*))
-              :super (and mods (keymod-super *xkeymod*))
+              :meta (and (intersection mods (modmap-meta *xkeymod*)) t)
+              :alt (and (intersection mods (modmap-alt *xkeymod*)) t)
+              :hyper (and (intersection mods (modmap-hyper *xkeymod*)) t)
+              :super (and (intersection mods (modmod-super *xkeymod*)) t)
               :altgr altgr-p)))
 
 ;;; input string utility functions
@@ -731,8 +732,7 @@ functions are passed this structure as their first argument."
            (setf symname "asciitilde"))
           ((string= symname "circumflex")
            (setf symname "asciicircum")))
-    (xlib:character-from-keysym *display*
-                            (gethash symname *name-keysym-table*))))
+    (xlib:character-from-keysym *display* (gethash symname *name-keysym-table*))))
 
 (defun dead-key-p (keysym)
   "Check if KEYSYM is dead"
@@ -749,8 +749,8 @@ to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
         (deadstr (ignore-errors
                   (gethash dead-keysym *dead-keysym-name-table*))))
     (xlib:character-from-keysym *display*
-                            (keysym-name-code
-                             (concatenate 'string charname deadstr)))))
+                                (keysym-name-code
+                                 (concatenate 'string charname deadstr)))))
 
 (defun find-character-for-keysym (input key)
   "Find a character for the given key with support for dead keys."
@@ -800,8 +800,10 @@ buffer. Returns a new modified input buffer."
              "Call the appropriate function based on the key
 pressed. Return 'done when the use has signalled the finish of his
 input (pressing Return), nil otherwise."
+             (dformat 2 "in process-key..")
              (let* ((key (key-from-code-state code state))
-                    (command (and key (lookup-key *input-map* key t))))
+                    (command (and key (dprint (lookup-key *input-map* key)))))
+               (dprint command)
                (if command
                    (prog1
                        (funcall command input key)
@@ -831,10 +833,10 @@ input (pressing Return), nil otherwise."
 
 (defun get-xkeymod ()
   (labels ((find-mod (mod codes)
-             (let* ((keysym (keysym-name-code mod))
+             (let* ((keysym (keysym-from-name mod))
                     (keycodes (multiple-value-list (xlib:keycodes-from-keysym *display* keysym))))
                (intersection keycodes codes))))
-    (let ((modifiers (make-keymod)))
+    (let ((modifiers (make-modmap)))
       (multiple-value-bind
             (shift-codes lock-codes control-codes mod1-codes mod2-codes mod3-codes mod4-codes mod5-codes)
           (xlib:modifier-mapping *display*)
@@ -842,25 +844,31 @@ input (pressing Return), nil otherwise."
         (loop for mod in '(:mod-1 :mod-2 :mod-3 :mod-4 :mod-5)
               for codes in (list mod1-codes mod2-codes mod3-codes mod4-codes mod5-codes)
               do
-              (cond ((or (find-mod "Meta_L" codes)
-                         (find-mod "Meta_R" codes))
-                     (setf (keymod-meta modifiers) t))
-                    ((or (find-mod "Alt_L" codes)
-                         (find-mod "Alt_R" codes))
-                     (setf (keymod-alt modifiers) t))
-                    ((or (find-mod "Super_L" codes)
-                         (find-mod "Super_R" codes))
-                     (setf (keymod-super modifiers) t))
-                    ((or (find-mod "Hyper_L" codes)
-                         (find-mod "Hyper_R" codes))
-                     (setf (keymod-hyper modifiers) t))
-                    ((find-mod "Num_Lock" codes)
-                     (setf (keymod-numlock modifiers) t))
-                    ((find-mod "ISO_Level3" codes)
-                     (setf (keymod-altgr modifiers) t))))
+                 (cond ((or (find-mod "Meta_L" codes)
+                            (find-mod "Meta_R" codes))
+                        (push mod (modmap-meta modifiers)))
+                       ((or (find-mod "Alt_L" codes)
+                            (find-mod "Alt_R" codes))
+                        (push mod (modmap-alt modifiers)))
+                       ((or (find-mod "Super_L" codes)
+                            (find-mod "Super_R" codes))
+                        (push mod (modmap-super modifiers)))
+                       ((or (find-mod "Hyper_L" codes)
+                            (find-mod "Hyper_R" codes))
+                        (push mod (modmap-hyper modifiers)))
+                       ((find-mod "Num_Lock" codes)
+                        (push mod (modmap-numlock modifiers)))
+                       ((find-mod "ISO_Level3" codes)
+                        (push mod (modmap-altgr modifiers)))))
+        ;; If alt is defined but meta isn't set meta to alt and clear alt
+        (when (and (modmap-alt modifiers)
+                   (null (modmap-meta modifiers)))
+          (setf (modmap-meta modifiers) (modmap-alt modifiers)
+                (modmap-alt modifiers) nil))
         modifiers))))
 
 (defun update-modifier-map ()
+  (dformat 1 "updating modifier map..")
   (setf *xkeymod* (get-xkeymod)
         *modifier-keycodes* (all-modifier-codes)))
 
