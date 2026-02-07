@@ -745,11 +745,11 @@ together, finding the keysym for it, and looking up the keysym on the X server.
 For example, given a keysym corresponding to 'a' and a dead keysym corresponding
 to 'dead_acute', 'dead_' is trimmed from the dead keysyms name, and 'a' and
 'acute' are concatenated to give 'aacute', the name of the keysym for 'á'."
-  (let ((charname (keysym-code-name keysym))
+  (let ((charname (name-from-keysym keysym))
         (deadstr (ignore-errors
                   (gethash dead-keysym *dead-keysym-name-table*))))
     (xlib:character-from-keysym *display*
-                                (keysym-name-code
+                                (keysym-from-name
                                  (concatenate 'string charname deadstr)))))
 
 (defun find-character-for-keysym (input key)

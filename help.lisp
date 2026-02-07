@@ -179,7 +179,7 @@ Example:
                           (when (key-hyper key)   "H-")
                           (when (key-alt key)     "A-")
                           (when (key-shift key)   "S-")
-                          (keysym-code-name (key-sym key))))
+                          (name-from-keysym (key-sym key))))
            (command-equal (cmd)
              (cond ((and (stringp cmd) (stringp command))
                     (cond (match-partial-string
