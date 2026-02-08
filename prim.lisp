@@ -46,7 +46,7 @@
       (std:with-thread ()
         (swank:start-server swank-file))))
   (let ((kbd (slot-value self 'kbd)))
-    (set-prefix-key (parse-key (prefix-key kbd))))
+    (set-prefix-key (prefix-key kbd)))
   (setq *wm-config* self))
 
 (defun load-init-file (&optional (catch-errors t))
