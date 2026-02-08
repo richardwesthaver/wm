@@ -30,11 +30,13 @@
           (:lsbfirst
            (do ((i 0 (+ 4 i)))
                ((>= i (length pixarray)))
-             (png::write-pixel (list (aref pixarray (+ 2 i))
+             (png::write-pixel #1=(list 
+                                (aref pixarray (+ 2 i))
                                 (aref pixarray (+ 1 i))
                                 (aref pixarray i)
                                 #xFF)
-                          png)))
+                               png)
+             (log:dprint #1#)))
           (:msbfirst
            (do ((i 0 (+ 4 i)))
                ((>= i (* height width 4)))

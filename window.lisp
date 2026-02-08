@@ -795,13 +795,13 @@ This will change the prefix key to Control+Meta+Hyper+Super + the z key. By
 most standards, a terrible prefix key but it makes a great example."
   (declare (interactive (key "Key: ")))
   (check-type key key)
-  (setf *escape-key* key)
+  (copy key *escape-key*)
   ;; if the escape key has no modifiers then disable the fake key by giving it
   ;; keysym 0 (NoSymbol). Otherwise you have 2 identical bindings and the one
   ;; that appears first in the list will be matched.
   (copy (make-key :sym (if (key-mods-p *escape-key*)
                            (key-sym key)
-                           0))
+                           -1))
         *escape-fake-key*)
   (dformat 1 "New prefix key: ~A" *escape-key*)
   (dformat 1 "Fake prefix key: ~A" *escape-fake-key*)

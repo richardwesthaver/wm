@@ -506,12 +506,12 @@ match with an element of the completions."
       (draw-input-bucket screen prompt input tail))))
 
 (defun key-from-code-state (code state)
-  (let* ((mods    (print (xlib:make-state-keys state)))
+  (let* ((mods    (dprint (xlib:make-state-keys state)))
          (shift-p (and (find :shift mods) t))
          (altgr-p (and (intersection (modmap-altgr *xkeymod*) mods) t))
          (base    (if altgr-p *altgr-offset* 0))
-         (sym     (xlib:keysym-from-keycode *display* code base))
-         (upsym   (xlib:keysym-from-keycode *display* code (+ base 1))))
+         (sym     (dprint (xlib:keysym-from-keycode *display* code base)))
+         (upsym   (dprint (xlib:keysym-from-keycode *display* code (+ base 1)))))
     ;; If a keysym has a shift modifier, then use the uppercase keysym
     ;; and remove remove the shift modifier.
     (make-key :sym (if (and shift-p (not (eql sym upsym)))
@@ -522,7 +522,7 @@ match with an element of the completions."
               :meta (and (intersection mods (modmap-meta *xkeymod*)) t)
               :alt (and (intersection mods (modmap-alt *xkeymod*)) t)
               :hyper (and (intersection mods (modmap-hyper *xkeymod*)) t)
-              :super (and (intersection mods (modmod-super *xkeymod*)) t)
+              :super (and (intersection mods (modmap-super *xkeymod*)) t)
               :altgr altgr-p)))
 
 ;;; input string utility functions
@@ -802,7 +802,7 @@ pressed. Return 'done when the use has signalled the finish of his
 input (pressing Return), nil otherwise."
              (dformat 2 "in process-key..")
              (let* ((key (key-from-code-state code state))
-                    (command (and key (dprint (lookup-key *input-map* key)))))
+                    (command (and key (dprint (lookup-key *input-map* key t)))))
                (dprint command)
                (if command
                    (prog1

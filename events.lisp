@@ -166,8 +166,8 @@ The Caller is responsible for setting up the input focus."
 (defun handle-keymap (kmaps code state key-seq grab update-fn)
   "Find the command mapped to the (code state) and return it."
   ;; KMAPS is a list of keymaps that may match the user's key sequence.
-  (dformat 1 "Awaiting key ~a" kmaps)
-  (let* ((key (key-from-code-state code state))
+  (dformat 1 "Awaiting key ~a ~S ~S ~S" kmaps code state key-seq)
+  (let* ((key (dprint (key-from-code-state code state)))
          (key-seq (cons key key-seq))
          (bindings (mapcar (lambda (m) (lookup-key m key)) (deref-keymaps kmaps)))
          ;; if the first non-nil thing is another keymap, then grab
