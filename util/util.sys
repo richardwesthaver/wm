@@ -1,6 +1,6 @@
-;;; ~/comp/ext/stumpwm/contrib/util/util.asd --- Util Sytem Definitions
-(defsystem :util
-  :depends-on (:std :swank :wm :dat :xlib :xlib/truetype :ppcre)
+;;; wm/util/util.sys --- WM Utility Sytem Definitions
+(defsys :util
+  :require (:std :swank :wm :dat :xlib :xlib/truetype :ppcre)
   :components ((:file "pkg")
                (:file "golden-ratio")
                (:file "clipboard")

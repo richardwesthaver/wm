@@ -36,6 +36,7 @@
       (read-ast c from)
       (load-ast c))
     (setf (ast c) nil)
+    (setf (slot-value c 'kbd) (load-config :kbd (slot-value c 'kbd)))
     c))
 (defmethod build ((self wm-config) &key)
   (setq *logger* (when-let ((log (slot-value self 'logger))) (build log)))

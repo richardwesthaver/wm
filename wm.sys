@@ -42,7 +42,8 @@
   (:file "minor-modes")
   (:file "replace-class"))
  :provide 
- ((:tests :require (:rt :wm) :components ((:file "tests")))))
+ ((:tests :require (:rt :wm) :components ((:file "tests")))
+  (:bin :wm :package :wm :toplevel "start-wm")))
             
             
 

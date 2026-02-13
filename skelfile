@@ -22,13 +22,15 @@
 ((default (build))
  (build ()
   (with-core (:quit t :input t)
-   ;; pre-load hooks
-   (asdf:load-system :core)
-   (funcall (find-symbol "LOAD-XKBCOMMON" :xkb)) ; requires xkbcommon.so
-   (asdf:load-system :xlib)
-   (asdf:load-system :wm)
-   (asdf:load-system :util)
-   (asdf:load-system :modeline)
+   (load-system :core)
+   (xkb:load-xkbcommon) ; requires xkbcommon.so
+   (load-system :vec)
+   (load-system :vec/paths)
+   (load-system :vec/paths/ttf)
+   (load-system :xlib)
+   (load-system :wm)
+   (load-system :util)
+   (load-system :modeline)
    (in-package :wm-user)
    ;; post-load hooks
    (sb-ext:save-lisp-and-die 
@@ -37,7 +39,6 @@
     :executable t
     :purify t
     :compression t)))
- (modules () (:install () #$mkdir -pv $USER_WM_DIR/lisp && cp -rf util modeline $USER_WM_DIR/lisp/$#))
  (:install ()
   (with-sudo 
    "install -m 755 .stash/wm /usr/local/bin/"))
