@@ -23,7 +23,7 @@
  (build ()
   (with-core (:quit t :input t)
    (load-system :core)
-   (xkb:load-xkbcommon) ; requires xkbcommon.so
+   (xkb:load-xkbcommon t) ; requires xkbcommon.so
    (load-system :vec)
    (load-system :vec/paths)
    (load-system :vec/paths/ttf)
@@ -41,9 +41,10 @@
     :compression t)))
  (:install ()
   (with-sudo 
-   "install -m 755 .stash/wm /usr/local/bin/"))
+   "install -m 755 .stash/wm /usr/bin/"))
+ (:test () (cli/tools:run-xvfb-run '("-d" ".stash/wm")))
  (clean ()
   #$rm -f *.fasl *.fas *.lib *.*fsl
   rm -f *.log *.fns *.fn *.aux *.cp *.ky *.log *.toc *.pg *.tp *.vr *.vrs
-  rm -f wm$#))
+  rm -rf .stash$#))
 

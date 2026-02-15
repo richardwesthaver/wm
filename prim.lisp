@@ -38,6 +38,7 @@
     (setf (ast c) nil)
     (setf (slot-value c 'kbd) (load-config :kbd (slot-value c 'kbd)))
     c))
+
 (defmethod build ((self wm-config) &key)
   (setq *logger* (when-let ((log (slot-value self 'logger))) (build log)))
   (load-theme (slot-value self 'theme))
@@ -47,8 +48,11 @@
       (std:with-thread ()
         (swank:start-server swank-file))))
   (let ((kbd (slot-value self 'kbd)))
-    (set-prefix-key (prefix-key kbd)))
-  (setq *wm-config* self))
+    (copy (prefix-key kbd) *escape-key*)
+    (copy (make-key :sym (if (key-mods-p *escape-key*)
+                             (key-sym key)
+                             -1))
+          *escape-fake-key*)))
 
 (defun load-init-file (&optional (catch-errors t))
   "Load the user's WM init file. Returns a values list: whether the file loaded (t if no
@@ -68,7 +72,7 @@ up."
 (defun load-wm-config ()
   "Load the user's WM config file."
   (when-let ((rc (or (std:xdg-config-file :wm) (probe-file #p"/etc/wmrc"))))
-    (load-config :wm rc)))
+    (setq *wm-config* (load-config :wm rc))))
 
 ;;; Completions
 (defvar *maximum-completions* 100

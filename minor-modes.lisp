@@ -554,7 +554,18 @@ ROOT-MAP-SPEC."
             ,@decls 
             (let ((*minor-mode* (find-minor-mode ',',mode (current-screen))))
               ,@body)))))
-  
+
+  (defvar *minor-mode-scopes* (make-hash-table)
+    "Store the scope supertypes and object retrieval functions for a scope")
+  (defun get-scope (designator)
+    (multiple-value-bind (value foundp)
+        (gethash designator *minor-mode-scopes*)
+      (if foundp
+          value
+          (error "Invalid scope designator ~A" designator))))
+  (defun scope-type (designator)
+    (first (get-scope designator)))
+
   (defun define-enable-methods (mode scope)
     (let ((optarg (get-scope scope)))
       `((defmethod autoenable-minor-mode ((mode (eql ',mode)) (obj ,mode))
@@ -665,22 +676,12 @@ scope object."
 
 ;;; Minor Mode Scopes
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *minor-mode-scopes* (make-hash-table)
-    "Store the scope supertypes and object retrieval functions for a scope")
   (defun add-minor-mode-scope
       (designator type current-object-thunk &optional filter-type)
     "Add a list of the TYPE, CURRENT-OBJECT-THUNK, and ALL-OBJECTS-THUNK, under
 DESIGNATOR in the minor mode scope hash table."
     (setf (gethash designator *minor-mode-scopes*)
           (list type current-object-thunk (or filter-type type))))
-  (defun get-scope (designator)
-    (multiple-value-bind (value foundp)
-        (gethash designator *minor-mode-scopes*)
-      (if foundp
-          value
-          (error "Invalid scope designator ~A" designator))))
-  (defun scope-type (designator)
-    (first (get-scope designator)))
   (defun scope-filter-type (designator)
     (third (get-scope designator)))
   (defun scope-current-object-function (designator)

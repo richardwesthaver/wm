@@ -42,15 +42,15 @@
 (defun disk-get-size (path)
   (disk:disk-total-space path t))
 
+(defun disk-get-available-size-as-number (path)
+  (disk:disk-available-space path))
+
 (defun disk-get-used-as-number (path)
    (- (disk-get-size-as-number path)
       (disk-get-available-size-as-number path)))
 
 (defun disk-get-used (path)
   (human-readable-size (disk-get-used-as-number path)))
-
-(defun disk-get-available-size-as-number (path)
-  (disk:disk-available-space path))
 
 (defun disk-get-available (path)
   (human-readable-size (disk:disk-available-space path t)))

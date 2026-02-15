@@ -2,6 +2,7 @@
 (defsys :wm
  :version "0.1.1"
  :require (:core :xlib :swank)
+ :hook ((:load (xkb:load-xkbcommon t)))
  :components 
  ((:file "pkg")
   (:file "prim")
@@ -44,6 +45,3 @@
  :provide 
  ((:tests :require (:rt :wm) :components ((:file "tests")))
   (:bin :wm :package :wm :toplevel "start-wm")))
-            
-            
-
