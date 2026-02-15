@@ -166,6 +166,8 @@ The action is to call FUNCTION with arguments ARGS."
 
 ;;; SBCL implementation
 
+;; HACK 2026-02-15: 
+
 ;; It would be generally nice if SBCL supported epoll/kqueue, but it
 ;; doesn't. The general I/O loop interface is consistent with such
 ;; implementations, however, so if support is added at any time, it
@@ -230,7 +232,6 @@ The action is to call FUNCTION with arguments ARGS."
           (sb-unix:fd-zero rfds)
           (sb-unix:fd-zero wfds)
           (sb-unix:fd-zero efds)
-
           ;; Collect the file descriptors we need to wait on in
           ;; the next step and the channels without any events
           ;; so we can remove them. Also group the active events

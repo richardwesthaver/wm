@@ -9,71 +9,6 @@
 
 ;;; Code:
 (in-package :wm)
-
-;;; Config
-(defvar *wm-config* nil)
-(defun default-wm-logger-config ()
-  (default-logger-config `(backup-file-sink :path ,(data-dir-file "wm.log"))))
-(defun default-wm-kbd-config ()
-  (make-instance 'kbd-config :prefix-key *escape-key* :escape-key "C-g"))
-
-(defconfig wm-config (ast)
-  ((theme :initform nil)
-   (logger :initform (default-wm-logger-config))
-   (groups :initform nil)
-   ;; (hooks)
-   ;; (mode-line-format)
-   ;; (desktop)
-   (kbd :initform (default-wm-kbd-config) :type 'kbd-config)
-   ;; (commands)
-   ;; (skel)
-   (swank :initform nil)))
-
-(defmethod make-config ((self (eql :wm)) &rest args) (apply 'make-instance 'wm-config args))
-(defmethod load-config ((self (eql :wm)) (from pathname) &key)
-  (let ((c (make-config :wm)))
-    (with-safe-io-syntax (:wm)
-      (read-ast c from)
-      (load-ast c))
-    (setf (ast c) nil)
-    (setf (slot-value c 'kbd) (load-config :kbd (slot-value c 'kbd)))
-    c))
-
-(defmethod build ((self wm-config) &key)
-  (setq *logger* (when-let ((log (slot-value self 'logger))) (build log)))
-  (load-theme (slot-value self 'theme))
-  (when (slot-value self 'swank)
-    (let ((swank-file (xdg-data-dir :wm "swank")))
-      (when (probe-file swank-file) (delete-file swank-file))
-      (std:with-thread ()
-        (swank:start-server swank-file))))
-  (let ((kbd (slot-value self 'kbd)))
-    (copy (prefix-key kbd) *escape-key*)
-    (copy (make-key :sym (if (key-mods-p *escape-key*)
-                             (key-sym key)
-                             -1))
-          *escape-fake-key*)))
-
-(defun load-init-file (&optional (catch-errors t))
-  "Load the user's WM init file. Returns a values list: whether the file loaded (t if no
-user-init files exist), the error if it didn't, and the user-init file that
-was loaded. When CATCH-ERRORS is nil, errors are left to be handled further
-up."
-  (if-let ((user-init (probe-file (std:xdg-config-dir :wm "init.lisp"))))
-    (if catch-errors
-        (handler-case (load user-init)
-          (error (c) (values nil (format nil "~a" c) user-init))
-          (:no-error (&rest args) (declare (ignore args)) (values t nil user-init)))
-        (progn
-          (load user-init)
-          (values t nil user-init)))
-    (values t nil nil)))
-
-(defun load-wm-config ()
-  "Load the user's WM config file."
-  (when-let ((rc (or (std:xdg-config-file :wm) (probe-file #p"/etc/wmrc"))))
-    (setq *wm-config* (load-config :wm rc))))
-
 ;;; Completions
 (defvar *maximum-completions* 100
   "Maximum number of completions to show in interactive prompts. Setting
@@ -1391,3 +1326,77 @@ a list of keymaps.")
 (defvar *custom-command-filters* ()
   "A list of functions which take a group instance and a command structure, and
 return true when the command should be active.")
+
+;;; Config
+(defvar *wm-config* nil)
+(defun default-wm-logger-config ()
+  (default-logger-config `(backup-file-sink :path ,(data-dir-file "wm.log"))))
+(defun default-wm-kbd-config ()
+  (make-instance 'kbd-config :prefix-key *escape-key* :escape-key "C-g"))
+
+(defconfig wm-config (ast)
+  ((theme :initform *palette*)
+   (logger :initform (default-wm-logger-config))
+   (groups :initform nil)
+   ;; (hooks)
+   ;; (mode-line-format)
+   ;; (desktop)
+   (kbd :initform (default-wm-kbd-config) :type 'kbd-config)
+   ;; (commands)
+   ;; (skel)
+   (swank :initform nil)))
+
+(defmethod make-config ((self (eql :wm)) &rest args) (apply 'make-instance 'wm-config args))
+(defmethod load-config ((self (eql :wm)) (from pathname) &key)
+  (let ((c (make-config :wm)))
+    (with-safe-io-syntax (:wm)
+      (read-ast c from)
+      (load-ast c))
+    (setf (ast c) nil)
+    (setf (slot-value c 'kbd) (load-config :kbd (slot-value c 'kbd)))
+    (unless (typep (slot-value c 'logger) 'logger-config)
+      (setf (slot-value c 'logger) (apply 'make-config :logger 
+                                          :pipe `((backup-file-sink 
+                                                   :path ,(data-dir-file "wm.log")))
+                                          (slot-value c 'logger))))
+    c))
+
+(defmethod build ((self wm-config) &key)
+  ;;  TODO 2026-02-15: use THEME designator instead of PALETTE
+  (load-palette (slot-value self 'theme))
+  (when (slot-value self 'swank)
+    (let ((swank-file (xdg-data-dir :wm "swank")))
+      (when (probe-file swank-file) (delete-file swank-file))
+      (std:with-thread ()
+        (swank:start-server swank-file))))
+  #+nil ;; TODO: fix error
+  (add-hook *start-hook* 
+            (lambda ()
+              (let ((kbd (slot-value self 'kbd)))
+                (copy (prefix-key kbd) *escape-key*)
+                (copy (make-key :sym (if (key-mods-p *escape-key*)
+                                         (key-sym (prefix-key kbd))
+                                         -1))
+                      *escape-fake-key*)))))
+
+(defun load-init-file (&optional (catch-errors t))
+  "Load the user's WM init file. Returns a values list: whether the file loaded (t if no
+user-init files exist), the error if it didn't, and the user-init file that
+was loaded. When CATCH-ERRORS is nil, errors are left to be handled further
+up."
+  (if-let ((user-init (probe-file (std:xdg-config-dir :wm "init.lisp"))))
+    (if catch-errors
+        (handler-case (load user-init)
+          (error (c) (values nil (format nil "~a" c) user-init))
+          (:no-error (&rest args) (declare (ignore args)) (values t nil user-init)))
+        (progn
+          (load user-init)
+          (values t nil user-init)))
+    (values t nil nil)))
+
+(defun load-wm-config ()
+  "Load the user's WM config file."
+  (when-let ((rc (or (std:xdg-config-file :wm) (probe-file #p"/etc/wmrc"))))
+    (setq *wm-config* (load-config :wm rc)
+          *logger* (build (slot-value *wm-config* 'logger)))))
+

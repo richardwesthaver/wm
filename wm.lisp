@@ -186,8 +186,6 @@
              ;; Enable minor mode keymap lookup. This needs to be done after
              ;; screens are initialized.
              (push #'minor-mode-top-maps *minor-mode-maps*)
-             ;; Build wmrc
-             ;; (build *wm-config*)
              ;; Load rc file
              (let ((*package* (find-package *default-package*)))
                (multiple-value-bind (success err rc) (load-init-file)
@@ -235,6 +233,8 @@
   (ensure-data-dir)
   (load-commands :wm)
   (load-wm-config)
+  ;; Build wmrc
+  (build *wm-config*)
   (set-signal-handler sb-posix:sighup
     (dformat 0 "SIGHUP received: forcing immediate restart of wm")
     (force-wm-restart)))
