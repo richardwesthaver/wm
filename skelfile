@@ -33,6 +33,8 @@
    (load-system :modeline)
    (in-package :wm-user)
    ;; post-load hooks
+   (log:remove-logger)
+   (sleep 1)
    (sb-ext:save-lisp-and-die 
     ".stash/wm" 
     :toplevel (find-symbol "START-WM" :wm)

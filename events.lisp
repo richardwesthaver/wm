@@ -73,7 +73,7 @@
         (setf (xlib:drawable-border-width xwin) border-width)))))
 
 (define-wm-event-handler :configure-request (stack-mode #|parent|# window #|above-sibling|# x y width height border-width value-mask)
-  (dformat 3 "CONFIGURE REQUEST ~@{~S ~}" stack-mode window x y width height border-width value-mask)
+  (dformat 4 "CONFIGURE REQUEST ~@{~S ~}" stack-mode window x y width height border-width value-mask)
   (if-let ((win (find-window window)))
     (configure-managed-window win x y width height stack-mode value-mask)
     (configure-unmanaged-window window x y width height border-width value-mask)))
@@ -87,7 +87,7 @@
         ((equalp old-heads new-heads)
          (dformat 3 "Bogus configure-notify on root window of ~S" screen) t)
         (t
-         (dformat 1 "Updating Xrandr or Xinerama configuration for ~S" screen)
+         (dformat 3 "Updating Xrandr or Xinerama configuration for ~S" screen)
          (if new-heads
              (progn (head-force-refresh screen new-heads)
                     (update-mode-lines screen))
@@ -96,17 +96,17 @@
 (define-wm-event-handler :map-request (parent send-event-p window)
   (unless send-event-p
     ;; This assumes parent is a root window and it should be.
-    (dformat 3 "map request: ~a ~a ~a" window parent (find-window window))
+    (dformat 4 "map request: ~a ~a ~a" window parent (find-window window))
     (let ((screen (find-screen parent))
           (win (find-window window))
           (wwin (find-withdrawn-window window)))
       ;; only absorb it if it's not already managed (it could be iconic)
       (cond
-        (win (dformat 1 "map request for mapped window ~a" win))
+        (win (dformat 4 "map request for mapped window ~a" win))
         ((eq (xwin-type window) :dock)
          (when wwin
            (setf screen (window-screen wwin)))
-         (dformat 1 "window is dock-type. attempting to place in mode-line")
+         (dformat 4 "window is dock-type. attempting to place in mode-line")
          (place-mode-line-window screen window)
          ;; Some panels are broken and only set the dock type after they map and withdraw.
          (when wwin
@@ -129,7 +129,7 @@
   ;; ones where event-window and window are the same, and
   ;; substructure unmap events when the event-window is the parent
   ;; of window.
-  (dformat 2 "UNMAP: ~s ~s ~a" send-event-p (not (xlib:window-equal event-window window)) (find-window window))
+  (dformat 4 "UNMAP: ~s ~s ~a" send-event-p (not (xlib:window-equal event-window window)) (find-window window))
   (unless (and (not send-event-p)
                (not (xlib:window-equal event-window window)))
     ;; if we can't find the window then there's nothing we need to
@@ -166,15 +166,15 @@ The Caller is responsible for setting up the input focus."
 (defun handle-keymap (kmaps code state key-seq grab update-fn)
   "Find the command mapped to the (code state) and return it."
   ;; KMAPS is a list of keymaps that may match the user's key sequence.
-  (dformat 1 "Awaiting key ~a ~S ~S ~S" kmaps code state key-seq)
-  (let* ((key (dprint (key-from-code-state code state)))
+  (dformat 4 "Awaiting key ~a ~S ~S ~S" kmaps code state key-seq)
+  (let* ((key (key-from-code-state code state))
          (key-seq (cons key key-seq))
          (bindings (mapcar (lambda (m) (lookup-key m key)) (deref-keymaps kmaps)))
          ;; if the first non-nil thing is another keymap, then grab
          ;; all the keymaps and recurse on them. If the first one is a
          ;; command, then we're done.
          (match (find-if-not 'null bindings)))
-    (dformat 1 "key-press: ~S ~S ~S" key state match)
+    (dformat 4 "key-press: ~S ~S ~S" key state match)
     (run-hook-with-args *key-press-hook* key key-seq match)
     (when update-fn
       (funcall update-fn key-seq))
@@ -255,8 +255,8 @@ kmap."
                    (cmd
                     (unmap-message-window (current-screen))
                     (let ((*current-key-seq* key-seq))
-                      (dformat 1 "Evaluating command ~A" (command cmd))
-                      (dprint (eval-command cmd t)))
+                      (dformat 3 "Evaluating command ~A" (command cmd))
+                      (eval-command cmd t))
                     t)
                    (t (wm-message "~{~a ~}not bound." (mapcar 'print-key (nreverse key-seq)))))))))))
 
@@ -359,7 +359,7 @@ converted to an atom is removed."
           (update-fullscreen window 1)))))))
 
 (define-wm-event-handler :property-notify (window atom state)
-  (dformat 2 "property notify ~s ~s ~s" window atom state)
+  (dformat 4 "property notify ~s ~s ~s" window atom state)
   (case atom
     (:rp_command_request
      ;; we will only find the screen if window is a root window, which
@@ -392,7 +392,7 @@ converted to an atom is removed."
   (setf (getf *x-selection* selection) nil))
 
 (define-wm-event-handler :selection-notify (window property selection)
-  (dformat 3 "selection-notify: ~s ~s ~s" window property selection)
+  (dformat 4 "selection-notify: ~s ~s ~s" window property selection)
   (when property
     (let* ((selection (or selection :primary))
            (sel-string (utf8-to-string
@@ -456,14 +456,14 @@ converted to an atom is removed."
 ;;; Fullscreen functions
 
 (defun activate-fullscreen (window)
-  (dformat 2 "client requests to go fullscreen")
+  (dformat 3 "client requests to go fullscreen")
   (add-wm-state (window-xwin window) :_NET_WM_STATE_FULLSCREEN)
   (setf (window-fullscreen window) t)
   (focus-window window))
 
 (defun deactivate-fullscreen (window)
   (setf (window-fullscreen window) nil)
-  (dformat 2 "client requests to leave fullscreen")
+  (dformat 3 "client requests to leave fullscreen")
   (remove-wm-state (window-xwin window) :_NET_WM_STATE_FULLSCREEN)
   (update-decoration window)
   (update-mode-lines (current-screen)))
@@ -505,7 +505,7 @@ converted to an atom is removed."
       (focus-all window)))
 
 (define-wm-event-handler :client-message (window type #|format|# data)
-  (dformat 2 "client message: ~s ~s" type data)
+  (dformat 3 "client message: ~s ~s" type data)
   (case type
     (:_NET_CURRENT_DESKTOP ;switch desktop
      (let* ((screen (find-screen window))
@@ -562,7 +562,7 @@ converted to an atom is removed."
        (dformat 3 "!!! Data: ~S" data)
        (group-move-request (window-group our-window) our-window x y :root)))
     (t
-     (dformat 2 "ignored message"))))
+     (dformat 1 "ignored message"))))
 
 (define-wm-event-handler :focus-out (window mode kind)
   (dformat 5 "~@{~s ~}" window mode kind))
@@ -657,7 +657,7 @@ they should be windows. So use this function to make a window out of DRAWABLE."
 
 (defun handle-event (&rest event-slots &key display event-key &allow-other-keys)
   (declare (ignore display))
-  (dformat 1 ">>> ~S" event-key)
+  (dformat 4 ">>> ~S" event-key)
   (let ((eventfn (gethash event-key *event-fn-table*))
         (win (getf event-slots :window))
         (*current-event-time* (getf event-slots :time)))
@@ -691,5 +691,5 @@ they should be windows. So use this function to make a window out of DRAWABLE."
           ;; we catch it higher up the event will not be flushed from
           ;; the queue and we'll get ourselves into an infinite loop.
           (dformat 4 "ignore synchronous ~a" c))))
-    (dformat 2 "<<< ~S" event-key)
+    (dformat 4 "<<< ~S" event-key)
     t))

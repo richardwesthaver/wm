@@ -333,7 +333,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
   "Given a screen number, returns a screen structure with initialized members"
   ;; Listen for the window manager events on the root window
   (declare (optimize (debug 3)))
-  (dformat 1 "Initializing screen: ~@[~a ~]~a ~a" (unless (sequence:emptyp host) host) id screen-number)
+  (dformat 3 "Initializing screen: ~@[~a ~]~a ~a" (unless (sequence:emptyp host) host) id screen-number)
   (let ((root (xlib:screen-root screen-number)))
     (setf (xlib:window-event-mask (xlib:screen-root screen-number))
           '(:substructure-redirect
@@ -343,7 +343,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
             :button-press
             :exposure))
     (xlib:display-finish-output *display*)
-    (dformat 1 "Initializing screen structures on root ~A" root)
+    (dformat 3 "Initializing screen structures on root ~A" root)
     ;; Initialize the screen structure
     (labels ((ac (color)
                ;; We add an alpha channel to the color returned by
@@ -351,7 +351,7 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                ;; but that requires a screen instance.
                (logior (xlib:alloc-color (xlib:screen-default-colormap screen-number) color)
                        (ash #xff 24))))
-      (let* ((default-colormap (dprint (xlib:screen-default-colormap screen-number)))
+      (let* ((default-colormap (xlib:screen-default-colormap screen-number))
              (fg-color (ac +default-foreground-color+))
              (bg-color (ac +default-background-color+))
              (win-bg-color (ac +default-window-background-color+))
@@ -360,22 +360,22 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
              (unfocus-color (ac +default-unfocus-color+))
              (float-focus-color (ac +default-float-focus-color+))
              (float-unfocus-color (ac +default-float-unfocus-color+))
-             (font (dprint (open-font *display*
+             (font (open-font *display*
                               (cond ((font-exists-p +default-font-name+)
                                      +default-font-name+)
                                     ((font-exists-p "fixed")
                                      "fixed")
                                     (t
-                                     "*")))))
-             (message-window (dprint (xlib:create-window :parent root
+                                     "*"))))
+             (message-window (xlib:create-window :parent root
                                                  :x 0 :y 0 :width 1 :height 1
                                                  :colormap default-colormap
                                                  :background bg-color
                                                  :border border-color
                                                  :border-width 1
                                                  :bit-gravity :north-east
-                                                 :event-mask '(:exposure))))
-             (screen (dprint (make-wm-class-instance
+                                                 :event-mask '(:exposure)))
+             (screen (make-wm-class-instance
                       'screen
                       :id id
                       :host host
@@ -391,49 +391,49 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
                       :msg-border-width 1
                       :frame-outline-width +default-frame-outline-width+
                       :fonts (list font)
-                      :input-window (dprint (xlib:create-window
+                      :input-window (xlib:create-window
                                      :parent root
                                      :x 0 :y 0 :width 20 :height 20
                                      :colormap default-colormap
                                      :background bg-color
                                      :border border-color
                                      :border-width 1
-                                     :event-mask '(:key-press :key-release)))
-                      :focus-window (dprint (xlib:create-window
+                                     :event-mask '(:key-press :key-release))
+                      :focus-window (xlib:create-window
                                      :parent root
-                                     :x 0 :y 0 :width 1 :height 1))
-                      :key-window (dprint (xlib:create-window
+                                     :x 0 :y 0 :width 1 :height 1)
+                      :key-window (xlib:create-window
                                    :parent root
                                    :x 0 :y 0 :width 1 :height 1
-                                   :event-mask '(:key-press :key-release)))
-                      :frame-window (dprint (xlib:create-window
+                                   :event-mask '(:key-press :key-release))
+                      :frame-window (xlib:create-window
                                      :parent root
                                      :x 0 :y 0 :width 20 :height 20
                                      :colormap default-colormap
                                      :background bg-color
                                      :border border-color
                                      :border-width 1
-                                     :event-mask '(:exposure)))
-                      :frame-outline-gc (dprint (xlib:create-gcontext
+                                     :event-mask '(:exposure))
+                      :frame-outline-gc (xlib:create-gcontext
                                          :drawable root
                                          :font (when (typep font 'xlib:font) font)
                                          :foreground fg-color
                                          :background fg-color
                                          :line-style :double-dash
-                                         :line-width +default-frame-outline-width+))
-                      :message-cc (dprint (make-ccontext
+                                         :line-width +default-frame-outline-width+)
+                      :message-cc (make-ccontext
                                    :win message-window
                                    :font font
                                    :gc (xlib:create-gcontext
                                         :drawable message-window
                                         :font (when (typep font 'xlib:font) font)
                                         :foreground fg-color
-                                        :background bg-color))))))
-             (group (dprint (make-wm-class-instance 'tile-group
+                                        :background bg-color))))
+             (group (make-wm-class-instance 'tile-group
                                             :screen screen
                                             :number 1
-                                            :name *default-group-name*))))
-        (dformat 1 "Setting up groups on ~A" screen)
+                                            :name *default-group-name*)))
+        (dformat 4 "Setting up groups on ~A" screen)
         (setf (screen-groups screen) (list group)
               (screen-current-group screen) group
               (ccontext-screen (screen-message-cc screen)) screen
@@ -441,14 +441,14 @@ FOCUS-WINDOW is an extra window used for _NET_SUPPORTING_WM_CHECK."
               (tile-group-frame-tree group) (copy-heads screen)
               (tile-group-current-frame group) (first (tile-group-frame-tree group))
               (xlib:window-background root) *default-bg-color*)
-        (dformat 1 "Mapping focus and key windows on ~A" screen)
+        (dformat 4 "Mapping focus and key windows on ~A" screen)
         ;; The focus window is mapped at all times
         (xlib:map-window (screen-focus-window screen))
         (xlib:map-window (screen-key-window screen))
         (netwm-set-properties screen)
         (update-colors-for-screen screen)
         (update-color-map screen)
-        (dformat 1 "Grabbing screen focus on ~A" screen)
+        (dformat 4 "Grabbing screen focus on ~A" screen)
         (xwin-grab-keys (screen-focus-window screen) group)
         screen))))
 

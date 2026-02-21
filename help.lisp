@@ -42,7 +42,7 @@ which-key window. Two arguments will be passed to this formatter:
     (apply 'mapcar 'concat (or cols '(nil)))))
 
 (defun display-bindings-for-keymaps (key-seq &rest keymaps)
-  (dformat 1 "Displaying bindings for ~A" key-seq)
+  (dformat 4 "Displaying bindings for ~A" key-seq)
   (let* ((screen (current-screen))
          (data (mapcan (lambda (map)
                          (map 'list 
@@ -63,7 +63,7 @@ which-key window. Two arguments will be passed to this formatter:
                                   (font-height (screen-font screen))))))
     (message-no-timeout "Prefix: ~a~%~{~a~^~%~}"
                         (print-key-seq key-seq)
-                        (or (dprint (columnize data cols)) '("(EMPTY MAP)")))))
+                        (or (columnize data cols) '("(EMPTY MAP)")))))
 
 (defcommand list-commands ()
   "List all available commands."
@@ -287,7 +287,7 @@ KMAPS are enabled"
 
 (defun which-key-mode-key-press-hook (key key-seq cmd)
   "*key-press-hook* for which-key-mode"
-  (dformat 1 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
+  (dformat 4 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
   (when (not (eq *top-map* *resize-map*))
     (let* ((oriented-key-seq (reverse key-seq))
            (maps (get-kmaps-at-key-seq (top-maps) oriented-key-seq)))

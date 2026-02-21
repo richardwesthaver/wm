@@ -369,7 +369,7 @@ when they are touched")))
 (defmethod initialize-instance :after ((obj wm-class) &key &allow-other-keys)
   ;; Register all newly created objects so that they can have the relevant minor
   ;; modes autoenabled.
-  (dprint (pushnew obj (wm-class-new-objects obj) :test #'equalp)))
+  (pushnew obj (wm-class-new-objects obj) :test #'equalp))
 
 (defgeneric print-wm-object (object stream)
   (:method (object stream)
@@ -390,11 +390,10 @@ make-instance."
   ;; initialize-instance because autoenabling a minor mode involves changing the
   ;; class of the object, which is implied to be undefined behavior if called
   ;; within a method which accesses the objects slots.
-  (dformat 1 "Initializing ~A ~S" class initargs)
-  (let ((object (dprint (apply #'make-instance class initargs))))
+  (let ((object (apply #'make-instance class initargs)))
     (prog1 object
       (loop for class in *active-global-minor-modes*
-            when (typep object (scope-type (minor-mode-scope (dprint class))))
+            when (typep object (scope-type (minor-mode-scope class)))
             do (autoenable-minor-mode class object))
       (setf (wm-class-new-objects object)
             (remove object (wm-class-new-objects object) :test #'eq)))))
@@ -1347,6 +1346,7 @@ return true when the command should be active.")
    (swank :initform nil)))
 
 (defmethod make-config ((self (eql :wm)) &rest args) (apply 'make-instance 'wm-config args))
+
 (defmethod load-config ((self (eql :wm)) (from pathname) &key)
   (let ((c (make-config :wm)))
     (with-safe-io-syntax (:wm)
@@ -1354,11 +1354,6 @@ return true when the command should be active.")
       (load-ast c))
     (setf (ast c) nil)
     (setf (slot-value c 'kbd) (load-config :kbd (slot-value c 'kbd)))
-    (unless (typep (slot-value c 'logger) 'logger-config)
-      (setf (slot-value c 'logger) (apply 'make-config :logger 
-                                          :pipe `((backup-file-sink 
-                                                   :path ,(data-dir-file "wm.log")))
-                                          (slot-value c 'logger))))
     c))
 
 (defmethod build ((self wm-config) &key)
@@ -1369,15 +1364,23 @@ return true when the command should be active.")
       (when (probe-file swank-file) (delete-file swank-file))
       (std:with-thread ()
         (swank:start-server swank-file))))
-  #+nil ;; TODO: fix error
-  (add-hook *start-hook* 
+  (let ((ast (slot-value self 'logger)))
+    (setq *logger*
+          (build (make-config 
+                  :logger
+                  :pipe 
+                  `((level-filter :id :level-filter :level ,(or (getf ast :level) *log-level*))
+                    (backup-file-sink :path ,(data-dir-file "wm.log")))))))
+  ;; #+nil ;; TODO: fix error
+  (add-wm-hook *start-hook* 
             (lambda ()
               (let ((kbd (slot-value self 'kbd)))
                 (copy (prefix-key kbd) *escape-key*)
                 (copy (make-key :sym (if (key-mods-p *escape-key*)
                                          (key-sym (prefix-key kbd))
                                          -1))
-                      *escape-fake-key*)))))
+                      *escape-fake-key*))))
+  self)
 
 (defun load-init-file (&optional (catch-errors t))
   "Load the user's WM init file. Returns a values list: whether the file loaded (t if no
@@ -1397,6 +1400,5 @@ up."
 (defun load-wm-config ()
   "Load the user's WM config file."
   (when-let ((rc (or (std:xdg-config-file :wm) (probe-file #p"/etc/wmrc"))))
-    (setq *wm-config* (load-config :wm rc)
-          *logger* (build (slot-value *wm-config* 'logger)))))
+    (setq *wm-config* (load-config :wm rc))))
 

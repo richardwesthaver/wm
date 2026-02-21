@@ -21,10 +21,10 @@
      (throw :top-level :quit))
     ;; all other asynchronous errors are printed.
     (asynchronous
-     (wm-message "Caught Asynchronous X Error: ~s ~s." error-key key-vals))
+     (wm-message "Caught Asynchronous X Error: ~s ~s." error-key key-vals)
+     (dformat 1 "Ignoring error: ~s" error-key))
     (t
      (apply 'error error-key :display display :error-key error-key key-vals))))
-
 
 (defgeneric handle-top-level-condition (c))
 

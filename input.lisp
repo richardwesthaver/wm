@@ -292,7 +292,7 @@ Available completion styles include
             (return (values nil k nil nil)))))))
 
 (defun read-key-or-selection ()
-  (loop for ev = (dprint (xlib:process-event *display* :handler #'read-key-or-selection-handle-event :timeout nil)) 
+  (loop for ev = (xlib:process-event *display* :handler #'read-key-or-selection-handle-event :timeout nil)
         do (cond ((stringp ev)
                   (return ev))
                  ((and (consp ev)
@@ -332,16 +332,15 @@ match with an element of the completions."
                                 :history -1
                                 :password password)))
     (labels ((match-input ()
-               (let* ((in (dprint (string-trim " " (input-line-string input))))
+               (let* ((in (string-trim " " (input-line-string input)))
                       (compls (input-find-completions in completions)))
-                 (dformat 2 "in match-input..")
                  (and (consp compls)
                       (string= in (if (consp (car compls))
                                       (caar compls)
                                       (car compls))))))
              (key-loop ()
                (with-focus (screen-input-window screen)
-                 (loop for key = (dprint (read-key-or-selection))
+                 (loop for key = (read-key-or-selection)
                        do
                           (cond ((stringp key)
                                  ;; handle selection
@@ -365,10 +364,9 @@ match with an element of the completions."
 
 (defun read-one-char (screen)
   "Read a single character from the user."
-  (dformat 1 "Reading from screen ~A" screen)
   (with-focus (screen-key-window screen)
     (let ((k (read-key-no-modifiers)))
-      (dprint k) ; keycodes
+      ;; (dprint k) ; keycodes
       (character-from-keycode (car k) (xlib:make-state-keys (cdr k))))))
 
 (defun read-one-char-or-click (group)
@@ -506,12 +504,12 @@ match with an element of the completions."
       (draw-input-bucket screen prompt input tail))))
 
 (defun key-from-code-state (code state)
-  (let* ((mods    (dprint (xlib:make-state-keys state)))
+  (let* ((mods    (xlib:make-state-keys state))
          (shift-p (and (find :shift mods) t))
          (altgr-p (and (intersection (modmap-altgr *xkeymod*) mods) t))
          (base    (if altgr-p *altgr-offset* 0))
-         (sym     (dprint (xlib:keysym-from-keycode *display* code base)))
-         (upsym   (dprint (xlib:keysym-from-keycode *display* code (+ base 1)))))
+         (sym     (xlib:keysym-from-keycode *display* code base))
+         (upsym   (xlib:keysym-from-keycode *display* code (+ base 1))))
     ;; If a keysym has a shift modifier, then use the uppercase keysym
     ;; and remove remove the shift modifier.
     (make-key :sym (if (and shift-p (not (eql sym upsym)))
@@ -800,10 +798,8 @@ buffer. Returns a new modified input buffer."
              "Call the appropriate function based on the key
 pressed. Return 'done when the use has signalled the finish of his
 input (pressing Return), nil otherwise."
-             (dformat 2 "in process-key..")
              (let* ((key (key-from-code-state code state))
-                    (command (and key (dprint (lookup-key *input-map* key t)))))
-               (dprint command)
+                    (command (and key (lookup-key *input-map* key t))))
                (if command
                    (prog1
                        (funcall command input key)
@@ -868,7 +864,7 @@ input (pressing Return), nil otherwise."
         modifiers))))
 
 (defun update-modifier-map ()
-  (dformat 1 "updating modifier map..")
+  (dformat 4 "updating modifier map..")
   (setf *xkeymod* (get-xkeymod)
         *modifier-keycodes* (all-modifier-codes)))
 
@@ -903,7 +899,6 @@ input (pressing Return), nil otherwise."
 (defun y-or-n-p (message)
   "Ask a \"y or n\" question on the current screen and return T if the
 user presses 'y'."
-  (dprint message)
   (wm-message "~a(y or n) " message)
   (eql (read-one-char (current-screen))
        #\y))

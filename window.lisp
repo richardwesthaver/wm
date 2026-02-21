@@ -488,7 +488,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
     (xlib:unmap-subwindows (window-parent window))))
 
 (defun hide-window (window)
-  (dformat 2 "hide window: ~s" window)
+  (dformat 4 "hide window: ~s" window)
   (unless (eql (window-state window) +iconic-state+)
     (setf (window-state window) +iconic-state+)
     ;; Mark window as hidden
@@ -670,7 +670,7 @@ and bottom_end_x."
         (*processing-existing-windows* t)
         (stacking (xlib:get-property (wm-screen-root screen) :_NET_CLIENT_LIST_STACKING :type :window)))
     (when stacking
-      (dformat 3 "Using window stacking: ~{~X ~}" stacking)
+      (dformat 4 "Using window stacking: ~{~X ~}" stacking)
       ;; sort by _NET_CLIENT_LIST_STACKING
       (setf children (stable-sort children #'< :key
                                   (lambda (xwin)
@@ -683,12 +683,12 @@ and bottom_end_x."
                     (internal-window-p screen win))
           (if (eq (xwin-type win) :dock)
               (progn
-                (dformat 1 "Window ~S is dock-type. Placing in mode-line" win)
+                (dformat 3 "Window ~S is dock-type. Placing in mode-line" win)
                 (place-mode-line-window screen win))
               (if (or (eql map-state :viewable)
                       (eql wm-state +iconic-state+))
                   (progn
-                    (dformat 1 "Processing ~S ~S" (xwin-name win) win)
+                    (dformat 3 "Processing ~S ~S" (xwin-name win) win)
                     (xlib:with-server-grabbed (*display*)
                       (process-mapped-window screen win)))))))))
   (dolist (w (screen-windows screen))
@@ -696,7 +696,7 @@ and bottom_end_x."
     (xwin-hide w)))
 
 (defun xwin-grab-key (w key)
-  (dformat 2 "grabbing key ~A" key)
+  (dformat 4 "grabbing key ~A" key)
   (labels ((add-shift-modifier (key)
              ;; don't butcher the caller's structure
              (let ((key (copy-structure key)))
@@ -710,7 +710,7 @@ and bottom_end_x."
               (or (not (key-super key)) (modmap-super *xkeymod*)))))
     (loop for code in (multiple-value-list (xlib:keycodes-from-keysym *display* (key-sym key)))
           ;; some keysyms aren't mapped to keycodes so just ignore them.
-          when (and code (dprint (key-modifiers-exist-p key)))
+          when (and code (key-modifiers-exist-p key))
           ;; Some keysyms, such as upper case letters, need the
           ;; shift modifier to be set in order to grab properly.
           do (let ((key (if (and (not (eql (key-sym key) (xlib:keysym-from-keycode *display* code 0)))
@@ -734,7 +734,7 @@ and bottom_end_x."
 (defun xwin-grab-keys (win group)
   (dolist (map (deref-keymaps (top-maps group))) ;; vector -> list
     (unless (sequence:emptyp map)
-      (dformat 1 "Grabbing keymaps..")
+      (dformat 4 "Grabbing keymaps..")
       (loop for i of-type keybind across map
             do (xwin-grab-key win (keybind-key i))))))
 
@@ -764,7 +764,7 @@ and bottom_end_x."
 
 (defun sync-keys ()
   "Any time *top-map* is modified this must be called."
-  (dformat 1 "syncing keys..")
+  (dformat 4 "syncing keys..")
   (loop for i in *screen-list*
         do (xwin-ungrab-keys (screen-focus-window i))
            (loop for j in (screen-mapped-windows i)
@@ -775,7 +775,7 @@ and bottom_end_x."
   ;; todo
   (when (current-window)
     (remap-keys-grab-keys (current-window)))
-  (dformat 1 "sync complete..")
+  (dformat 4 "sync complete..")
   (xlib:display-finish-output *display*))
 
 (defcommand command-mode ()
@@ -802,8 +802,8 @@ most standards, a terrible prefix key but it makes a great example."
                            (key-sym key)
                            -1))
         *escape-fake-key*)
-  (dformat 1 "New prefix key: ~A" *escape-key*)
-  (dformat 1 "Fake prefix key: ~A" *escape-fake-key*)
+  (dformat 3 "New prefix key: ~A" *escape-key*)
+  (dformat 4 "Fake prefix key: ~A" *escape-fake-key*)
   (sync-keys))
 
 (command-alias :escape :set-prefix-key)
@@ -898,7 +898,7 @@ needed."
   ;; This function cannot request info about WINDOW from the xserver as it may not exist anymore.
   (let ((group (window-group window))
         (screen (window-screen window)))
-    (dformat 1 "withdraw window ~a" screen)
+    (dformat 3 "withdraw window ~a" screen)
     ;; Save it for later since it is only withdrawn, not destroyed.
     (push window (screen-withdrawn-windows screen))
     (setf (window-state window) +withdrawn-state+
@@ -930,7 +930,7 @@ needed."
           (delete window (screen-withdrawn-windows screen)))
     (setf (screen-urgent-windows screen)
           (delete window (screen-urgent-windows screen)))
-    (dformat 1 "destroy window ~a" screen)
+    (dformat 3 "destroy window ~a" screen)
     (dformat 3 "destroying parent window")
     (dformat 7 "parent window is ~a" (window-parent window))
     (xlib:destroy-window (window-parent window))))

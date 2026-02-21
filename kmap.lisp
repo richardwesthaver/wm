@@ -69,7 +69,7 @@ keybinding in the which-key window.")
 (defun %sync-top-map (map)
   ;; TODO 2026-01-25: should probably be equiv?
   (when (equalp map *top-map*)
-    (dprint "syncing top map..")
+    (dformat 4 "syncing top map..")
     (sync-keys)))
 
 ;; We need to tell the X server when changing the top-map bindings.

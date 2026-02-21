@@ -2,7 +2,7 @@
 (defsys :wm
  :version "0.1.1"
  :require (:core :xlib :swank)
- :hook ((:load (xkb:load-xkbcommon t)))
+ :hook ((:load (xkb:load-xkbcommon t)) (:save log:remove-logger))
  :components 
  ((:file "pkg")
   (:file "prim")

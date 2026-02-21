@@ -36,7 +36,7 @@
                                 (aref pixarray i)
                                 #xFF)
                                png)
-             (log:dprint #1#)))
+             #1#))
           (:msbfirst
            (do ((i 0 (+ 4 i)))
                ((>= i (* height width 4)))

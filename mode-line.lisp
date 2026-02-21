@@ -207,7 +207,7 @@ timer.")
       (xlib:map-window window)
       (setf (xlib:window-priority window) :below)
       (redraw-mode-line mode-line)
-      (dformat 3 "modeline: ~s" mode-line)
+      (dformat 4 "modeline: ~s" mode-line)
       (turn-on-mode-line-timer)
       (run-hook-with-args *new-mode-line-hook* mode-line))))
 
