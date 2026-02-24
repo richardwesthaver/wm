@@ -76,7 +76,6 @@ keybinding in the which-key window.")
 (add-hook *keymap-hook* '%sync-top-map :name :define)
 
 ;;; The Top Map
-;; DONE 2026-01-25: async-aware queue
 (defvar *top-map-queue* nil)
 
 (defun push-top-map (new-top)

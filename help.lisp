@@ -269,7 +269,8 @@ FIND-BINDING-IN-KMAP."
   (deref-keymaps
    (reduce
     (lambda (result map)
-      (let* ((binding (find key map :key 'keybind-key :test 'key-eq))
+      (let* ((binding (handler-case (find key map :key 'keybind-key :test 'key-eq)
+                        (type-error () nil)))
              (command (when binding (keybind-cmd binding))))
         (if command
             (setf result (cons command result))
@@ -287,7 +288,7 @@ KMAPS are enabled"
 
 (defun which-key-mode-key-press-hook (key key-seq cmd)
   "*key-press-hook* for which-key-mode"
-  (dformat 4 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
+  ;; (dformat 4 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
   (when (not (eq *top-map* *resize-map*))
     (let* ((oriented-key-seq (reverse key-seq))
            (maps (get-kmaps-at-key-seq (top-maps) oriented-key-seq)))
