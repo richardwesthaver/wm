@@ -271,17 +271,18 @@
                                        (round perc)))))))))))))
 
 ;;; The actual mode-line format function. A bit ugly...
-(let ((next 0)
-      (last-value ""))
-  (defun fmt-bat (ml)
-    (declare (ignore ml))
-    ;; Return the last info again, if we are called too quickly.
-    (let ((now (get-universal-time)))
-      (when (< now next)
-        (return-from fmt-bat last-value))
-      (setf next (+ now *refresh-time*)))
-    ;; Generate info string.
-    (setf last-value (battery-info-string))))
+(eval-always
+  (let ((next 0)
+        (last-value ""))
+    (defun fmt-bat (ml)
+      (declare (ignore ml))
+      ;; Return the last info again, if we are called too quickly.
+      (let ((now (get-universal-time)))
+        (when (< now next)
+          (return-from fmt-bat last-value))
+        (setf next (+ now *refresh-time*)))
+      ;; Generate info string.
+      (setf last-value (battery-info-string)))))
 
 ;;; Put this at the end to avoid evaluating it when the core above
 ;;; throws an error.

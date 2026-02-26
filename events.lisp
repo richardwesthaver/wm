@@ -255,41 +255,16 @@ kmap."
                    (cmd
                     (unmap-message-window (current-screen))
                     (let ((*current-key-seq* key-seq))
-                      (dformat 3 "Evaluating command ~A" (command cmd))
+                      (dformat 3 "Evaluating command ~A" cmd)
                       (eval-command cmd t))
                     t)
                    (t (wm-message "~{~a ~}not bound." (mapcar 'print-key (nreverse key-seq)))))))))))
-
-(defun bytes-to-window (bytes)
-  "Combine a list of 4 8-bit bytes into a 32-bit number. This is because
-ratpoison sends the rp_command_request window in 8 byte chunks."
-  (logior (first bytes)
-          (ash (second bytes) 8)
-          (ash (third bytes) 16)
-          (ash (fourth bytes) 24)))
-
-(defun handle-rp-commands (root)
-  "Handle a ratpoison style command request."
-  (labels ((one-cmd ()
-             (multiple-value-bind (win type format bytes-after) (xlib:get-property root :rp_command_request :end 4 :delete-p t)
-               (declare (ignore type format))
-               (setf win (xlib::lookup-window *display* (bytes-to-window win)))
-               (when (xlib:window-p win)
-                 (let* ((data (xlib:get-property win :rp_command))
-                        (interactive-p (car data))
-                        (cmd (map 'string 'code-char (nbutlast (cdr data)))))
-                   (declare (ignore interactive-p))
-                   (eval-command cmd)
-                   (xlib:change-property win :rp_command_result (map 'list 'char-code "0TODO") :string 8)
-                   (xlib:display-finish-output *display*)))
-               bytes-after)))
-    (loop while (> (one-cmd) 0))))
 
 (defun handle-wm-commands (root)
   "Handle a WM style command request."
   (let* ((win root)
          (screen (find-screen root))
-         (data (xlib:get-property win :wm_command :delete-p t :result-type '(vector (unsigned-byte 8))))
+         (data (xlib:get-property win :wm_command :delete-p t :result-type 'octet-vector))
          (cmd (utf8-to-string data)))
     (let ((msgs (screen-last-msg screen))
           (hlts (screen-last-msg-highlights screen))
@@ -361,13 +336,6 @@ converted to an atom is removed."
 (define-wm-event-handler :property-notify (window atom state)
   (dformat 4 "property notify ~s ~s ~s" window atom state)
   (case atom
-    (:rp_command_request
-     ;; we will only find the screen if window is a root window, which
-     ;; is the only place we listen for ratpoison commands.
-     (let* ((screen (find-screen window)))
-       (when (and (eq state :new-value)
-                  screen)
-         (handle-rp-commands window))))
     (:wm_command
      ;; RP commands are too weird and problematic, KISS.
      (let* ((screen (find-screen window)))
