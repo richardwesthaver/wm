@@ -333,13 +333,14 @@ modes."
         (list window frame head group screen *unscoped-minor-modes*)
         (list window head group screen *unscoped-minor-modes*))))
 
-(defcommand current-minor-modes (&optional (screen (current-screen))) ()
-  "Return all currently active minor modes."
-  (let ((modes (mapcan #'list-minor-modes
-                       (list-current-mode-objects :screen screen))))
-    (prog1 modes 
-      (when *interactive*
-        (wm-message "~{~A~^~%~}" (or modes '("No active minor modes")))))))
+(eval-always
+  (defcommand current-minor-modes (&optional (screen (current-screen))) ()
+    "Return all currently active minor modes."
+    (let ((modes (mapcan #'list-minor-modes
+                         (list-current-mode-objects :screen screen))))
+      (prog1 modes 
+        (when *interactive*
+          (wm-message "~{~A~^~%~}" (or modes '("No active minor modes"))))))))
 
 (defcommand enabled-minor-modes () ()
   "Return all enabled minor modes, with duplicates removed."

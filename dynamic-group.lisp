@@ -214,6 +214,169 @@ the layout, master frame, the master window, and the window stack."
          
          ,@body))))
 
+(eval-always
+  (labels
+      ((initialize-group-head-master-stack-split (group head)
+         ;; Create a split, setting the master and stack frame values for the
+         ;; group and head appropriately. return the stack and master frames.
+         (let ((frame (tile-group-frame-head group head)))
+           (assert (frame-p frame))
+           (with-group-head-info (group head :split-ratio ratio)
+             (multiple-value-bind (fnum f1 f2)
+                 (dyn-split-frame-in-dir-with-frame group frame
+                                                    (case layout
+                                                      ((:left :right) :column)
+                                                      ((:top :bottom) :row))
+                                                    (case layout
+                                                      ((:left :top) ratio)
+                                                      ((:right :bottom)
+                                                       (- 1 ratio))))
+               (declare (ignore fnum))
+               ;; Ensure that the master frame always has the lowest frame number.
+               (when (or (eql layout :right)
+                         (eql layout :bottom))
+                 (pswap (frame-number f1) (frame-number f2)))
+               (macrolet ((select-frame (right-and-bottom left-and-top)
+                            ;; Because f1 and f2 can both be the master frame
+                            ;; depending upon our layout, we need a way of
+                            ;; consistently selecting the master frame and stack
+                            ;; frame here. So we use this local macro.
+                            `(if (or (eql layout :right)
+                                     (eql layout :bottom))
+                                 ,right-and-bottom
+                                 ,left-and-top)))
+                 (psetf master-frame (select-frame f2 f1)
+                        stack-frames (list (select-frame f1 f2)))
+                 ;; Return (values stack-frame master-frame)
+                 (select-frame (values f1 f2) (values f2 f1)))))))
+       (add-stack-frame (group head)
+         ;; Add a frame to the stack. We always add the frame to the end of the
+         ;; stack, which effectively turns the frame tree into a list. 
+         (labels ((get-final-frame (tree)
+                    ;; run through the tree until we get a frame.
+                    (or (and (frame-p tree) tree)
+                        (get-final-frame (cadr tree)))))
+           (with-group-head-info (group head)
+             (let* ((fh (tile-group-frame-head group head)) 
+                    (tree (case layout ((:top :left) (cadr fh)) ; get stack tree
+                                ((:bottom :right) (car fh))))
+                    (frame-to-split (get-final-frame tree)))
+               (dyn-split-frame-in-dir-with-frame group
+                                                  frame-to-split
+                                                  (case layout
+                                                    ((:left :right) :row)
+                                                    ((:top :bottom) :column))
+                                                  split-ratio)))))
+       (add-window-to-stack (group head window)
+         ;; Push WINDOW onto the stack. This assumes there already is a windows
+         ;; stack. 
+         (with-group-head-info (group head)
+           (push window stack-windows))))
+    (defun dynamic-group-place-window (group head window)
+      ;; This function should only be called when HEAD can accept WINDOW. This
+      ;; function DOES NOT check for or protect against head/group overflow.
+      (with-group-head-info (group head :layout head-layout :split-ratio ratio)
+        (let ((head-frame-tree (tile-group-frame-head group head)))
+          (if (frame-p head-frame-tree)
+              ;; Then theres only one frame, and we need to check the number of
+              ;; windows to see if we are adding the initial window or moving the
+              ;; initial window to the stack.
+
+              ;; TODO: This could be rewritten to not use case, and not depend on
+              ;; the number of windows. 
+              (case (or (and master-window
+                             (length (cons master-window stack-windows)))
+                        0)
+                (0 ;; Initialize master window
+                 (psetf master-frame head-frame-tree
+                        master-window window
+                        ;; set up the single window and frame
+                        (window-frame window) head-frame-tree
+                        (frame-window head-frame-tree) window
+                        (group-current-window group) window)
+                 (update-decoration window)
+                 (raise-window window)
+                 (focus-frame group master-frame))
+                (1
+                 (multiple-value-bind (stack master)
+                     ;; Create the master/stack split, set up the head info
+                     ;; alist.
+                     (initialize-group-head-master-stack-split group head)
+                   (declare (ignorable stack master))
+                   (psetf stack-windows (list master-window)
+                          master-window window
+                          (group-current-window group) window)
+                   (synchronize-frames-and-windows group head)
+                   (raise-window window)
+                   (focus-frame group master-frame)))
+                (otherwise
+                 (error "Group ~A head ~A has desynchronized." group head)))
+              ;; Otherwise we already have a stack, so move master to the stack and
+              ;; make WINDOW the new master. 
+              (progn
+                (add-stack-frame group head)
+                (add-window-to-stack group head master-window)
+                (setf master-window window)
+                (synchronize-frames-and-windows group head)
+                (raise-window window)
+                (let* ((fh (tile-group-frame-head group head)) 
+                       (tree (case head-layout
+                               ((:top :left) (cadr fh)) ; get stack tree
+                               ((:bottom :right) (car fh)))))
+                  (balance-frames-internal group tree)))))))))
+
+(eval-always
+  (labels
+      ((only-one (group head)
+         ;; This is just a clone of the command ONLY, but it takes a group and a
+         ;; head to work with instead of using the current ones. 
+         (with-group-head-info (group head)
+           (let ((win master-window)
+                 (frame (copy-frame head)))
+             (if (only-one-frame-p)
+                 (wm-message "There's only one frame.")
+                 (progn
+                   (mapc (lambda (w)
+                           ;; windows in other frames disappear
+                           (unless (eq (window-frame w) 
+                                       (tile-group-current-frame group))
+                             (hide-window w))
+                           (setf (window-frame w) frame))
+                         (remove-if (lambda (w) (typep w 'float-window))
+                                    (head-windows group head)))
+                   (setf (frame-window frame) win
+                         (tile-group-frame-head group head) frame
+                         (tile-group-current-frame group) frame)
+                   (focus-frame group frame)
+                   (if (frame-window frame)
+                       (update-decoration (frame-window frame))
+                       (show-frame-indicator group))
+                   (sync-frame-windows group (tile-group-current-frame group))))))))
+    (defun dynamic-group-retile-head (group head &optional retile-floats)
+      "Retile a specific head within a group. If RETILE-FLOATS is T then place all
+floating windows onto the stack."
+      (with-group-head-info (group head)
+        (only-one group head)
+        (let ((windows (reverse
+                        (cons master-window
+                              (if retile-floats
+                                  (append
+                                   (loop for w in (head-windows group head)
+                                         when (float-window-p w)
+                                         collect w)
+                                   stack-windows)
+                                  stack-windows)))))
+          (setf master-window nil
+                stack-windows nil)
+          (loop with previous-floats = nil
+                for window in windows
+                do (when (float-window-p window)
+                     (push window previous-floats)
+                     (replace-class window 'dynamic-window))
+                   (dynamic-group-place-window group head window))
+          (map nil 'sync-minor-modes windows)
+          (focus-frame group (window-frame master-window)))))))
+
 ;; We also need a writer method for a couple of the class allocated slots. These
 ;; should have the same name as our slot reader and should include a keyarg to
 ;; update all heads, and update all groups. If updating all heads we map over
@@ -225,7 +388,6 @@ the layout, master frame, the master window, and the window stack."
 ;; global. The global methods take an optional argument specifying which heads
 ;; to update to the new value. All updated heads are retiled to immediately
 ;; reflect the changes.
-
 (defmethod (setf dynamic-group-master-layout)
     (new (group dynamic-group) &optional (update-heads :unset))
   ;; Possible values for update-heads are :unset, :all, or :none
@@ -586,167 +748,6 @@ policy of GROUP"
   (when (null (frame-window (window-frame window)))
     (frame-raise-window (window-group window) (window-frame window)
                         window nil)))
-
-(labels
-    ((initialize-group-head-master-stack-split (group head)
-       ;; Create a split, setting the master and stack frame values for the
-       ;; group and head appropriately. return the stack and master frames.
-       (let ((frame (tile-group-frame-head group head)))
-         (assert (frame-p frame))
-         (with-group-head-info (group head :split-ratio ratio)
-           (multiple-value-bind (fnum f1 f2)
-               (dyn-split-frame-in-dir-with-frame group frame
-                                                  (case layout
-                                                    ((:left :right) :column)
-                                                    ((:top :bottom) :row))
-                                                  (case layout
-                                                    ((:left :top) ratio)
-                                                    ((:right :bottom)
-                                                     (- 1 ratio))))
-             (declare (ignore fnum))
-             ;; Ensure that the master frame always has the lowest frame number.
-             (when (or (eql layout :right)
-                       (eql layout :bottom))
-               (pswap (frame-number f1) (frame-number f2)))
-             (macrolet ((select-frame (right-and-bottom left-and-top)
-                          ;; Because f1 and f2 can both be the master frame
-                          ;; depending upon our layout, we need a way of
-                          ;; consistently selecting the master frame and stack
-                          ;; frame here. So we use this local macro.
-                          `(if (or (eql layout :right)
-                                   (eql layout :bottom))
-                               ,right-and-bottom
-                               ,left-and-top)))
-               (psetf master-frame (select-frame f2 f1)
-                      stack-frames (list (select-frame f1 f2)))
-               ;; Return (values stack-frame master-frame)
-               (select-frame (values f1 f2) (values f2 f1)))))))
-     (add-stack-frame (group head)
-       ;; Add a frame to the stack. We always add the frame to the end of the
-       ;; stack, which effectively turns the frame tree into a list. 
-       (labels ((get-final-frame (tree)
-                  ;; run through the tree until we get a frame.
-                  (or (and (frame-p tree) tree)
-                      (get-final-frame (cadr tree)))))
-         (with-group-head-info (group head)
-           (let* ((fh (tile-group-frame-head group head)) 
-                  (tree (case layout ((:top :left) (cadr fh)) ; get stack tree
-                              ((:bottom :right) (car fh))))
-                  (frame-to-split (get-final-frame tree)))
-             (dyn-split-frame-in-dir-with-frame group
-                                                frame-to-split
-                                                (case layout
-                                                  ((:left :right) :row)
-                                                  ((:top :bottom) :column))
-                                                split-ratio)))))
-     (add-window-to-stack (group head window)
-       ;; Push WINDOW onto the stack. This assumes there already is a windows
-       ;; stack. 
-       (with-group-head-info (group head)
-         (push window stack-windows))))
-  (defun dynamic-group-place-window (group head window)
-    ;; This function should only be called when HEAD can accept WINDOW. This
-    ;; function DOES NOT check for or protect against head/group overflow.
-    (with-group-head-info (group head :layout head-layout :split-ratio ratio)
-      (let ((head-frame-tree (tile-group-frame-head group head)))
-        (if (frame-p head-frame-tree)
-            ;; Then theres only one frame, and we need to check the number of
-            ;; windows to see if we are adding the initial window or moving the
-            ;; initial window to the stack.
-            
-            ;; TODO: This could be rewritten to not use case, and not depend on
-            ;; the number of windows. 
-            (case (or (and master-window
-                           (length (cons master-window stack-windows)))
-                      0)
-              (0 ;; Initialize master window
-               (psetf master-frame head-frame-tree
-                      master-window window
-                      ;; set up the single window and frame
-                      (window-frame window) head-frame-tree
-                      (frame-window head-frame-tree) window
-                      (group-current-window group) window)
-               (update-decoration window)
-               (raise-window window)
-               (focus-frame group master-frame))
-              (1
-               (multiple-value-bind (stack master)
-                   ;; Create the master/stack split, set up the head info
-                   ;; alist.
-                   (initialize-group-head-master-stack-split group head)
-                 (declare (ignorable stack master))
-                 (psetf stack-windows (list master-window)
-                        master-window window
-                        (group-current-window group) window)
-                 (synchronize-frames-and-windows group head)
-                 (raise-window window)
-                 (focus-frame group master-frame)))
-              (otherwise
-               (error "Group ~A head ~A has desynchronized." group head)))
-            ;; Otherwise we already have a stack, so move master to the stack and
-            ;; make WINDOW the new master. 
-            (progn
-              (add-stack-frame group head)
-              (add-window-to-stack group head master-window)
-              (setf master-window window)
-              (synchronize-frames-and-windows group head)
-              (raise-window window)
-              (let* ((fh (tile-group-frame-head group head)) 
-                     (tree (case head-layout
-                             ((:top :left) (cadr fh)) ; get stack tree
-                             ((:bottom :right) (car fh)))))
-                (balance-frames-internal group tree))))))))
-
-(labels
-    ((only-one (group head)
-       ;; This is just a clone of the command ONLY, but it takes a group and a
-       ;; head to work with instead of using the current ones. 
-       (with-group-head-info (group head)
-         (let ((win master-window)
-               (frame (copy-frame head)))
-           (if (only-one-frame-p)
-               (wm-message "There's only one frame.")
-               (progn
-                 (mapc (lambda (w)
-                         ;; windows in other frames disappear
-                         (unless (eq (window-frame w) 
-                                     (tile-group-current-frame group))
-                           (hide-window w))
-                         (setf (window-frame w) frame))
-                       (remove-if (lambda (w) (typep w 'float-window))
-                                  (head-windows group head)))
-                 (setf (frame-window frame) win
-                       (tile-group-frame-head group head) frame
-                       (tile-group-current-frame group) frame)
-                 (focus-frame group frame)
-                 (if (frame-window frame)
-                     (update-decoration (frame-window frame))
-                     (show-frame-indicator group))
-                 (sync-frame-windows group (tile-group-current-frame group))))))))
-  (defun dynamic-group-retile-head (group head &optional retile-floats)
-    "Retile a specific head within a group. If RETILE-FLOATS is T then place all
-floating windows onto the stack."
-    (with-group-head-info (group head)
-      (only-one group head)
-      (let ((windows (reverse
-                      (cons master-window
-                            (if retile-floats
-                                (append
-                                 (loop for w in (head-windows group head)
-                                       when (float-window-p w)
-                                       collect w)
-                                 stack-windows)
-                                stack-windows)))))
-        (setf master-window nil
-              stack-windows nil)
-        (loop with previous-floats = nil
-              for window in windows
-              do (when (float-window-p window)
-                   (push window previous-floats)
-                   (replace-class window 'dynamic-window))
-                 (dynamic-group-place-window group head window))
-        (map nil 'sync-minor-modes windows)
-        (focus-frame group (window-frame master-window))))))
 
 ;;; Handle overflow of both heads and groups
 

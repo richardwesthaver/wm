@@ -64,9 +64,7 @@ is a tile group.")
 ;; TODO: define-smart-keymap (shadow mod keys)
 (define-keymap *root-map* ()
   (kbd "c")   "exec xterm"
-  (kbd "C-c") "exec xterm"
   (kbd "e")   "emacs"
-  (kbd "C-e") "emacs"
   (kbd "b")   "banish"
   (kbd "C-b") "banish"
   (kbd "a")   "time"
@@ -76,7 +74,6 @@ is a tile group.")
   *escape-fake-key* "send-escape"
   (kbd ";")   "colon"
   (kbd ":")   "eval"
-  (kbd "v")   "version"
   (kbd "m")   "lastmsg"
   (kbd "C-m") "lastmsg"
   (kbd "G")   "vgroups"
