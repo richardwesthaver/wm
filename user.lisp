@@ -292,9 +292,9 @@ current frame instead of switching to the window."
   "Reload WM using ASDF."
   (wm-message "Reloading WM...")
   ;; TODO std/defsys..
-  #+asdf (with-restarts-menu
-           (asdf:operate 'asdf:load-op :wm))
-  #+asdf (wm-message "Reloading WM...^B^2*Done^n."))
+  (with-restarts-menu
+    (load-system :wm))
+  (wm-message "Reloading WM...^B^2*Done^n."))
 
 (defcommand emacs ()
   "Start emacs unless it is already running, in which case focus it."
