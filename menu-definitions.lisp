@@ -190,21 +190,21 @@ unmark the entry at the selected point."
     (format nil "~@[~A ~]~A"
             (menu-prompt menu) (single-menu-current-input menu))))
 
-(defmethod typing-action ((menu menu) key-seq)
+(defmethod typing-action ((menu menu) keyseq)
   "Default action is to do nothing"
-  (declare (ignore key-seq)))
+  (declare (ignore keyseq)))
 
-(defmethod typing-action ((menu single-menu) key-seq)
+(defmethod typing-action ((menu single-menu) keyseq)
   "If the user entered a key not mapped in *MENU-MAP*, check it.
 If he's trying to type an entry's name, either complete or not based
-on COMPLETE-PARTIAL. Match is case insensitive. If KEY-SEQ is nil,
+on COMPLETE-PARTIAL. Match is case insensitive. If KEYSEQ is nil,
 some other function has manipulated the current-input and is requesting
 a re-computation of the match."
-  (let ((input-char (and key-seq (get-input-char key-seq))))
+  (let ((input-char (and keyseq (get-input-char keyseq))))
     (when input-char
       (vector-push-extend input-char (single-menu-current-input menu)))
     (handler-case
-        (when (or input-char (not key-seq))
+        (when (or input-char (not keyseq))
           (labels ((match-p (table-item)
                      (funcall (single-menu-filter-pred menu)
                               (car table-item)
@@ -215,10 +215,10 @@ a re-computation of the match."
             (bound-check-menu menu)))
       (ppcre:ppcre-syntax-error ()))))
 
-(defmethod typing-action ((menu batch-menu) key-seq)
+(defmethod typing-action ((menu batch-menu) keyseq)
   "Mark the selected item with the character that was typed. If the character
 is not allowed, as specified by allowed-markers, item is not marked"
-  (let ((input-char (and key-seq (get-input-char key-seq))))
+  (let ((input-char (and keyseq (get-input-char keyseq))))
     (with-slots (selected table allowed-markers) menu
       (when (and input-char (or (not allowed-markers) (member input-char allowed-markers)))
         (setf (car (nth selected table)) input-char)
@@ -282,11 +282,11 @@ more spaces; READ-ARG is used to split the string)."
                      (incf highlight))
                    (run-hook-with-args *menu-selection-hook* menu)
                    (echo-string-list screen strings highlight)))
-               (multiple-value-bind (action key-seq) (read-from-keymap (menu-keymap menu))
+               (multiple-value-bind (action keyseq) (read-from-keymap (menu-keymap menu))
                  (cond ((and action
                              (not (or (fboundp action)
                                       (functionp action)))
-                             (help-key-p key-seq))
+                             (help-key-p keyseq))
                         (setf displaying-help-bindings t))
                        ((and displaying-help-bindings
                              (eql action 'menu-abort))
@@ -297,7 +297,7 @@ more spaces; READ-ARG is used to split the string)."
                         (if (fboundp action)
                             (progn (funcall action menu)
                                    (bound-check-menu menu))
-                            (typing-action menu (first key-seq)))))))))
+                            (typing-action menu (first keyseq)))))))))
       (unmap-all-message-windows))))
 
 

@@ -151,8 +151,8 @@ Must signal :menu-quit with the result."))
   (:documentation "Returns the prompt-line that should be displayed. If no
 line is to be displayed, then return nil"))
 
-(defgeneric typing-action (menu key-seq)
-  (:documentation "Performs an action based on key-seq when key-seq is not in the
+(defgeneric typing-action (menu keyseq)
+  (:documentation "Performs an action based on keyseq when keyseq is not in the
 appropriate menu-map."))
 
 (defgeneric get-menu-items (menu)

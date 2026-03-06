@@ -9,7 +9,7 @@
 ;;; Code:
 (in-package #:wm)
 
-(defvar *which-key-format* (concat *key-seq-color* "*~5a^n ~a")
+(defvar *which-key-format* (concat *keyseq-color* "*~5a^n ~a")
   "The format string that decides how keybindings will show up in the
 which-key window. Two arguments will be passed to this formatter:
 
@@ -41,8 +41,8 @@ which-key window. Two arguments will be passed to this formatter:
                                  (:right (format nil "~a~a~a" (if (= c 0) "" padstr) len s)))))))
     (apply 'mapcar 'concat (or cols '(nil)))))
 
-(defun display-bindings-for-keymaps (key-seq &rest keymaps)
-  (dformat 4 "Displaying bindings for ~A" key-seq)
+(defun display-bindings-for-keymaps (keyseq &rest keymaps)
+  (dformat 4 "Displaying bindings for ~A" keyseq)
   (let* ((screen (current-screen))
          (data (mapcan (lambda (map)
                          (map 'list 
@@ -62,7 +62,7 @@ which-key window. Two arguments will be passed to this formatter:
                         (truncate (- (head-height (current-head)) (* 2 (screen-msg-border-width screen)))
                                   (font-height (screen-font screen))))))
     (message-no-timeout "Prefix: ~a~%~{~a~^~%~}"
-                        (print-key-seq key-seq)
+                        (print-keyseq keyseq)
                         (or (columnize data cols) '("(EMPTY MAP)")))))
 
 (defcommand list-commands ()
@@ -90,23 +90,23 @@ which-key window. Two arguments will be passed to this formatter:
 (defcommand describe-key (keys)
   "Either interactively type the key sequence or supply it as text. This
   command prints the command bound to the specified key sequence."
-  (declare (interactive (key-seq "Describe key:")))
-  (let ((printed-key (mapcar 'print-key keys)))
+  (declare (interactive (keyseq "Describe key:")))
+  (let ((printed-key (map 'list 'print-key keys)))
     (if-let ((cmd (loop for map in (top-maps)
-                        for cmd = (lookup-key-sequence map keys)
+                        for cmd = (lookup-keyseq map keys)
                         when cmd return cmd)))
-            (let ((cmd-without-args (read-arg cmd)))
-              (message-no-timeout "~{~A~^ ~} is bound to \"~A\".~%~A"
-                                  printed-key cmd
-                                  (describe-object cmd-without-args nil)))
-            (cond ((and (help-key-p keys)
-                        (cdr printed-key))
-                   (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
-                               printed-key (butlast printed-key)))
-                  ((cancel-key-p keys)
-                   (wm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
-                               (lastcar printed-key)))
-                  (t (wm-message "~{~A~^ ~} is not bound." printed-key))))))
+      (let ((cmd-without-args (read-arg cmd)))
+        (message-no-timeout "~{~A~^ ~} is bound to \"~A\".~%~A"
+                            printed-key cmd
+                            (describe-object cmd-without-args nil)))
+      (cond ((and (help-key-p keys)
+                  (cdr printed-key))
+             (wm-message "~{~A~^ ~} shows the bindings for the prefix map under ~{~A~^ ~}."
+                         printed-key (butlast printed-key)))
+            ((cancel-key-p keys)
+             (wm-message "Any command ending in ~A is meant to cancel any command in progress \"ABORT\".~%"
+                         (lastcar printed-key)))
+            (t (wm-message "~{~A~^ ~} is not bound." printed-key))))))
 
 (defun describe-variable-to-stream (var stream)
   "Write the help for the variable to the stream."
@@ -242,7 +242,7 @@ FIND-BINDING-IN-KMAP."
     (let ((cmd (string-downcase cmd)))
       (if-let ((bindings (keys cmd)))
               (format stream "\"~a\" is on ~{~a~^, ~}." cmd
-                      (mapcar 'print-key-seq bindings))
+                      (mapcar 'print-keyseq bindings))
               (format stream "Command \"~a\" is not currently bound." cmd))
       (let ((reverse-hash (make-hash-table :size (hash-table-size *commands*)
                                            :test 'eq)))
@@ -256,7 +256,7 @@ FIND-BINDING-IN-KMAP."
                           cmd (mapcar #'string-downcase aliases))
                   (loop for a in aliases
                         for k = #2=(keys (string-downcase (symbol-name a))) then #2#
-                        when k do (format stream "~%\"~a\" is on ~{~a~^, ~}." (string-downcase a) (mapcar 'print-key-seq k))))))))
+                        when k do (format stream "~%\"~a\" is on ~{~a~^, ~}." (string-downcase a) (mapcar 'print-keyseq k))))))))
 
 (defcommand where-is (cmd)
   "Print the key sequences bound to the specified command."
@@ -278,22 +278,22 @@ FIND-BINDING-IN-KMAP."
     kmaps
     :initial-value nil)))
 
-(defun get-kmaps-at-key-seq (kmaps key-seq)
-  "get a list of kmaps that are activated when pressing KEY-SEQ when
+(defun get-kmaps-at-keyseq (kmaps keyseq)
+  "get a list of kmaps that are activated when pressing KEYSEQ when
 KMAPS are enabled"
-  (if (= 1 (length key-seq))
-      (get-kmaps-at-key kmaps (first key-seq))
-      (get-kmaps-at-key-seq (get-kmaps-at-key kmaps (first key-seq))
-                            (cdr key-seq))))
+  (if (= 1 (length keyseq))
+      (get-kmaps-at-key kmaps (first keyseq))
+      (get-kmaps-at-keyseq (get-kmaps-at-key kmaps (first keyseq))
+                            (cdr keyseq))))
 
-(defun which-key-mode-key-press-hook (key key-seq cmd)
+(defun which-key-mode-key-press-hook (key keyseq cmd)
   "*key-press-hook* for which-key-mode"
-  ;; (dformat 4 "which-key-mode active: ~A ~S ~A" key key-seq cmd)
+  ;; (dformat 4 "which-key-mode active: ~A ~S ~A" key keyseq cmd)
   (when (not (eq *top-map* *resize-map*))
-    (let* ((oriented-key-seq (reverse key-seq))
-           (maps (get-kmaps-at-key-seq (top-maps) oriented-key-seq)))
+    (let* ((oriented-keyseq (reverse keyseq))
+           (maps (get-kmaps-at-keyseq (top-maps) oriented-keyseq)))
       (when-let ((only-maps (remove-if-not 'keymap-p maps)))
-                (apply 'display-bindings-for-keymaps oriented-key-seq only-maps)))))
+                (apply 'display-bindings-for-keymaps oriented-keyseq only-maps)))))
 
 (defcommand which-key-mode ()
   "Toggle which-key-mode"

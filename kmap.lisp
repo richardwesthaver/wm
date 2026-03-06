@@ -21,7 +21,7 @@ prefix map.")
  *group-root-map* and either *tile-group-root-map*, *float-group-root-map*,
  or *dynamic-group-map*). It is known as the prefix map.")
 
-(defvar *key-seq-color* "^5"
+(defvar *keyseq-color* "^5"
   "Color of a keybinding when displayed in windows such as the prefix
 keybinding in the which-key window.")
 
@@ -62,9 +62,9 @@ keybinding in the which-key window.")
         (altgr-key key)
         key)))
 
-(defun parse-wm-key-seq (keys)
+(defun parse-wm-keyseq (keys)
   "KEYS is a key sequence. Parse it and return the list of keys."
-  (mapcar 'parse-wm-key (split-whitespace keys)))
+  (coerce (mapcar 'parse-wm-key (split-whitespace keys)) 'keyseq))
 
 (defun %sync-top-map (map)
   ;; TODO 2026-01-25: should probably be equiv?

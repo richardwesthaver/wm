@@ -121,17 +121,17 @@ only return active commands."
                        prompt
                        (wm-commands))))
 
-(define-command-type :key-seq (prompt)
+(define-command-type :keyseq (prompt)
   (labels ((update (seq)
              (wm-message "~a ~{~a ~}"
                       prompt
                       (mapcar 'print-key (reverse seq)))))
     (let ((rest (read-args *command-input*)))
-      (or (and rest (parse-wm-key-seq rest))
+      (or (and rest (parse-wm-keyseq rest))
           ;; read a key sequence from the user
           (with-focus (screen-key-window (current-screen))
             (wm-message "~a" prompt)
-            (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))))))))
+            (coerce (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))) 'keyseq))))))
 
 (define-command-type :window-number (prompt)
   (when-let ((n (or (read-arg *command-input*)

@@ -163,21 +163,21 @@ The Caller is responsible for setting up the input focus."
          (state (cdr code-state)))
     (handle-keymap kmaps code state nil nil update-fn)))
 
-(defun handle-keymap (kmaps code state key-seq grab update-fn)
+(defun handle-keymap (kmaps code state keyseq grab update-fn)
   "Find the command mapped to the (code state) and return it."
   ;; KMAPS is a list of keymaps that may match the user's key sequence.
-  (dformat 4 "Awaiting key ~a ~S ~S ~S" kmaps code state key-seq)
+  (dformat 4 "Awaiting key ~a ~S ~S ~S" kmaps code state keyseq)
   (let* ((key (key-from-code-state code state))
-         (key-seq (cons key key-seq))
+         (keyseq (cons key keyseq))
          (bindings (mapcar (lambda (m) (lookup-key m key)) (deref-keymaps kmaps)))
          ;; if the first non-nil thing is another keymap, then grab
          ;; all the keymaps and recurse on them. If the first one is a
          ;; command, then we're done.
          (match (find-if-not 'null bindings)))
     (dformat 4 "key-press: ~S ~S ~S" key state match)
-    (run-hook-with-args *key-press-hook* key key-seq match)
+    (run-hook-with-args *key-press-hook* key keyseq match)
     (when update-fn
-      (funcall update-fn key-seq))
+      (funcall update-fn keyseq))
     (cond ((keymap-or-keymap-symbol-p match)
            (when grab
              (grab-pointer (current-screen)))
@@ -185,15 +185,15 @@ The Caller is responsible for setting up the input focus."
                   (code (car code-state))
                   (state (cdr code-state)))
              (unwind-protect
-                  (handle-keymap (remove-if-not 'keymap-or-keymap-symbol-p bindings) code state key-seq nil update-fn)
+                  (handle-keymap (remove-if-not 'keymap-or-keymap-symbol-p bindings) code state keyseq nil update-fn)
                (when grab (ungrab-pointer)))))
           (match
-              (values match key-seq))
+              (values match keyseq))
           ((find key *help-keys* :test 'key-eq)
-           (apply 'display-bindings-for-keymaps (reverse (cdr key-seq)) (deref-keymaps kmaps))
-           (values t key-seq))
+           (apply 'display-bindings-for-keymaps (reverse (cdr keyseq)) (deref-keymaps kmaps))
+           (values t keyseq))
           (t
-           (values nil key-seq)))))
+           (values nil keyseq)))))
 
 (defun top-maps (&optional (group (current-group)))
   "Return all top level keymaps that are active."
@@ -230,10 +230,10 @@ kmap."
                     when (typep group (first i))
                     collect (second i)))))))
 
-(defvar *current-key-seq* nil
+(defvar *current-keyseq* nil
   "The sequence of keys which were used to invoke a command, available
   within a command definition as a dynamic var binding. Commands may
-  dispatch further based on the value in *current-key-seq*.")
+  dispatch further based on the value in *current-keyseq*.")
 
 (defvar *custom-key-event-handler* nil
   "A custom key event handler can be set in this variable,
@@ -249,16 +249,16 @@ kmap."
                   (funcall *custom-key-event-handler* code state))
              ;; modifiers can sneak in with a race condition. so avoid that.
              (unless (is-modifier code)
-               (multiple-value-bind (cmd key-seq) (get-cmd code state)
+               (multiple-value-bind (cmd keyseq) (get-cmd code state)
                  (cond
                    ((eq cmd t))
                    (cmd
                     (unmap-message-window (current-screen))
-                    (let ((*current-key-seq* key-seq))
+                    (let ((*current-keyseq* keyseq))
                       (dformat 3 "Evaluating command ~A" cmd)
                       (eval-command cmd t))
                     t)
-                   (t (wm-message "~{~a ~}not bound." (mapcar 'print-key (nreverse key-seq)))))))))))
+                   (t (wm-message "~{~a ~}not bound." (mapcar 'print-key (nreverse keyseq)))))))))))
 
 (defun handle-wm-commands (root)
   "Handle a WM style command request."
