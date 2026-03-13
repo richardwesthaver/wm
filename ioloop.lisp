@@ -65,18 +65,6 @@ of the `screen'."
       *display* (wm-screen-root screen))
      1000.0))
 
-(defun run-with-timer (secs repeat function &rest args)
-  "Perform an action after a delay of SECS seconds.
-Repeat the action every REPEAT seconds, if repeat is non-nil.
-SECS and REPEAT may be reals.
-The action is to call FUNCTION with arguments ARGS."
-  (check-type secs (real 0 *))
-  (check-type repeat (or null (real 0 *)))
-  (check-type function (or function symbol))
-  (let ((timer (make-timer (lambda () (apply function args)) :thread t)))
-    (schedule-timer timer secs :repeat-interval repeat)
-    timer))
-
 ;;; General interface
 (defgeneric io-channel-ioport (io-loop channel)
   (:documentation

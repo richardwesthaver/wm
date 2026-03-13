@@ -9,29 +9,30 @@
 ;; Code:
 (in-package #:wm)
 
-(defvar *escape-key* (kbd "C-t")
-  "The escape key. Any keymap that wants to hang off the escape key
+(eval-always
+  (defvar *escape-key* (kbd "C-t")
+    "The escape key. Any keymap that wants to hang off the escape key
 should use this specific key struct instead of creating their own
 C-t.")
 
-(defvar *help-keys* (list (kbd "?") (kbd "C-h"))
-  "The list of keys used to invoke the help command.")
+  (defvar *help-keys* (list (kbd "?") (kbd "C-h"))
+    "The list of keys used to invoke the help command.")
 
-(defvar *escape-fake-key* (kbd "t")
-  "The binding that sends the fake escape key to the current window.")
+  (defvar *escape-fake-key* (kbd "t")
+    "The binding that sends the fake escape key to the current window.")
 
-(defvar *groups-map* (sparse-keymap)
-  "The keymap that group related key bindings sit on. It is bound to 'C-t g' by default.")
+  (defvar *groups-map* (sparse-keymap)
+    "The keymap that group related key bindings sit on. It is bound to 'C-t g' by default.")
 
-(defvar *exchange-window-map* (sparse-keymap)
-  "The keymap that exchange-window key bindings sit on. It is bound to 'C-t x' by default.")
+  (defvar *exchange-window-map* (sparse-keymap)
+    "The keymap that exchange-window key bindings sit on. It is bound to 'C-t x' by default.")
 
-(defvar *help-map* (sparse-keymap)
-  "Help related bindings hang from this keymap")
+  (defvar *help-map* (sparse-keymap)
+    "Help related bindings hang from this keymap")
 
-(defvar *group-top-maps* '((tile-group *tile-group-top-map*)
-                           (group *group-top-map*))
-  "An alist of the top level maps for each group type. For a given
+  (defvar *group-top-maps* '((tile-group *tile-group-top-map*)
+                             (group *group-top-map*))
+    "An alist of the top level maps for each group type. For a given
 group, all maps whose type matches the given group are active. So for
 a tile-group, both the group map and tile-group map are active.
 
@@ -39,15 +40,15 @@ Order is important. Each map is seached in the order they appear in
 the list (inactive maps being skipped). In general the order should go
 from most specific groups to most general groups.")
 
-(defvar *group-top-map* (sparse-keymap))
-(defvar *group-root-map* (sparse-keymap)
-  "Commands specific to a group context hang from this keymap.
+  (defvar *group-top-map* (sparse-keymap))
+  (defvar *group-root-map* (sparse-keymap)
+    "Commands specific to a group context hang from this keymap.
 It is available as part of the @dnf{prefix map}.")
-(defvar *tile-group-top-map* (sparse-keymap))
-(defvar *tile-group-root-map* (sparse-keymap)
-  "Commands specific to a tile-group context hang from this keymap.
+  (defvar *tile-group-top-map* (sparse-keymap))
+  (defvar *tile-group-root-map* (sparse-keymap)
+    "Commands specific to a tile-group context hang from this keymap.
 It is available as part of the @dnf{prefix map} when the active group
-is a tile group.")
+is a tile group."))
 
 ;; Do it this way so its easier to wipe the map and get a clean one.
 ;; (defmacro fill-keymap (map &rest bindings)
