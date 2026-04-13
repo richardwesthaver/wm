@@ -82,7 +82,7 @@
            (progn
              (xlib:map-window window)
              (xlib:grab-pointer window '(:button-press :button-release :button-motion) :owner-p t)
-             (call (command :echo) (list "Click and drag the area to screenshot."))
+             ;; (call (command :echo) (list "Click and drag the area to screenshot."))
              (xlib:event-case (display :discard-p t)
                (exposure
                 ()
@@ -102,7 +102,7 @@
                (button-press
                 ()
                 (multiple-value-bind (root-x root-y) (xlib:global-pointer-position display)
-                  (call (command :echo) (list (format nil "Screenshotting from ~A, ~A to ..." root-x root-y)))
+                  ;; (call (command :echo) (list (format nil "Screenshotting from ~A, ~A to ..." root-x root-y)))
                   (setf x1 root-x)
                   (setf y1 root-y)
                   (setf x2 (+ 1 x1))
@@ -117,8 +117,7 @@
                     ;; drawing over the old rectangle reverts the pixels back to their original values.
                     (when x2
                       (xlib:draw-rectangle window gc x1 y1 (- x2 x1) (- y2 y1)))
-                    (call (command :echo) 
-                          (list (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename)))
+                    ;; (call (command :echo) (list (format nil "Screenshotted from ~A, ~A to ~A, ~A to ~A" x1 y1 root-x root-y filename))
                     (%screenshot-window (xlib:screen-root (wm:screen-number (wm:current-screen))) filename
                                         :x (- x1 1)
                                         :y (- y1 1)

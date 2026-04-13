@@ -86,7 +86,7 @@ only return active commands."
 
 (define-command-type :y-or-n (prompt)
   (let* ((positive-responses '("y" t))
-         (s (or (read-arg *command-input*)
+         (s (or (read-arg *command-io*)
                 (read-one-line (current-screen) (concat prompt "(y/n): ")))))
     (member s positive-responses :test #'equalp)))
 
@@ -105,18 +105,18 @@ only return active commands."
                               (package-name pkg) var)))))
 
 (define-command-type :variable (prompt)
-  (lookup-symbol (read-wm-arg *command-input* prompt)))
+  (lookup-symbol (read-wm-arg *command-io* prompt)))
 
 (define-command-type :function (prompt)
   (multiple-value-bind (sym pkg var)
-      (lookup-symbol (read-wm-arg *command-input* prompt))
+      (lookup-symbol (read-wm-arg *command-io* prompt))
     (if (fboundp sym)
         sym
         (throw 'cmd (format nil "The symbol ~A::~A is not bound to any function."
                               (package-name pkg) var)))))
 
 (define-command-type :command (prompt)
-  (or (read-arg *command-input*)
+  (or (read-arg *command-io*)
       (completing-read-screen (current-screen)
                        prompt
                        (wm-commands))))
@@ -126,15 +126,15 @@ only return active commands."
              (wm-message "~a ~{~a ~}"
                       prompt
                       (mapcar 'print-key (reverse seq)))))
-    (let ((rest (read-args *command-input*)))
+    (let ((rest (read-args *command-io*)))
       (or (and rest (parse-wm-keyseq rest))
           ;; read a key sequence from the user
           (with-focus (screen-key-window (current-screen))
             (wm-message "~a" prompt)
-            (coerce (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))) 'keyseq))))))
+            (coerce (nreverse (nth-value 1 (read-from-keymap (top-maps) #'update))) 'kbd::keyseq))))))
 
 (define-command-type :window-number (prompt)
-  (when-let ((n (or (read-arg *command-input*)
+  (when-let ((n (or (read-arg *command-io*)
                (completing-read-screen (current-screen)
                                 prompt
                                 (mapcar 'window-map-number
@@ -146,7 +146,7 @@ only return active commands."
       (throw 'cmd "No such window."))))
 
 (define-command-type :number (prompt)
-  (when-let ((n (or (read-arg *command-input*)
+  (when-let ((n (or (read-arg *command-io*)
                     (read-one-line (current-screen) prompt))))
     (handler-case (parse-number n)
       (invalid-number (c)
@@ -154,20 +154,20 @@ only return active commands."
         (throw 'cmd "Number required.")))))
 
 (define-command-type :string (prompt)
-  (or (read-arg *command-input*)
+  (or (read-arg *command-io*)
       (read-one-line (current-screen) prompt)))
 
 (define-command-type :password (prompt)
-  (or (read-arg *command-input*)
+  (or (read-arg *command-io*)
       (read-one-line (current-screen) prompt :password t)))
 
 (define-command-type :key (prompt)
-  (when-let ((s (or (read-arg *command-input*)
+  (when-let ((s (or (read-arg *command-io*)
                (read-one-line (current-screen) prompt))))
     (kbd s)))
 
 (define-command-type :window-name (prompt)
-  (or (read-arg *command-input*)
+  (or (read-arg *command-io*)
       (completing-read-screen (current-screen) prompt
                        (mapcar 'window-name
                                (group-windows (current-group))))))
@@ -177,7 +177,7 @@ only return active commands."
                    ("down" :down)
                    ("left" :left)
                    ("right" :right)))
-         (string (read-wm-arg *command-input* prompt (mapcar 'first values)))
+         (string (read-wm-arg *command-io* prompt (mapcar 'first values)))
          (dir (second (assoc string values :test 'string-equal))))
     (or dir
         (throw 'cmd "No matching direction."))))
@@ -193,7 +193,7 @@ only return active commands."
                    ("top-left" :top-left)
                    ("bottom-right" :bottom-right)
                    ("bottom-left" :bottom-left)))
-         (string (read-wm-arg *command-input* prompt (mapcar 'first values)))
+         (string (read-wm-arg *command-io* prompt (mapcar 'first values)))
          (gravity (second (assoc string values :test 'string-equal))))
     (or gravity
         (throw 'cmd "No matching gravity."))))
@@ -214,7 +214,7 @@ only return active commands."
 
 (define-command-type :group (prompt)
   (let ((match (select-group (current-screen)
-                             (or (read-arg *command-input*)
+                             (or (read-arg *command-io*)
                                  (completing-read-screen (current-screen) prompt
                                                   (mapcar 'group-name
                                                           (screen-groups (current-screen))))))))
@@ -223,7 +223,7 @@ only return active commands."
 
 (define-command-type :frame (prompt)
   (declare (ignore prompt))
-  (if-let ((arg (read-arg *command-input*)))
+  (if-let ((arg (read-arg *command-io*)))
     (or (find arg (group-frames (current-group))
               :key (lambda (f)
                      (string (get-frame-number-translation f)))
@@ -237,12 +237,12 @@ only return active commands."
   (let ((prompt (format nil "~A -c " *shell-program*))
         (*input-history* *input-shell-history*))
     (unwind-protect
-         (or (read-args *command-input*)
+         (or (read-args *command-io*)
              (completing-read-screen (current-screen) prompt 'complete-program))
       (setf *input-shell-history* *input-history*))))
 
 (define-command-type :rest (prompt)
-  (or (read-args *command-input*)
+  (or (read-args *command-io*)
       (read-one-line (current-screen) prompt)))
 
 (defcommand (:wm colon) (&optional initial-input)
