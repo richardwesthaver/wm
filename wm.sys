@@ -4,7 +4,7 @@
  :require (:core :xlib :swank)
  :hook ((:load (xkb:load-xkbcommon t)) (:save log:remove-logger))
  :components 
- ((:file "pkg")
+ ((:pkg "pkg" :default-package wm-user)
   (:file "prim")
   (:file "font-rendering")
   (:file "kmap")

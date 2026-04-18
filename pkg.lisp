@@ -1,7 +1,7 @@
 ;;; pkg.lisp -- WM Packages
 
 ;;; Code:
-(defpackage :wm
+(defpkg :wm
   (:use #:cl #:std #:obj/meta/mix #:time #:log #:obj #:sb-ext #:kbd)
   (:import-from #:std/os #:execv)
   (:import-from #:sb-debug #:print-backtrace #:backtrace)
@@ -408,7 +408,7 @@
    wm-config
    default-wm-logger-config))
 
-(std:defpkg :wm-user
+(defpkg :wm-user
   (:use #:core-lisp #:std #:wm #:cli #:obj #:log #:net #:io #:kbd #:skel #:homer #:krypt #:packy #:cmd))
 
 (in-package :wm)
