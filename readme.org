@@ -4,32 +4,6 @@
 #+email:richard.westhaver@gmail.com
 This is a fork of StumpWM built for the Cursed Linux environment.
 
-#+BEGIN: project-info :files nil :tasks nil :status nil :churn t :html nil
-#+CALL: project-details(vc='nil) :dir ~/comp/shed/wm/
-
-#+RESULTS:
-|-------------+------------------------------------------------------|
-| name        | wm                                                   |
-| version     | 1.0.1                                                |
-| description | A fork of StumpWM by Shawn Betts <sabetts@vcn.bc.ca> |
-| id          | 1445975379900235397                                  |
-| root        | ~/comp/shed/wm/                                      |
-| tags        | gui wm linux x                                       |
-| updated     | Thu Feb 12 21:16:10 2026 -0500                       |
-| langs       | lisp org                                             |
-| lines       | 19688 :code 16008 :comment 1402 :blank 2278          |
-|-------------+------------------------------------------------------|
-
-#+CALL: hg-churn() :dir ~/comp/shed/wm/
-
-#+RESULTS:
-: 2025-11  36604 *************************************************************
-: 2025-12    519 
-: 2026-01  18792 *******************************
-: 2026-02   1260 **
-
-#+END:
-
 Original Authors:
 #+begin_example
 The Stump Window Manager Authors
