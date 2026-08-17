@@ -1,4 +1,4 @@
-;;; ~/comp/shed/wm/wm.sys --- WM Sytem Definitions
+;;; wm.sys --- WM Sytem Definitions
 (defsys :wm
  :version "0.1.1"
  :require (:core :xlib :swank)
@@ -44,4 +44,34 @@
   (:file "replace-class"))
  :provide 
  ((:tests :require (:rt :wm) :components ((:file "tests")))
-  (:bin :wm :package :wm :toplevel "start-wm")))
+  (:bin :wm :package :wm :toplevel "start-wm")
+  (:sys :wm/modeline
+   :require (:std :net :xlib :wm :obj)
+   :components 
+   ((:mod "modeline"
+     :components
+     ((:file "pkg")
+      (:file "battery")
+      (:file "cpu")
+      (:file "mem")
+      (:file "net")
+      (:file "hostname")
+      (:file "hidden")
+      (:file "maildir")
+      (:file "tray")
+      (:file "disk")))))
+  (:sys :wm/util
+   :require (:std :swank :wm :dat :xlib :xlib/truetype)
+   :components 
+   ((:mod "util"
+     :components
+     ((:file "pkg")
+      (:file "golden-ratio")
+      (:file "clipboard")
+      (:file "history")
+      (:file "screenshot")
+      (:file "gaps")
+      (:file "ttf-fonts")
+      (:file "windows")))))))
+
+

@@ -29,8 +29,8 @@
    (load-system :vec/paths/ttf)
    (load-system :xlib)
    (load-system :wm)
-   (load-system :util)
-   (load-system :modeline)
+   (load-system :wm/util)
+   (load-system :wm/modeline)
    (in-package :wm-user)
    ;; post-load hooks
    (log:remove-logger)
@@ -48,5 +48,27 @@
  (clean ()
   #$rm -f *.fasl *.fas *.lib *.*fsl
   rm -f *.log *.fns *.fn *.aux *.cp *.ky *.log *.toc *.pg *.tp *.vr *.vrs
-  rm -rf .stash$#))
+  rm -rf .stash$#)
+ (docs ()
+  (:build ()
+   (load-sys "../vec/vec.sys")
+   (load-system :vec/paths :force t)
+   (load-system :vec/paths/ttf :force t)
+   (load-system :vec/aa :force t)
+   (load-system :vec/aa/misc :force t)
+   (load-system :vec :force t)
+   (load-sys "../xlib/xlib.sys")
+   (load-system :xlib)
+   (load-system :xlib/truetype)
+   (load-sys "wm.sys")
+   (load-system :wm :force t)
+   (in-package :wm-user)
+   (load-system :wm/util :force t)
+   (load-system :wm/modeline :force t)
+   (let ((*document-multi-file* t))
+    (time (publish (project-documentation)
+           :output #p".stash/api.org" 
+           :parent "shed"
+           ;; :info t 
+           :setupfile "../../../clean.theme"))))))
 

@@ -1,8 +1,17 @@
 #+title: wm
 #+description: Window Manager
 #+author: Richard Westhaver
-#+email:richard.westhaver@gmail.com
-This is a fork of StumpWM built for the Cursed Linux environment.
+#+email: ellis@compiler.company
+This is a fork of StumpWM built for the Core Linux environment.
+
+#+call: project-links(include='all)
+
+#+RESULTS:
+- [[https://compiler.company/docs/wm/index][Documentation]] 
+  - [[https://compiler.company/docs/shed/wm/man][User Manual]]
+  - [[https://compiler.company/docs/shed/wm/api][API Reference]]
+  - [[https://compiler.company/docs/shed/wm/info][Info]]
+- [[https://compiler.company/plan/tasks/shed.html#wm][Tasks]]
 
 Original Authors:
 #+begin_example

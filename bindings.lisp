@@ -6,7 +6,7 @@
 
 ;; define standard key bindings
 
-;; Code:
+;;; Code:
 (in-package #:wm)
 
 (eval-always
